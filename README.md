@@ -1,4 +1,4 @@
-# 📷 FotoKalk — Kalkulator honorara za fotografe (RH 2026)
+# 📷 FotoKalk PRO — Kalkulator honorara za fotografe (RH 2026)
 
 > Terenski pomoćnik za fotografe koji rade za **Adriatic.hr** — evidencija klijenata, plan snimanja i automatski obračun neto honorara prema hrvatskim poreznim propisima za 2026. godinu.
 
