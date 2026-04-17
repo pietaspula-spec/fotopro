@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- FotoKalk PRO v1.0.0 | Kalkulator honorara za fotografe -->
+<!-- FotoKalk PRO v1.0.1 | Kalkulator honorara za fotografe -->
 <html lang="hr">
 <head>
 <meta charset="UTF-8">
@@ -284,7 +284,6 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
     <div class="theme-sl-knob" id="themeKnob">☀️</div>
   </label>
   <div class="tabs" id="tabsBar"></div>
-  <a href="upute.html" target="_blank" rel="noopener" id="helpBtn" title="Upute za korištenje" style="width:36px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid var(--brd);color:var(--mut2);font-family:var(--sans);font-size:.78rem;font-weight:700;text-decoration:none;flex-shrink:0;transition:all .18s" onmouseover="this.style.borderColor='var(--acc)';this.style.color='var(--acc)'" onmouseout="this.style.borderColor='var(--brd)';this.style.color='var(--mut2)'">?</a>
   <button id="backupHeaderBtn" title="Backup podataka" onclick="openBackupModal()" style="width:36px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid var(--brd);color:var(--mut2);background:transparent;cursor:pointer;flex-shrink:0;transition:all .18s;padding:0" onmouseover="this.style.borderColor='var(--acc)';this.style.color='var(--acc)'" onmouseout="this.style.borderColor='var(--brd)';this.style.color='var(--mut2)'">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="M7 11l5 5 5-5"/><rect x="3" y="17" width="18" height="4" rx="1.5"/></svg>
   </button>
@@ -295,7 +294,7 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
 
 <div class="mode-bar">
   <div class="mode-sw">
-    <button class="mode-btn" id="btnA" onclick="setMode('a')">FotoKalk PRO v1.0.0</button>
+    <button class="mode-btn" id="btnA" onclick="setMode('a')">FotoKalk PRO v1.0.1</button>
   </div>
 </div>
 
@@ -487,6 +486,13 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
   <!-- POST -->
   <div class="pg" id="a-post">
     <div class="card">
+      <div class="ct">Upute</div>
+      <a href="upute.html" target="_blank" rel="noopener" class="btn bp" style="display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;font-size:.9rem;padding:13px 17px;width:100%">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Otvori upute za korištenje
+      </a>
+    </div>
+    <div class="card">
       <div class="ct">Naknade — Adriatic.hr čl.4</div>
       <div class="setr"><label>Honorar/kategoriji (bruto €) <span class="sbg">čl.4</span></label><input type="number" id="a-s-cp" placeholder="0" step="0.5" onchange="aSaveCfg()"></div>
       <div class="setr"><label>Honorar dron (bruto €) <span class="sbg">čl.4</span></label><input type="number" id="a-s-dp" placeholder="0" step="0.5" onchange="aSaveCfg()"></div>
@@ -543,6 +549,10 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
       <div class="ct">⚠️ Opasna zona</div>
       <button class="btn bd" onclick="clearData('a')">🗑 Obriši povijest Adriatic.hr</button>
     </div>
+    <div class="card">
+      <div class="ct">Račun</div>
+      <button class="btn bd" style="width:100%;padding:11px 17px;font-size:.85rem" onclick="logoutApp()">⇥ Odjava</button>
+    </div>
   </div>
 
   <!-- KLIJENTI -->
@@ -571,8 +581,8 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
       <button class="btn bp" style="font-size:.75rem;padding:7px 14px;flex-shrink:0" onclick="openPlanModal()">+ Novo</button>
     </div>
     <div class="frow">
-      <button class="ft on" onclick="planSetFilt('svi',this)">Svi</button>
-      <button class="ft" onclick="planSetFilt('ceka',this)">Na čekanju</button>
+      <button class="ft on" onclick="planSetFilt('ceka',this)">Na čekanju</button>
+      <button class="ft" onclick="planSetFilt('svi',this)">Svi</button>
       <button class="ft" onclick="planSetFilt('obavljeno',this)">Obavljeno</button>
       <button class="ft" onclick="planSetFilt('otkazano',this)">Otkazano</button>
     </div>
@@ -607,10 +617,7 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
       style="width:100%;padding:13px;background:var(--acc);color:#000;font-weight:700;font-size:.95rem;border:none;border-radius:10px;cursor:pointer;font-family:var(--sans);margin-bottom:10px">
       Prijava →
     </button>
-    <button id="lb-skip" onclick="loginSkip()"
-      style="width:100%;padding:8px;background:transparent;color:var(--mut);font-size:.78rem;border:none;cursor:pointer;font-family:var(--sans);display:none">
-      Preskoči, koristi bez oblaka
-    </button>
+
   </div>
 </div>
 
@@ -1488,7 +1495,7 @@ function posaoPopulatePicker(){
 
 
 // ═══ PLAN SNIMANJA ═══
-let planFilt='svi', planEditId=null;
+let planFilt='ceka', planEditId=null;
 function planLoad(){return JSON.parse(localStorage.getItem('fk_plan_a')||'[]')}
 function planSaveAll(arr){localStorage.setItem('fk_plan_a',JSON.stringify(arr))}
 function planSetFilt(f,btn){planFilt=f;g('a-plan').querySelectorAll('.ft').forEach(b=>b.classList.remove('on'));btn.classList.add('on');planRender()}
@@ -1891,10 +1898,9 @@ function syncThemeColor() {
 // ═══ SUPABASE CLOUD SYNC ═══
 const SB_URL = 'https://rvdlsbtwcillsrsnmzze.supabase.co';
 const SB_KEY = 'sb_publishable_d1AkA5OcQfED9HBdFqAKtA_84Ey54sl';
-const SB_USER_ID = 'f942fe98-8cf8-4df8-9e69-9f1f197778b9';
-const SB_ROW_ID = 19;
 
-let sbToken = null; // JWT token nakon prijave
+let sbToken  = null; // JWT token nakon prijave
+let sbUserId = null; // UUID korisnika — dinamički po prijavi
 
 function sbHeaders(extra){
   const h = {'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+(sbToken||SB_KEY)};
@@ -1910,8 +1916,6 @@ function loginOpen(cb){
   _loginStartup  = false;
   const err = g('lb-err');
   if(err){ err.style.display='none'; err.textContent=''; }
-  const skip = g('lb-skip');
-  if(skip) skip.style.display = 'none'; // bez preskakanja kad poziva cloud akcija
   const modal = g('loginModal');
   modal.style.display = 'flex';
   modal.style.flexDirection = 'column';
@@ -1923,8 +1927,6 @@ function loginOpenStartup(){
   _loginStartup  = true;
   const err = g('lb-err');
   if(err){ err.style.display='none'; err.textContent=''; }
-  const skip = g('lb-skip');
-  if(skip) skip.style.display = 'block'; // pri startu može preskočiti
   const modal = g('loginModal');
   modal.style.display = 'flex';
   modal.style.flexDirection = 'column';
@@ -1938,10 +1940,14 @@ function loginClose(){
   _loginStartup  = false;
 }
 
-function loginSkip(){
-  // Korisnik preskače login pri startu — nastavi normalni init bez tokena
-  loginClose();
-  appInit();
+function logoutApp(){
+  customConfirm('Odjaviti se? Lokalni podaci ostaju na uređaju.', ()=>{
+    sbToken  = null;
+    sbUserId = null;
+    localStorage.removeItem('fk_sb_token');
+    localStorage.removeItem('fk_sb_uid');
+    loginOpenStartup();
+  });
 }
 
 async function loginSubmit(){
@@ -1961,8 +1967,10 @@ async function loginSubmit(){
     });
     const data = await res.json();
     if(!res.ok){ throw new Error(data.error_description||data.msg||'Greška pri prijavi'); }
-    sbToken = data.access_token;
+    sbToken  = data.access_token;
+    sbUserId = data.user?.id || null;
     localStorage.setItem('fk_sb_token', sbToken);
+    if(sbUserId) localStorage.setItem('fk_sb_uid', sbUserId);
     loginClose();
     toast('Prijava uspješna ✓');
     if(_loginStartup){
@@ -1978,10 +1986,12 @@ async function loginSubmit(){
   }
 }
 
-// Pokušaj obnove tokena iz localStorage pri startu
+// Pokušaj obnove tokena i userId iz localStorage pri startu
 (function(){
   const t = localStorage.getItem('fk_sb_token');
-  if(t) sbToken = t;
+  const u = localStorage.getItem('fk_sb_uid');
+  if(t) sbToken  = t;
+  if(u) sbUserId = u;
 })();
 
 // ── SPREMI NA OBLAK ────────────────────────────────────────
@@ -1995,28 +2005,23 @@ async function cloudSave(){
 
   try {
     const payload = buildBackupData();
-    const body = JSON.stringify({ id: SB_ROW_ID, user_id: SB_USER_ID, sadrzaj: payload });
 
-    // UPSERT — zamijeni red (id=19) novim sadržajem
-    const res = await fetch(SB_URL+'/rest/v1/podaci?id=eq.'+SB_ROW_ID, {
-      method: 'PATCH',
-      headers: sbHeaders({'Prefer':'return=minimal'}),
-      body: JSON.stringify({ sadrzaj: payload })
+    // UPSERT — jedan red po korisniku (user_id je UNIQUE)
+    const res = await fetch(SB_URL+'/rest/v1/podaci', {
+      method: 'POST',
+      headers: sbHeaders({'Prefer':'resolution=merge-duplicates,return=minimal'}),
+      body: JSON.stringify({ user_id: sbUserId, sadrzaj: payload })
     });
 
-    if(res.status === 404 || res.status === 406){
-      // Red ne postoji — INSERT
-      const res2 = await fetch(SB_URL+'/rest/v1/podaci', {
-        method: 'POST',
-        headers: sbHeaders({'Prefer':'return=minimal'}),
-        body: JSON.stringify({ id: SB_ROW_ID, user_id: SB_USER_ID, sadrzaj: payload })
-      });
-      if(!res2.ok){ const t2=await res2.text(); throw new Error('INSERT greška: '+res2.status+' '+t2); }
-    } else if(!res.ok){
-      const t=await res.text();
-      // Ako je 401/403 — token istekao, resetiraj i ponovi prijavu
-      if(res.status===401||res.status===403){ sbToken=null; localStorage.removeItem('fk_sb_token'); loginOpen(()=>cloudSave()); return; }
-      throw new Error('PATCH greška: '+res.status+' '+t);
+    if(!res.ok){
+      const t = await res.text();
+      if(res.status===401||res.status===403){
+        sbToken=null; sbUserId=null;
+        localStorage.removeItem('fk_sb_token');
+        localStorage.removeItem('fk_sb_uid');
+        loginOpen(()=>cloudSave()); return;
+      }
+      throw new Error('Greška: '+res.status+' '+t);
     }
 
     markBackupDone();
@@ -2039,12 +2044,14 @@ async function cloudPull(){
     if(btn) btn.disabled = true;
 
     try {
-      const res = await fetch(SB_URL+'/rest/v1/podaci?id=eq.'+SB_ROW_ID+'&select=sadrzaj', {
+      const res = await fetch(SB_URL+'/rest/v1/podaci?user_id=eq.'+sbUserId+'&select=sadrzaj', {
         headers: sbHeaders()
       });
 
       if(res.status===401||res.status===403){
-        sbToken=null; localStorage.removeItem('fk_sb_token');
+        sbToken=null; sbUserId=null;
+        localStorage.removeItem('fk_sb_token');
+        localStorage.removeItem('fk_sb_uid');
         loginOpen(()=>cloudPull()); return;
       }
       if(!res.ok){ const t=await res.text(); throw new Error('Fetch greška: '+res.status+' '+t); }
@@ -2204,11 +2211,14 @@ function appInit(){
     applyGrad(getGrad());
     if(!localStorage.getItem('fk_gdpr')){const b=g('gdprBar');if(b)b.style.display='flex';}
   }
-  // Mode
-  setMode('a');
-  showPg('a-plan');
-  today('a-dt');
-  checkBackupReminder();
+  // setTimeout osigurava da browser dovrši repaint (sakrije login modal)
+  // prije nego što setMode gradi tab ikone — inače se ne prikažu pri prvom pokretanju
+  setTimeout(()=>{
+    setMode('a');
+    showPg('a-plan');
+    today('a-dt');
+    checkBackupReminder();
+  }, 50);
 }
 </script>
 </body>
