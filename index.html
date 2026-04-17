@@ -547,7 +547,14 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
     </div>
     <div class="card">
       <div class="ct">⚠️ Opasna zona</div>
-      <button class="btn bd" onclick="clearData('a')">🗑 Obriši povijest Adriatic.hr</button>
+      <button class="btn bd" onclick="clearData('a')" style="margin-bottom:8px">🗑 Obriši povijest Adriatic.hr</button>
+      <div style="height:1px;background:var(--brd);margin:10px 0"></div>
+      <div style="font-size:.72rem;color:var(--mut2);margin-bottom:8px;line-height:1.5">
+        ⚠️ <strong style="color:var(--red)">Brisanje svih podataka</strong> — briše sve zapise, klijente, plan snimanja i postavke. Login token ostaje. Radnja je nepovratna.
+      </div>
+      <button class="btn bd" onclick="clearAllData()" style="width:100%;padding:10px 17px;font-size:.82rem">
+        🗑 Obriši SVE podatke aplikacije
+      </button>
     </div>
     <div class="card">
       <div class="ct">Račun</div>
@@ -1024,6 +1031,20 @@ tr:nth-child(even) td{background:#f9f9f9}
 }
 
 function clearData(ns){customConfirm('Obrisati cijelu povijest?',()=>{localStorage.removeItem(ns==='p'?'fk_p_j':'fk_a_j');aRenderHist();toast('Obrisano')})}
+
+// Brisanje SVIH podataka aplikacije (bez odjave — ostaje login token)
+function clearAllData(){
+  customConfirm('Obrisati SVE podatke aplikacije? Ova radnja se ne može poništiti!', ()=>{
+    const token = localStorage.getItem('fk_sb_token');
+    const uid   = localStorage.getItem('fk_sb_uid');
+    localStorage.clear();
+    sessionStorage.clear();
+    // Vrati token da korisnik ne mora ponovno logirati
+    if(token) localStorage.setItem('fk_sb_token', token);
+    if(uid)   localStorage.setItem('fk_sb_uid', uid);
+    window.location.reload();
+  });
+}
 function buildBackupData(){return {
   v:3,
   ts:new Date().toISOString(),
@@ -1941,12 +1962,14 @@ function loginClose(){
 }
 
 function logoutApp(){
-  customConfirm('Odjaviti se? Lokalni podaci ostaju na uređaju.', ()=>{
+  customConfirm('Odjaviti se? Svi lokalni podaci bit će obrisani s ovog uređaja.', ()=>{
     sbToken  = null;
     sbUserId = null;
-    localStorage.removeItem('fk_sb_token');
-    localStorage.removeItem('fk_sb_uid');
-    loginOpenStartup();
+    // Obriši SVE lokalne podatke — sljedeći korisnik počinje od nule
+    localStorage.clear();
+    sessionStorage.clear();
+    // Reload stranice — čisti in-memory state i service worker cache
+    window.location.reload();
   });
 }
 
@@ -2007,7 +2030,8 @@ async function cloudSave(){
     const payload = buildBackupData();
 
     // UPSERT — jedan red po korisniku (user_id je UNIQUE)
-    const res = await fetch(SB_URL+'/rest/v1/podaci', {
+    // ?on_conflict=user_id — PostgREST mora znati koji je conflict target
+    const res = await fetch(SB_URL+'/rest/v1/podaci?on_conflict=user_id', {
       method: 'POST',
       headers: sbHeaders({'Prefer':'resolution=merge-duplicates,return=minimal'}),
       body: JSON.stringify({ user_id: sbUserId, sadrzaj: payload })
@@ -2079,6 +2103,8 @@ async function cloudPull(){
       aLoadCfg(); aBuildKG(); aRenderHist(); klRender(); planRender();
       applyStatus(getStatus()); applyGrad(getGrad());
       if(d.theme){const isL=d.theme==='l';document.body.classList.toggle('light',isL);const k=g('themeKnob');if(k)k.textContent=isL?'☀️':'🌙';syncThemeColor();}
+      // Rebuild tab ikone koje se ne prikažu bez ovog poziva
+      setMode(mode);
 
       toast('Podaci preuzeti iz oblaka ✓');
     } catch(e){
@@ -2212,13 +2238,13 @@ function appInit(){
     if(!localStorage.getItem('fk_gdpr')){const b=g('gdprBar');if(b)b.style.display='flex';}
   }
   // setTimeout osigurava da browser dovrši repaint (sakrije login modal)
-  // prije nego što setMode gradi tab ikone — inače se ne prikažu pri prvom pokretanju
+  // prije nego što setMode gradi tab ikone — 200ms za pouzdanost na iOS PWA
   setTimeout(()=>{
     setMode('a');
     showPg('a-plan');
     today('a-dt');
     checkBackupReminder();
-  }, 50);
+  }, 200);
 }
 </script>
 </body>
