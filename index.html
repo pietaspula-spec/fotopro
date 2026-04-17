@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<!-- FotoKalk v1.3.0 | Kalkulator honorara za fotografe -->
+<!-- FotoKalk PRO v1.0.0 | Kalkulator honorara za fotografe -->
 <html lang="hr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>FotoKalk</title>
+<title>FotoKalk PRO</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0b0c0e" id="themeColorMeta">
 <meta name="description" content="Kalkulator honorara za fotografe — Adriatic.hr i privatni najam (RH 2026)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="FotoKalk">
+<meta name="apple-mobile-web-app-title" content="FotoKalk PRO">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -204,7 +204,25 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
 .toast.on{opacity:1;transform:translateY(0)}.toast.err{background:var(--red);color:#fff}
 .empty{text-align:center;padding:40px 20px;color:var(--mut);font-size:.8rem}
 @media(max-width:600px){.c2,.c3{grid-template-columns:1fr}}
-/* CUSTOM CONFIRM MODAL */
+/* CLOUD SYNC */
+.cloud-btn{background:transparent;border:1px solid var(--brd);color:var(--mut2);font-family:var(--sans);font-size:.72rem;font-weight:700;padding:5px 11px;border-radius:6px;cursor:pointer;transition:all .18s;display:inline-flex;align-items:center;gap:5px}
+.cloud-btn:hover{border-color:#60a5fa;color:#60a5fa}
+.cloud-btn.save{border-color:var(--grn);color:var(--grn)}.cloud-btn.save:hover{background:rgba(52,211,153,.1)}
+.cloud-btn.pull{border-color:var(--blu);color:var(--blu)}.cloud-btn.pull:hover{background:rgba(96,165,250,.1)}
+.cloud-btn:disabled{opacity:.4;cursor:not-allowed}
+.cloud-status{font-size:.68rem;color:var(--mut);font-family:var(--mono)}
+.cloud-status.ok{color:var(--grn)}.cloud-status.err{color:var(--red)}
+/* LOGIN MODAL */
+.login-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:800;align-items:center;justify-content:center}
+.login-modal.on{display:flex}
+.login-box{background:var(--surf);border-radius:14px;padding:28px 24px;width:320px;max-width:92vw;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.login-box h3{font-size:1rem;font-weight:700;margin-bottom:18px;color:var(--txt)}
+.login-box label{font-size:.72rem;color:var(--mut2);font-weight:600;display:block;margin-bottom:4px}
+.login-box input{width:100%;background:var(--surf2);border:1px solid var(--brd);border-radius:7px;color:var(--txt);font-family:var(--sans);font-size:.88rem;padding:9px 11px;outline:none;transition:border-color .18s;margin-bottom:12px}
+.login-box input:focus{border-color:var(--blu)}
+.login-box .lberr{font-size:.72rem;color:var(--red);margin-bottom:10px;display:none}
+.login-box .lbbtns{display:flex;gap:8px;margin-top:4px}
+
 .conf-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center}
 .conf-modal.on{display:flex}
 .conf-box{background:var(--surf);border-radius:14px;padding:22px 20px;width:300px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,.5)}
@@ -251,7 +269,7 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
     <img src="icon-192.png" alt="FotoKalk">
   </div>
   <div class="inst-text">
-    <div class="inst-title">FotoKalk</div>
+    <div class="inst-title">FotoKalk PRO</div>
     <div class="inst-sub" id="instSubText">Instaliraj aplikaciju za brži pristup i rad bez interneta.</div>
   </div>
   <div class="inst-actions">
@@ -277,7 +295,7 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
 
 <div class="mode-bar">
   <div class="mode-sw">
-    <button class="mode-btn" id="btnA" onclick="setMode('a')">Adriatic.hr</button>
+    <button class="mode-btn" id="btnA" onclick="setMode('a')">FotoKalk PRO v1.0.0</button>
   </div>
 </div>
 
@@ -508,8 +526,7 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
       </div>
     </div>
     <div class="card">
-      <div class="ct">💾 Backup — sve podatke</div>
-      <div id="backupReminderBanner" style="display:none;align-items:center;gap:10px;background:rgba(240,192,64,.10);border:1px solid var(--acc);border-radius:8px;padding:10px 13px;margin-bottom:12px">
+      <div class="ct">💾 Backup — sve podatke</div>      <div id="backupReminderBanner" style="display:none;align-items:center;gap:10px;background:rgba(240,192,64,.10);border:1px solid var(--acc);border-radius:8px;padding:10px 13px;margin-bottom:12px">
         <span style="font-size:1.1rem">⏰</span>
         <span style="font-size:.8rem;flex:1;color:var(--txt)">Nisi radio backup <strong id="backupDaysAgo"></strong> — preporučujemo da napraviš backup i pošalješ ga sebi.</span>
         <button class="btn bd" style="font-size:.68rem;padding:3px 9px;flex-shrink:0" onclick="dismissBackupReminder()">✕</button>
@@ -566,6 +583,37 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
 
 </main>
 
+<!-- LOGIN SCREEN (startup + cloud) -->
+<div id="loginModal" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:950;overflow-y:auto;align-items:center;justify-content:center">
+  <div style="max-width:400px;width:100%;margin:0 auto;padding:40px 24px 48px">
+    <div style="font-size:2rem;font-weight:800;color:var(--acc);letter-spacing:-1px;margin-bottom:4px">📷 FotoKalk PRO</div>
+    <div style="font-size:.85rem;color:var(--mut2);margin-bottom:36px">Kalkulator honorara za fotografe</div>
+    <div style="font-size:1.05rem;font-weight:700;color:var(--txt);margin-bottom:6px">Prijava</div>
+    <div style="font-size:.78rem;color:var(--mut2);margin-bottom:24px;line-height:1.5">Unesite podatke za pristup aplikaciji i cloud sinkronizaciji.</div>
+    <div style="margin-bottom:14px">
+      <label style="font-size:.72rem;color:var(--mut2);font-weight:600;display:block;margin-bottom:5px">E-mail</label>
+      <input type="email" id="lb-email" placeholder="your@email.com" autocomplete="email"
+        style="width:100%;background:var(--surf2);border:1px solid var(--brd);border-radius:8px;color:var(--txt);font-family:var(--sans);font-size:.9rem;padding:11px 13px;outline:none;transition:border-color .18s"
+        onfocus="this.style.borderColor='var(--blu)'" onblur="this.style.borderColor='var(--brd)'">
+    </div>
+    <div style="margin-bottom:18px">
+      <label style="font-size:.72rem;color:var(--mut2);font-weight:600;display:block;margin-bottom:5px">Lozinka</label>
+      <input type="password" id="lb-pass" placeholder="••••••••" autocomplete="current-password"
+        style="width:100%;background:var(--surf2);border:1px solid var(--brd);border-radius:8px;color:var(--txt);font-family:var(--sans);font-size:.9rem;padding:11px 13px;outline:none;transition:border-color .18s"
+        onfocus="this.style.borderColor='var(--blu)'" onblur="this.style.borderColor='var(--brd)'">
+    </div>
+    <div id="lb-err" style="font-size:.75rem;color:var(--red);margin-bottom:12px;display:none"></div>
+    <button id="lb-btn" onclick="loginSubmit()"
+      style="width:100%;padding:13px;background:var(--acc);color:#000;font-weight:700;font-size:.95rem;border:none;border-radius:10px;cursor:pointer;font-family:var(--sans);margin-bottom:10px">
+      Prijava →
+    </button>
+    <button id="lb-skip" onclick="loginSkip()"
+      style="width:100%;padding:8px;background:transparent;color:var(--mut);font-size:.78rem;border:none;cursor:pointer;font-family:var(--sans);display:none">
+      Preskoči, koristi bez oblaka
+    </button>
+  </div>
+</div>
+
 <!-- CUSTOM CONFIRM MODAL -->
 <div class="conf-modal" id="confModal">
   <div class="conf-box">
@@ -580,11 +628,27 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
 <!-- BACKUP MODAL -->
 <div class="modal-bg" id="backupModal" onclick="if(event.target===this)closeBackupModal()">
   <div class="modal" style="padding:22px 18px 32px">
-    <div class="modal-title">💾 Backup podataka</div>
+    <div class="modal-title">☁️ Oblak / Backup</div>
     <div id="backupModalReminder" style="display:none;align-items:center;gap:10px;background:rgba(240,192,64,.10);border:1px solid var(--acc);border-radius:8px;padding:10px 13px;margin-bottom:14px">
       <span style="font-size:1.1rem">⏰</span>
       <span style="font-size:.8rem;flex:1;color:var(--txt)">Nisi radio backup <strong id="backupModalDaysAgo"></strong> — preporuča se backup.</span>
     </div>
+    <!-- CLOUD -->
+    <div style="font-size:.6rem;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--mut2);margin-bottom:9px">Oblak</div>
+    <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:16px">
+      <button class="btn" id="backupModalCloudSave" style="width:100%;justify-content:center;display:flex;align-items:center;gap:8px;font-size:.85rem;padding:11px 17px;background:rgba(52,211,153,.12);color:var(--grn);border:1px solid rgba(52,211,153,.35)" onclick="cloudSave();closeBackupModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/></svg>
+        Spremi na oblak
+      </button>
+      <button class="btn" id="backupModalCloudPull" style="width:100%;justify-content:center;display:flex;align-items:center;gap:8px;font-size:.85rem;padding:11px 17px;background:rgba(96,165,250,.1);color:var(--blu);border:1px solid rgba(96,165,250,.3)" onclick="cloudPullFromModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/><polyline points="8 16 12 20 16 16"/><line x1="12" y1="12" x2="12" y2="20"/></svg>
+        Povuci s oblaka
+      </button>
+    </div>
+    <!-- DIVIDER -->
+    <div style="height:1px;background:var(--brd);margin-bottom:16px"></div>
+    <!-- LOCAL BACKUP -->
+    <div style="font-size:.6rem;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--mut2);margin-bottom:9px">Backup</div>
     <div style="display:flex;flex-direction:column;gap:9px">
       <button class="btn bp" style="width:100%;justify-content:center;display:flex;align-items:center;gap:8px;font-size:.85rem;padding:11px 17px" onclick="backupAll();closeBackupModal()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="M7 11l5 5 5-5"/><rect x="3" y="17" width="18" height="4" rx="1.5"/></svg>
@@ -599,8 +663,7 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
         Uvezi backup
       </button>
     </div>
-    <div class="ib" style="margin-top:12px">ℹ️ Backup sadrži sve podatke aplikacije i postavke. Podijeli ga WhatsApp-om, mailom, na Drive — gdje god želiš.</div>
-    <button class="btn bo" style="width:100%;margin-top:10px;font-size:.78rem" onclick="closeBackupModal()">Zatvori</button>
+    <button class="btn bo" style="width:100%;margin-top:14px;font-size:.78rem" onclick="closeBackupModal()">Zatvori</button>
   </div>
 </div>
 
@@ -608,7 +671,7 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
 <!-- ONBOARDING -->
 <div id="onboardModal">
   <div class="ob-wrap">
-    <div class="ob-logo">📷 FotoKalk</div>
+    <div class="ob-logo">📷 FotoKalk PRO</div>
     <div class="ob-sub">Kalkulator honorara za fotografe — RH 2026</div>
     <div class="ob-title">Dobrodošao/la! 👋</div>
     <div class="ob-desc">Unesite nekoliko osnovnih podataka kako bi aplikacija bila što korisnija. Sve ostaje isključivo na ovom uređaju.</div>
@@ -970,7 +1033,7 @@ function buildBackupData(){return {
   gdpr:localStorage.getItem('fk_gdpr'),
   onboard:localStorage.getItem('fk_onboard')
 }}
-function backupFilename(){const d=new Date();return 'fotokalk_backup_'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'.json'}
+function backupFilename(){const d=new Date();return 'fotokalkpro_'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'.json'}
 function markBackupDone(){localStorage.setItem('fk_last_backup',Date.now());checkBackupReminder()}
 function backupAll(){const data=buildBackupData();const b=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');const _burl=URL.createObjectURL(b);a.href=_burl;setTimeout(()=>URL.revokeObjectURL(_burl),1500);a.download=backupFilename();a.click();markBackupDone();toast('Backup preuzet ✓')}
 function shareBackup(){
@@ -1825,6 +1888,211 @@ function syncThemeColor() {
   meta.content = document.body.classList.contains('light') ? '#f0f2f5' : '#0b0c0e';
 }
 
+// ═══ SUPABASE CLOUD SYNC ═══
+const SB_URL = 'https://rvdlsbtwcillsrsnmzze.supabase.co';
+const SB_KEY = 'sb_publishable_d1AkA5OcQfED9HBdFqAKtA_84Ey54sl';
+const SB_USER_ID = 'f942fe98-8cf8-4df8-9e69-9f1f197778b9';
+const SB_ROW_ID = 19;
+
+let sbToken = null; // JWT token nakon prijave
+
+function sbHeaders(extra){
+  const h = {'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+(sbToken||SB_KEY)};
+  return Object.assign(h, extra||{});
+}
+
+// ── LOGIN ──────────────────────────────────────────────────
+let _loginCallback = null;
+let _loginStartup  = false; // true = prikazano pri startu, bez "Odustani"
+
+function loginOpen(cb){
+  _loginCallback = cb || null;
+  _loginStartup  = false;
+  const err = g('lb-err');
+  if(err){ err.style.display='none'; err.textContent=''; }
+  const skip = g('lb-skip');
+  if(skip) skip.style.display = 'none'; // bez preskakanja kad poziva cloud akcija
+  const modal = g('loginModal');
+  modal.style.display = 'flex';
+  modal.style.flexDirection = 'column';
+  setTimeout(()=>{ const em=g('lb-email'); if(em)em.focus(); }, 100);
+}
+
+function loginOpenStartup(){
+  _loginCallback = null;
+  _loginStartup  = true;
+  const err = g('lb-err');
+  if(err){ err.style.display='none'; err.textContent=''; }
+  const skip = g('lb-skip');
+  if(skip) skip.style.display = 'block'; // pri startu može preskočiti
+  const modal = g('loginModal');
+  modal.style.display = 'flex';
+  modal.style.flexDirection = 'column';
+  setTimeout(()=>{ const em=g('lb-email'); if(em)em.focus(); }, 150);
+}
+
+function loginClose(){
+  const modal = g('loginModal');
+  modal.style.display = 'none';
+  _loginCallback = null;
+  _loginStartup  = false;
+}
+
+function loginSkip(){
+  // Korisnik preskače login pri startu — nastavi normalni init bez tokena
+  loginClose();
+  appInit();
+}
+
+async function loginSubmit(){
+  const email = (g('lb-email')?.value||'').trim();
+  const pass  = g('lb-pass')?.value||'';
+  const errEl = g('lb-err');
+  if(!email||!pass){ errEl.textContent='Unesite e-mail i lozinku.'; errEl.style.display='block'; return; }
+
+  const btn = g('lb-btn');
+  if(btn){ btn.disabled=true; btn.textContent='Prijava…'; }
+
+  try {
+    const res = await fetch(SB_URL+'/auth/v1/token?grant_type=password', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SB_KEY},
+      body: JSON.stringify({email, password:pass})
+    });
+    const data = await res.json();
+    if(!res.ok){ throw new Error(data.error_description||data.msg||'Greška pri prijavi'); }
+    sbToken = data.access_token;
+    localStorage.setItem('fk_sb_token', sbToken);
+    loginClose();
+    toast('Prijava uspješna ✓');
+    if(_loginStartup){
+      appInit(); // nastavi normalni startup flow
+    } else if(_loginCallback){
+      _loginCallback();
+    }
+  } catch(e){
+    errEl.textContent = e.message;
+    errEl.style.display = 'block';
+  } finally {
+    if(btn){ btn.disabled=false; btn.textContent='Prijava →'; }
+  }
+}
+
+// Pokušaj obnove tokena iz localStorage pri startu
+(function(){
+  const t = localStorage.getItem('fk_sb_token');
+  if(t) sbToken = t;
+})();
+
+// ── SPREMI NA OBLAK ────────────────────────────────────────
+async function cloudSave(){
+  if(!sbToken){
+    loginOpen(()=>cloudSave());
+    return;
+  }
+  const btn = g('backupModalCloudSave');
+  if(btn) btn.disabled = true;
+
+  try {
+    const payload = buildBackupData();
+    const body = JSON.stringify({ id: SB_ROW_ID, user_id: SB_USER_ID, sadrzaj: payload });
+
+    // UPSERT — zamijeni red (id=19) novim sadržajem
+    const res = await fetch(SB_URL+'/rest/v1/podaci?id=eq.'+SB_ROW_ID, {
+      method: 'PATCH',
+      headers: sbHeaders({'Prefer':'return=minimal'}),
+      body: JSON.stringify({ sadrzaj: payload })
+    });
+
+    if(res.status === 404 || res.status === 406){
+      // Red ne postoji — INSERT
+      const res2 = await fetch(SB_URL+'/rest/v1/podaci', {
+        method: 'POST',
+        headers: sbHeaders({'Prefer':'return=minimal'}),
+        body: JSON.stringify({ id: SB_ROW_ID, user_id: SB_USER_ID, sadrzaj: payload })
+      });
+      if(!res2.ok){ const t2=await res2.text(); throw new Error('INSERT greška: '+res2.status+' '+t2); }
+    } else if(!res.ok){
+      const t=await res.text();
+      // Ako je 401/403 — token istekao, resetiraj i ponovi prijavu
+      if(res.status===401||res.status===403){ sbToken=null; localStorage.removeItem('fk_sb_token'); loginOpen(()=>cloudSave()); return; }
+      throw new Error('PATCH greška: '+res.status+' '+t);
+    }
+
+    markBackupDone();
+    toast('Podaci spremljeni u oblak ✓');
+  } catch(e){
+    toast('Greška: '+e.message, true);
+  } finally {
+    if(btn) btn.disabled = false;
+  }
+}
+
+// ── POVUCI S OBLAKA ────────────────────────────────────────
+async function cloudPull(){
+  if(!sbToken){
+    loginOpen(()=>cloudPull());
+    return;
+  }
+  customConfirm('Povući podatke iz oblaka? Lokalni podaci bit će zamijenjeni.', async ()=>{
+    const btn = g('backupModalCloudPull');
+    if(btn) btn.disabled = true;
+
+    try {
+      const res = await fetch(SB_URL+'/rest/v1/podaci?id=eq.'+SB_ROW_ID+'&select=sadrzaj', {
+        headers: sbHeaders()
+      });
+
+      if(res.status===401||res.status===403){
+        sbToken=null; localStorage.removeItem('fk_sb_token');
+        loginOpen(()=>cloudPull()); return;
+      }
+      if(!res.ok){ const t=await res.text(); throw new Error('Fetch greška: '+res.status+' '+t); }
+
+      const rows = await res.json();
+      if(!rows||!rows.length||!rows[0].sadrzaj){ throw new Error('Nema podataka u oblaku.'); }
+
+      const d = rows[0].sadrzaj;
+      if(!d.v){ throw new Error('Neispravan format podataka u oblaku.'); }
+
+      // Primijeni podatke (ista logika kao importAll)
+      if(d.a_j)   localStorage.setItem('fk_a_j',   JSON.stringify(d.a_j));
+      if(d.a_cfg) localStorage.setItem('fk_a',      d.a_cfg);
+      if(d.autor) localStorage.setItem('fk_autor',  d.autor);
+      if(d.a_kl)  localStorage.setItem('fk_kl_a',  d.a_kl);
+      if(d.a_plan)localStorage.setItem('fk_plan_a', d.a_plan);
+      if(d.status)localStorage.setItem('fk_status', d.status);
+      if(d.grad)  localStorage.setItem('fk_grad',   d.grad);
+      if(d.theme) localStorage.setItem('fk_theme',  d.theme);
+      if(d.mode)  localStorage.setItem('fk_mode',   d.mode);
+      if(d.gdpr)  localStorage.setItem('fk_gdpr',   d.gdpr);
+      if(d.onboard)localStorage.setItem('fk_onboard',d.onboard);
+
+      // Refresh UI
+      aLoadCfg(); aBuildKG(); aRenderHist(); klRender(); planRender();
+      applyStatus(getStatus()); applyGrad(getGrad());
+      if(d.theme){const isL=d.theme==='l';document.body.classList.toggle('light',isL);const k=g('themeKnob');if(k)k.textContent=isL?'☀️':'🌙';syncThemeColor();}
+
+      toast('Podaci preuzeti iz oblaka ✓');
+    } catch(e){
+      toast('Greška: '+e.message, true);
+    } finally {
+      if(btn) btn.disabled = false;
+    }
+  });
+}
+
+async function cloudPullFromModal(){
+  closeBackupModal();
+  await cloudPull();
+}
+
+// Enter tipka u login polju
+document.addEventListener('keydown', e=>{
+  if(e.key==='Enter' && g('loginModal')?.style.display!=='none') loginSubmit();
+  if(e.key==='Escape' && g('loginModal')?.style.display!=='none' && !_loginStartup) loginClose();
+});
+
 // ═══ SERVICE WORKER ═══
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -1915,10 +2183,21 @@ document.addEventListener('DOMContentLoaded',()=>{
   const th=localStorage.getItem('fk_theme');
   if(th==='d'){document.body.classList.remove('light');const k=g('themeKnob');if(k)k.textContent='🌙';}
   syncThemeColor();
+
+  // Startup login — prikaži ako nema tokena
+  if(!sbToken){
+    loginOpenStartup();
+  } else {
+    appInit();
+  }
+});
+
+// ─── GLAVNI INIT (poziva se nakon prijave ili preskakanja) ───
+function appInit(){
   // Onboarding — samo prvi put
   if(!localStorage.getItem('fk_onboard')){
     populateGradSelects(getGrad());
-    onboardPopulateGrad();  // BUG FIX: ob-grad se mora puniti zasebno pri prvom pokretanju
+    onboardPopulateGrad();
     g('onboardModal').classList.add('on');
   } else {
     applyStatus(getStatus());
@@ -1930,7 +2209,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   showPg('a-plan');
   today('a-dt');
   checkBackupReminder();
-});
+}
 </script>
 </body>
 </html>
