@@ -8,79 +8,105 @@
 
 ## ✨ Funkcionalnosti
 
+- **Autentikacija** — obavezna prijava e-mailom i lozinkom, bez mogućnosti korištenja bez prijave
+- **Multi-user cloud sync** — svaki korisnik ima vlastiti korisnički račun i odvojene podatke na Supabase cloudu
 - **Evidencija klijenata i objekata** — vlasnici, šifre objekata, ugovori, GPS koordinate, status fotografiranja
-- **Plan snimanja** — termini s jasnim statusima (na čekanju / obavljeno / otkazano)
+- **Plan snimanja** — termini s jasnim statusima (na čekanju / obavljeno / otkazano), zadani prikaz "Na čekanju"
 - **Kalkulator honorara** — automatski izračun bruto i neto iznosa prema čl. 4 ugovora:
   - Kategorije objekta (6,50 € bruto/kat)
   - Snimanje dronom (32,50 € bruto)
   - Putni troškovi (€/km, prag km)
   - Naknade za otkazana snimanja (30 € propuštena dobit)
-- **Porezni obračun za RH 2026** — prilagođen gradu/općini i statusu fotografa (samostalni umjetnik, zaposleni, umirovljenik), s obračunom MIO, zdravstvenog i poreza na dohodak
+- **Porezni obračun za RH 2026** — prilagođen gradu/općini i statusu fotografa (samostalni umjetnik, zaposleni, umirovljenik)
 - **Statistike** — zarada po mjesecima, ukupni neto, neplaćeni iznosi, PDV prag upozorenje
 - **Izvoz podataka** — Excel, PDF, JSON, CSV
-- **Backup sustav** — lokalni backup koji se može podijeliti putem maila, WhatsApp-a ili Google Drivea
+- **Backup sustav** — cloud backup (Supabase) + lokalni backup (.json) koji se može podijeliti
 
 ---
 
-## 🔒 Privatnost i pohrana podataka
+## 🔒 Autentikacija i pohrana podataka
 
-Aplikacija je izrađena u skladu s važećom regulativom o zaštiti osobnih podataka **(GDPR / Uredba EU 2016/679)**.
+Aplikacija zahtijeva prijavu. Korisnici se **ne mogu sami registrirati** — administrator ih dodaje putem Supabase Dashboarda.
 
-**Svi podaci pohranjuju se isključivo lokalno na uređaju korisnika** (`localStorage` preglednika) — ništa se ne šalje na vanjske poslužitelje niti se ikakvi podaci prikupljaju centralno.
+**Podaci se čuvaju na dva mjesta:**
+- **Lokalno** u `localStorage` preglednika (brz pristup, radi offline)
+- **Supabase cloud** — ručnim klikom na "Spremi na oblak" u ☰ izborniku
+
+Svaki korisnik vidi i može mijenjati **isključivo vlastite podatke** — Row Level Security (RLS) na razini baze onemogućava pristup tuđim podacima.
 
 ---
 
-## ⚠️ Važno — gubitak podataka pri brisanju cachea
+## 👤 Upravljanje korisnicima
 
-Budući da se podaci čuvaju lokalno u pregledniku, postoji jedan kritičan rizik:
+Novi korisnici se dodaju putem **Supabase Dashboarda**:
 
-> **Ako korisnik obriše cache / podatke preglednika, svi uneseni podaci bit će trajno izgubljeni.**
+1. Idi na **Authentication → Users**
+2. Klikni **"Add user"** ili **"Invite user"**
+3. Unesi e-mail i lozinku (ili Supabase šalje pozivnicu s linkom)
 
-### Kako napraviti backup (preporučuje se redovito):
+Promjena lozinke: Authentication → Users → klikni korisnika → "Reset password"
 
-1. U aplikaciji klikni gumb **„💾 Backup — sve podatke"** (dno stranice / postavke)
-2. Odaberi **„Preuzmi backup"** ili **„Podijeli backup"**
-3. Backup datoteku pošalji sebi na **mail**, spremi na **Google Drive**, **iCloud** ili podijeli putem **WhatsAppa**
-4. Za obnovu podataka koristi opciju **„Uvezi backup"**
+---
 
-> 💡 Preporučuje se backup nakon svakog radnog dana ili barem jednom tjedno.
+## ☁️ Cloud sync (Supabase)
+
+Struktura baze podataka — tablica `podaci`:
+
+```sql
+-- Unique constraint (jedan red po korisniku)
+ALTER TABLE podaci ADD CONSTRAINT podaci_user_id_key UNIQUE (user_id);
+
+-- Row Level Security
+ALTER TABLE podaci ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "vlastiti_podaci" ON podaci
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+```
+
+Cloud sync nije automatski — korisnik ga pokreće ručno:
+- **☰ → Oblak / Backup → Spremi na oblak** — šalje lokalne podatke na cloud
+- **☰ → Oblak / Backup → Povuci s oblaka** — preuzima cloud podatke na uređaj
+
+---
+
+## ⚠️ Rizik gubitka podataka
+
+Lokalni podaci (`localStorage`) brišu se ako korisnik obriše cache preglednika.
+
+**Preporuka:** koristiti cloud backup svakodnevno + lokalni .json backup jednom tjedno.
 
 ---
 
 ## 📱 PWA — Instalacija na uređaj
 
-Aplikacija je dostupna kao **Progressive Web App (PWA)** i može se instalirati na mobitel ili računalo:
+Aplikacija je dostupna kao **Progressive Web App (PWA)** i može se instalirati:
 
 - **Android / Chrome** — tri točke → *Dodaj na početni zaslon*
 - **iOS / Safari** — dijeli ikona → *Dodaj na početni zaslon*
 - **Desktop / Chrome** → ikona instalacije u adresnoj traci
 
-Nakon instalacije aplikacija radi **potpuno offline**.
+Nakon instalacije aplikacija radi **potpuno offline** (cloud sync zahtijeva internet).
 
 ---
 
 ## 🔄 Napomena za developere — ažuriranje verzije
 
-Aplikacija koristi **Service Worker s cache-first strategijom** što znači da korisnici **ne dobivaju automatski novu verziju** odmah nakon deploya na GitHub Pages.
+Aplikacija koristi **Service Worker s cache-first strategijom**. Nova verzija aktivira se tek kada korisnik zatvori sve tabove i ponovno otvori aplikaciju.
 
-Nova verzija aktivira se tek kada korisnik zatvori sve tabove i ponovno otvori aplikaciju.
-
-**Da bi se forsiralo ažuriranje kod korisnika, pri svakom novom deployu treba povećati verziju cachea u `sw.js`:**
+**Pri svakom novom deployu povećaj verziju cachea u `sw.js`:**
 
 ```js
-// Primjer — mijenjaj pri svakom deployu:
-const CACHE_NAME = 'fotokalk-v2'; // ← povećaj broj
+const CACHE_NAME = 'fotokalk-v2'; // ← povećaj broj pri svakom deployu
 ```
-
-Stari cache se tada automatski briše i korisnici preuzimaju novu verziju pri sljedećem otvaranju.
 
 ---
 
 ## 🛠️ Tech stack
 
 - Vanilla HTML / CSS / JavaScript (bez frameworka)
+- [Supabase](https://supabase.com/) — autentikacija (Auth) i cloud pohrana podataka (PostgreSQL + RLS)
 - Service Worker (offline podrška, PWA)
-- localStorage (lokalna pohrana podataka)
+- localStorage (lokalna pohrana i brzi pristup)
 - [SheetJS (XLSX)](https://sheetjs.com/) — izvoz u Excel
 - GitHub Pages — hosting
 
