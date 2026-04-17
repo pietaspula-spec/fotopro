@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FotoKalk — Upute za korištenje</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg: #0b0c0e;
+    --surf: #13151a;
+    --surf2: #1a1d25;
+    --brd: #252830;
+    --acc: #f0c040;
+    --acc2: #e0a800;
+    --txt: #e8eaf0;
+    --mut: #6b7280;
+    --mut2: #9ca3af;
+    --grn: #34d399;
+    --red: #f87171;
+    --blu: #60a5fa;
+    --pur: #a78bfa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--txt);
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    padding: 64px 24px 52px;
+    text-align: center;
+    overflow: hidden;
+    border-bottom: 1px solid var(--brd);
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(240,192,64,.13) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 14px;
+    filter: drop-shadow(0 0 20px rgba(240,192,64,.4));
+  }
+  .hero h1 {
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--acc);
+    line-height: 1.1;
+  }
+  .hero h1 span { color: var(--txt); }
+  .hero-sub {
+    margin-top: 12px;
+    font-size: .95rem;
+    color: var(--mut2);
+    font-weight: 400;
+    letter-spacing: .3px;
+  }
+
+  /* ── QUICK START ── */
+  .quick {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 40px 24px 0;
+  }
+  .quick-title {
+    font-size: .6rem;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--acc);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .quick-title::after { content: ''; flex: 1; height: 1px; background: var(--brd); }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .step {
+    background: var(--surf);
+    border: 1px solid var(--brd);
+    border-radius: 12px;
+    padding: 18px 16px;
+    position: relative;
+    transition: border-color .2s;
+  }
+  .step:hover { border-color: rgba(240,192,64,.35); }
+  .step-n {
+    font-family: 'Space Mono', monospace;
+    font-size: .65rem;
+    color: var(--acc);
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .step h3 {
+    font-size: .88rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+    color: var(--txt);
+  }
+  .step p {
+    font-size: .78rem;
+    color: var(--mut2);
+    line-height: 1.55;
+  }
+  .step-icon {
+    font-size: 1.4rem;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  /* ── CONTENT ── */
+  .content {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* ── SECTION ── */
+  .section {
+    margin-top: 40px;
+  }
+  .sec-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--brd);
+  }
+  .sec-icon {
+    width: 36px;
+    height: 36px;
+    background: rgba(240,192,64,.12);
+    border: 1px solid rgba(240,192,64,.25);
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .sec-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--txt);
+  }
+  .sec-badge {
+    margin-left: auto;
+    font-size: .6rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    background: rgba(240,192,64,.12);
+    color: var(--acc);
+    border: 1px solid rgba(240,192,64,.25);
+    padding: 3px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* ── FIELD ROWS ── */
+  .fields { display: flex; flex-direction: column; gap: 8px; }
+  .field {
+    background: var(--surf);
+    border: 1px solid var(--brd);
+    border-radius: 9px;
+    padding: 10px 14px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .field-label {
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--txt);
+    min-width: 155px;
+    flex-shrink: 0;
+    padding-top: 1px;
+  }
+  .field-desc {
+    font-size: .78rem;
+    color: var(--mut2);
+    line-height: 1.55;
+  }
+  .tag {
+    display: inline-block;
+    font-size: .58rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+  .tag-y { background: rgba(240,192,64,.15); color: var(--acc); border: 1px solid rgba(240,192,64,.3); }
+  .tag-g { background: rgba(52,211,153,.12); color: var(--grn); border: 1px solid rgba(52,211,153,.25); }
+  .tag-r { background: rgba(248,113,113,.12); color: var(--red); border: 1px solid rgba(248,113,113,.25); }
+  .tag-b { background: rgba(96,165,250,.12); color: var(--blu); border: 1px solid rgba(96,165,250,.25); }
+
+  /* ── TIPS ── */
+  .tip {
+    background: rgba(240,192,64,.06);
+    border: 1px solid rgba(240,192,64,.2);
+    border-left: 3px solid var(--acc);
+    border-radius: 0 8px 8px 0;
+    padding: 10px 14px;
+    font-size: .8rem;
+    color: var(--mut2);
+    margin-top: 10px;
+    line-height: 1.6;
+  }
+  .tip strong { color: var(--acc); }
+
+  .warn {
+    background: rgba(248,113,113,.06);
+    border: 1px solid rgba(248,113,113,.2);
+    border-left: 3px solid var(--red);
+    border-radius: 0 8px 8px 0;
+    padding: 10px 14px;
+    font-size: .8rem;
+    color: var(--mut2);
+    margin-top: 10px;
+    line-height: 1.6;
+  }
+  .warn strong { color: var(--red); }
+
+  .info {
+    background: rgba(96,165,250,.06);
+    border: 1px solid rgba(96,165,250,.2);
+    border-left: 3px solid var(--blu);
+    border-radius: 0 8px 8px 0;
+    padding: 10px 14px;
+    font-size: .8rem;
+    color: var(--mut2);
+    margin-top: 10px;
+    line-height: 1.6;
+  }
+  .info strong { color: var(--blu); }
+
+  /* ── PROSE ── */
+  .prose {
+    font-size: .85rem;
+    color: var(--mut2);
+    line-height: 1.75;
+    margin-top: 10px;
+  }
+  .prose + .prose { margin-top: 8px; }
+  .prose strong { color: var(--txt); }
+
+  /* ── TABS PREVIEW ── */
+  .tab-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .tab-pill {
+    background: var(--surf2);
+    border: 1px solid var(--brd);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--mut2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tab-pill.active {
+    background: rgba(240,192,64,.12);
+    border-color: rgba(240,192,64,.4);
+    color: var(--acc);
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: var(--brd);
+    margin: 32px 0;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--brd);
+    text-align: center;
+    padding: 24px;
+    font-size: .72rem;
+    color: var(--mut);
+    font-family: 'Space Mono', monospace;
+  }
+
+  @media (max-width: 520px) {
+    .field { flex-direction: column; gap: 4px; }
+    .field-label { min-width: unset; }
+    .steps { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-icon">📷</span>
+  <h1>FotoKalk <span>— Upute</span></h1>
+  <div class="hero-sub">Kalkulator honorara za fotografe · Adriatic.hr · RH 2026</div>
+</div>
+
+<!-- QUICK START -->
+<div class="quick">
+  <div class="quick-title">Počni za 3 minute</div>
+  <div class="steps">
+    <div class="step">
+      <span class="step-icon">⚙️</span>
+      <div class="step-n">KORAK 01</div>
+      <h3>Postavi cijene</h3>
+      <p>Klikni ⚙️ i unesi honorar po kategoriji, dron i km stopu iz svog ugovora s Adriatic.hr.</p>
+    </div>
+    <div class="step">
+      <span class="step-icon">🏠</span>
+      <div class="step-n">KORAK 02</div>
+      <h3>Unesi posao</h3>
+      <p>U Kalkulatoru odaberi objekt, datum i klikaj kategorije prostorija koje fotografiraš.</p>
+    </div>
+    <div class="step">
+      <span class="step-icon">💰</span>
+      <div class="step-n">KORAK 03</div>
+      <h3>Vidi obračun</h3>
+      <p>Aplikacija odmah prikazuje bruto i neto iznos s porezima. Klikni 💾 za zapis u povijest.</p>
+    </div>
+    <div class="step">
+      <span class="step-icon">📊</span>
+      <div class="step-n">KORAK 04</div>
+      <h3>Prati zaradu</h3>
+      <p>U Povijesti vidiš sve poslove, ukupnu zaradu i grafikon po mjesecima.</p>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="content">
+
+  <!-- ══ SEKCIJA 1: KALKULATOR ══ -->
+  <div class="section">
+    <div class="sec-header">
+      <div class="sec-icon">🧮</div>
+      <div class="sec-title">Kalkulator</div>
+      <span class="sec-badge">Tab 1</span>
+    </div>
+
+    <p class="prose">Glavna stranica za unos svakog posla. Popuni polja, aplikacija računa u realnom vremenu.</p>
+
+    <div class="fields" style="margin-top:14px;">
+      <div class="field">
+        <div class="field-label">Šifra objekta</div>
+        <div class="field-desc">Adriatic.hr šifra smještajnog objekta (npr. 12345). Koristi se za evidenciju i ugovor.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Datum</div>
+        <div class="field-desc">Datum fotografiranja. Automatski se popuni na danas pri svakom otvaranju.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Lokacija</div>
+        <div class="field-desc">Grad ili mjesto (npr. Rovinj, Pula). Samo za preglednost u evidenciji.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Ime / Prezime vlasnika</div>
+        <div class="field-desc">Ime vlasnika objekta — koristi se za automatsko popunjavanje ugovora.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Broj ugovora</div>
+        <div class="field-desc">Broj ugovora s Adriatic.hr (npr. 1191/2026). Opcionalno.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">↓ Popuni iz klijenta</div>
+        <div class="field-desc">Padajući izbornik — ako je vlasnik pohranjen u Klijentima, jednim klikom popuni sva polja automatski.</div>
+      </div>
+    </div>
+
+    <div class="divider" style="margin: 18px 0 14px;"></div>
+
+    <p class="prose"><strong>Fotografske kategorije</strong> — srce kalkulatora. Za svaki prostor objekta dodijeliš koliko fotografija.</p>
+    <div class="fields" style="margin-top:10px;">
+      <div class="field">
+        <div class="field-label">Kategorije prostorija</div>
+        <div class="field-desc">Klikni na naziv prostorije (Dnevni boravak, Kuhinja, Soba…) da je aktiviraš. Prikazuje se brojač ispod. Svaka aktivna kategorija množi se s postavljenom cijenom po kategoriji.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Fotografiranje dronom <span class="tag tag-y">toggle</span></div>
+        <div class="field-desc">Uključi toggle ako je ugovorom predviđeno fotografiranje dronom. Automatski dodaje iznos honorara za dron.</div>
+      </div>
+    </div>
+
+    <div class="divider" style="margin: 18px 0 14px;"></div>
+
+    <p class="prose"><strong>Putni troškovi</strong></p>
+    <div class="fields" style="margin-top:10px;">
+      <div class="field">
+        <div class="field-label">Km — jedna relacija</div>
+        <div class="field-desc">Upiši kilometre od tvoje baze do objekta (jedna strana). Aplikacija sama množi × 2 za povrat i prikazuje ukupno km.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">€/km</div>
+        <div class="field-desc">Stopa po kilometru iz postavki. Može se korigirati i ovdje za svaki posao posebno.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Prag km</div>
+        <div class="field-desc">Minimalni km ispod kojeg se putni troškovi ne obračunavaju (npr. 5 km — u gradu nema naplate puta).</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Dodatni troškovi</div>
+        <div class="field-desc">Trajekt, autocesta, parking — unesi iznos u € pa će biti dodano na obračun.</div>
+      </div>
+    </div>
+
+    <div class="divider" style="margin: 18px 0 14px;"></div>
+
+    <p class="prose"><strong>Otkazano snimanje</strong></p>
+    <div class="fields" style="margin-top:10px;">
+      <div class="field">
+        <div class="field-label">Otkaz po dolasku <span class="tag tag-r">toggle</span></div>
+        <div class="field-desc">Ako je snimanje otkazano nakon što si već stigao na objekt — uključi toggle. Obračun prelazi na: putni troškovi + propratni + naknada za propuštenu dobit.</div>
+      </div>
+    </div>
+
+    <div class="tip" style="margin-top: 14px;">
+      <strong>Napomena</strong> — slobodno polje za bilješke uz svaki posao (npr. "urgentno", "vlasnik zakasnio 30 min"). Vidljivo u povijesti.
+    </div>
+
+    <div class="divider" style="margin: 18px 0 14px;"></div>
+
+    <p class="prose"><strong>Obračun — RH 2026</strong></p>
+    <div class="fields" style="margin-top:10px;">
+      <div class="field">
+        <div class="field-label">Bruto iznos</div>
+        <div class="field-desc">Ukupan iznos koji naručitelj plaća (honorar + putni + dron). Ovo ide na JOPPD i ugovor.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Neto — moja zarada</div>
+        <div class="field-desc">Što ti stvarno ostaje nakon MIO doprinosa, zdravstvenog, poreza na dohodak i paušalnih izdataka. Izračunato po tvojim poreznim stopama.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">💾 Spremi</div>
+        <div class="field-desc">Zapis se pohrani u povijest. Isti posao možeš snimiti više puta ako ispravljaš grešku — svaki zapis je zaseban.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">↺ Reset</div>
+        <div class="field-desc">Briše sva polja kalkulatora i vraća ga na početno stanje za novi unos.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SEKCIJA 2: POVIJEST ══ -->
+  <div class="section">
+    <div class="sec-header">
+      <div class="sec-icon">📋</div>
+      <div class="sec-title">Povijest</div>
+      <span class="sec-badge">Tab 2</span>
+    </div>
+
+    <p class="prose">Evidencija svih snimljenih poslova s pregledom zarade i statusom plaćanja.</p>
+
+    <div class="fields" style="margin-top:14px;">
+      <div class="field">
+        <div class="field-label">Ukupni neto</div>
+        <div class="field-desc">Suma neto zarade svih poslova u evidenciji — sve što ti je ostalo u džepu.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Ukupno bruto</div>
+        <div class="field-desc">Suma bruto iznosa — sve što su naručitelji platili (ili trebaju platiti).</div>
+      </div>
+      <div class="field">
+        <div class="field-label">⚠️ Neplaćeno</div>
+        <div class="field-desc">Prikazuje se ako postoje poslovi bez oznake plaćeno. Klikni na žuti badge kraj zapisa da označiš plaćanje.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Grafikon po mjesecima</div>
+        <div class="field-desc">Stupičasti grafikon bruto zarade po kalendarskim mjesecima — brz pregled sezone.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Filteri</div>
+        <div class="field-desc">Filtriraj zapise: <strong>Svi</strong> · <strong>Plaćeno</strong> · <strong>Neplaćeno</strong>. Korisno za brzo pronalaženje dugova.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Ispis evidencije</div>
+        <div class="field-desc">Gumb za printanje / PDF izvoza. Odabereš koji mjesec — otvara formatiranu stranicu za ispis s oznakom "Adriatic.hr · Autorsko djelo".</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Excel export</div>
+        <div class="field-desc">Izvezi cijelu povijest u .xlsx datoteku za vođenje u tablici ili slanje računovođi. Ako xlsx.js nije dostupan offline — automatski pada na CSV.</div>
+      </div>
+    </div>
+
+    <div class="info" style="margin-top: 12px;">
+      <strong>PDV upozorenje</strong> — ako se godišnji promet primaknuti pragu od 60.000 € — aplikacija prikazuje upozorenje o mogućoj obvezi upisa u registar PDV obveznika.
+    </div>
+  </div>
+
+  <!-- ══ SEKCIJA 3: KLIJENTI ══ -->
+  <div class="section">
+    <div class="sec-header">
+      <div class="sec-icon">👥</div>
+      <div class="sec-title">Klijenti</div>
+      <span class="sec-badge">Tab 3</span>
+    </div>
+
+    <p class="prose">Baza vlasnika objekata. Jednom pohranjen klijent može se brzo povući u kalkulator.</p>
+
+    <div class="fields" style="margin-top:14px;">
+      <div class="field">
+        <div class="field-label">Novi klijent</div>
+        <div class="field-desc">Gumb + Novi otvara modal za unos: ime, prezime, telefon, šifra objekta, broj ugovora, adresa i GPS koordinate.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">GPS koordinate <span class="tag tag-b">lat / lng</span></div>
+        <div class="field-desc">Upiši geografske koordinate objekta. Pojavljuje se gumb 📍 Waze i 📅 Google Maps za direktnu navigaciju iz aplikacije.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Status klijenta</div>
+        <div class="field-desc">Označi je li objekt <strong>Fotografiran</strong> ili <strong>Nije fotografiran</strong>. Filteri na vrhu brzo sortiraju listu.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">CSV export / import</div>
+        <div class="field-desc">Izvezi cijelu bazu klijenata u CSV za Google Sheets, ili uvezi iz CSV-a. Praktično za backup ili dijeljenje s kolegom.</div>
+      </div>
+    </div>
+
+    <div class="tip" style="margin-top: 12px;">
+      <strong>Brzi workflow:</strong> Pohrani klijenta jednom → u Kalkulatoru odaberi iz padajućeg izbornika "↓ Popuni iz klijenta" → sva polja se popune automatski → samo klikni kategorije i Spremi.
+    </div>
+  </div>
+
+  <!-- ══ SEKCIJA 4: PLAN SNIMANJA ══ -->
+  <div class="section">
+    <div class="sec-header">
+      <div class="sec-icon">📅</div>
+      <div class="sec-title">Plan snimanja</div>
+      <span class="sec-badge">Tab 4</span>
+    </div>
+
+    <p class="prose">Organiziraj nadolazeće termine i prati status svakog dogovorenog snimanja.</p>
+
+    <div class="fields" style="margin-top:14px;">
+      <div class="field">
+        <div class="field-label">+ Novo snimanje</div>
+        <div class="field-desc">Otvara modal za unos: datum, šifra objekta, ime vlasnika, telefon, broj ugovora i GPS koordinate za navigaciju.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Status termina</div>
+        <div class="field-desc">Svaki termin može biti u jednom od 3 stanja: <strong>Na čekanju</strong> (žuta oznaka), <strong>Obavljeno</strong> (zelena), <strong>Otkazano</strong> (crvena, bljeđe).</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Filteri</div>
+        <div class="field-desc">Brzo filtriraj termine: Svi · Na čekanju · Obavljeno · Otkazano.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">📍 Navigacija</div>
+        <div class="field-desc">Ako su unesene GPS koordinate — prikazuje se gumb za direktno otvaranje u Wazeu ili Google Mapsu.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">📅 Google Calendar</div>
+        <div class="field-desc">Gumb za dodavanje termina direktno u Google Kalendar. Otvara se predpopunjen event s nazivom i datumom snimanja.</div>
+      </div>
+    </div>
+
+    <div class="tip" style="margin-top: 12px;">
+      <strong>Sync s klijentima:</strong> Kada označiš termin kao Obavljeno, status se automatski ažurira i u kartici Klijenti za isti objekt.
+    </div>
+  </div>
+
+  <!-- ══ SEKCIJA 5: POSTAVKE ══ -->
+  <div class="section">
+    <div class="sec-header">
+      <div class="sec-icon">⚙️</div>
+      <div class="sec-title">Postavke</div>
+      <span class="sec-badge">⚙️ gumb</span>
+    </div>
+
+    <p class="prose">Otvara se gumbom ⚙️ u gornjem desnom kutu. Sve što se postavi ovdje globalno se primjenjuje na svaki obračun.</p>
+
+    <div class="divider" style="margin: 14px 0 12px;"></div>
+    <p class="prose"><strong>Naknade — Adriatic.hr čl.4</strong></p>
+    <div class="fields" style="margin-top:10px;">
+      <div class="field">
+        <div class="field-label">Honorar/kategoriji <span class="tag tag-y">čl.4</span></div>
+        <div class="field-desc">Bruto iznos po jednoj fotografskoj kategoriji prema tvom ugovoru s Adriatic.hr (npr. 6,50 €).</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Honorar dron <span class="tag tag-y">čl.4</span></div>
+        <div class="field-desc">Bruto iznos za fotografiranje dronom (npr. 32,50 €). Dodaje se uz redovni honorar.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">€/km <span class="tag tag-y">čl.4</span></div>
+        <div class="field-desc">Naknada po kilometru (npr. 0,40 €). Vrijedi za putne troškove u svakom obračunu.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Prag km <span class="tag tag-y">čl.4</span></div>
+        <div class="field-desc">Minimalni broj km ispod kojeg se putni troškovi ne obračunavaju. Postavi prema ugovoru (npr. 5).</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Propuštena dobit — otkaz</div>
+        <div class="field-desc">Fiksni iznos naknade za propuštenu dobit ako je snimanje otkazano po dolasku (npr. 30 €).</div>
+      </div>
+    </div>
+
+    <div class="divider" style="margin: 16px 0 12px;"></div>
+    <p class="prose"><strong>Porezne stope — RH 2026</strong></p>
+    <div class="fields" style="margin-top:10px;">
+      <div class="field">
+        <div class="field-label">Grad / općina</div>
+        <div class="field-desc">Odaberi svoju JLS (jedinicu lokalne samouprave). Aplikacija automatski postavlja ispravnu stopu poreza na dohodak za 2026. godinu.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Paušalni izdaci (%) <span class="tag tag-b">ZPD</span></div>
+        <div class="field-desc">Standardno 30% (normirani troškovi). Uz potvrdu strukovne udruge moguće je primijeniti 55% za fotografsku umjetnost — konzultirati poreznog savjetnika.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">MIO doprinos (%) <span class="tag tag-b">ZD</span></div>
+        <div class="field-desc">Standardno 10% za II. stup. Za isključivo I. stup promijeni na 15%.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Zdravstveno (%) <span class="tag tag-b">ZD</span></div>
+        <div class="field-desc">Zdravstveni doprinos koji plaća naručitelj (7,5%). Ne oduzima se od tvojeg neta — teret je naručitelja.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Porez na dohodak (%) <span class="tag tag-b">JLS</span></div>
+        <div class="field-desc">Automatski se postavi prema odabranom gradu. Može se ručno promijeniti. Prirez je od 2025. ukinut u svim JLS.</div>
+      </div>
+    </div>
+
+    <div class="divider" style="margin: 16px 0 12px;"></div>
+    <p class="prose"><strong>Moj status</strong></p>
+    <div class="fields" style="margin-top:10px;">
+      <div class="field">
+        <div class="field-label">Status fotografa</div>
+        <div class="field-desc">Odaberi: <strong>Samostalni umjetnik / obrtnik</strong>, <strong>Zaposlen kod poslodavca</strong> ili <strong>Umirovljenik</strong>. Utječe na obračun doprinosa i prikazana upozorenja.</div>
+      </div>
+    </div>
+    <div class="warn" style="margin-top: 10px;">
+      <strong>Umirovljenici:</strong> Aplikacija upozorava ali ne računa automatski dodatni MIO 5% (čl.213 Zakona o doprinosima). Konzultirati računovođu.
+    </div>
+
+    <div class="divider" style="margin: 16px 0 12px;"></div>
+    <p class="prose"><strong>Kategorije objekta</strong></p>
+    <div class="fields" style="margin-top:10px;">
+      <div class="field">
+        <div class="field-label">Lista kategorija</div>
+        <div class="field-desc">Predefinirane prostorije koje se prikazuju u kalkulatoru. Svaku možeš ukloniti klikom na ✕.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">+ Dodaj kategoriju</div>
+        <div class="field-desc">Upiši naziv vlastite kategorije (npr. "Garaža", "Teretana") i klikni Dodaj. Odmah se pojavljuje u kalkulatoru.</div>
+      </div>
+    </div>
+
+    <div class="divider" style="margin: 16px 0 12px;"></div>
+    <p class="prose"><strong>Backup</strong></p>
+    <div class="fields" style="margin-top:10px;">
+      <div class="field">
+        <div class="field-label">⬇ Preuzmi backup</div>
+        <div class="field-desc">Preuzmi sve podatke (povijest, klijenti, postavke, plan) kao jednu <code style="font-family:monospace;font-size:.75rem;color:var(--acc)">.json</code> datoteku na uređaj.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">↗ Podijeli backup</div>
+        <div class="field-desc">Na mobilnom uređaju otvara share sheet — pošalji backup WhatsAppom, mailom, na Google Drive i sl.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">⬆ Uvezi backup</div>
+        <div class="field-desc">Učitaj prethodno preuzetu .json datoteku. Svi podaci se obnavljaju. Korisno pri prelasku na novi uređaj.</div>
+      </div>
+    </div>
+    <div class="tip" style="margin-top: 10px;">
+      <strong>Preporuka:</strong> Napravi backup barem jednom tjedno i pošalji ga sebi na mail. Aplikacija pohranjuje sve lokalno na uređaju — bez oblaka, bez servera.
+    </div>
+
+    <div class="warn" style="margin-top: 10px;">
+      <strong>⚠️ Opasna zona — Obriši povijest:</strong> Trajno briše sve zapisane poslove. Ne može se poništiti. Backup napravi prije!
+    </div>
+  </div>
+
+  <!-- ══ SEKCIJA 6: OPĆE ══ -->
+  <div class="section">
+    <div class="sec-header">
+      <div class="sec-icon">💡</div>
+      <div class="sec-title">Korisni detalji</div>
+    </div>
+
+    <div class="fields" style="margin-top:14px;">
+      <div class="field">
+        <div class="field-label">Tamna / Svijetla tema</div>
+        <div class="field-desc">Gumb 🌙 / ☀️ u gornjem desnom kutu mijenja temu. Postavka se pamti između sesija.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Offline rad</div>
+        <div class="field-desc">Aplikacija radi potpuno bez interneta nakon prvog učitavanja. Service Worker kešira sve resurse lokalno.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Instalacija na mobitel <span class="tag tag-g">PWA</span></div>
+        <div class="field-desc">Na HTTPS serveru prikazuje se opcija "Dodaj na početni zaslon" (iOS) ili "Instaliraj aplikaciju" (Android). Radi kao nativna app — bez adresne trake, fullscreen.</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Svi podaci — lokalno</div>
+        <div class="field-desc">Ništa se ne šalje na server. Sve je pohranjeno u localStorage ovog uređaja i preglednika. Brisanjem podataka preglednika brišu se i podaci aplikacije.</div>
+      </div>
+    </div>
+
+    <div class="info" style="margin-top: 12px;">
+      <strong>GDPR:</strong> Aplikacija prikazuje obavijest o lokalnoj pohrani podataka pri prvom pokretanju. Za komercijalnu upotrebu s podacima klijenata preporučuje se konzultacija s odvjetnikom.
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  FotoKalk · Kalkulator honorara za fotografe · RH 2026 · Sva prava pridržana
+</footer>
+
+</body>
+</html>

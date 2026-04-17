@@ -1,0 +1,37 @@
+Copyright (c) 2026 — FotoKalk. Sva prava pridržana.
+
+UVJETI KORIŠTENJA
+
+Ovaj softver ("FotoKalk") i sav prateći izvorni kod, dizajn i dokumentacija
+zaštićeni su autorskim pravom. Korištenjem aplikacije prihvaćate sljedeće uvjete:
+
+1. DOPUŠTENO
+   - Korištenje aplikacije u osobne i profesionalne svrhe
+   - Dijeljenje poveznice na originalnu aplikaciju (https://pietaspula-spec.github.io/foto/)
+
+2. ZABRANJENO
+   - Mijenjanje, prilagođavanje ili izrada izvedenih djela na temelju ovog softvera
+   - Redistribucija izvornog koda ili kompajliranog softvera, djelomično ili u cijelosti
+   - Korištenje softvera ili njegovih dijelova u komercijalne svrhe bez pisane dozvole autora
+   - Uklanjanje ili izmjena ovih uvjeta korištenja i obavijesti o autorskim pravima
+
+3. ODRICANJE ODGOVORNOSTI
+   Softver se pruža "kakav jest" (as-is), bez jamstava bilo koje vrste, izričitih
+   ili podrazumijevanih. Autor ne snosi nikakvu odgovornost za:
+   - Gubitak podataka uslijed brisanja cachea preglednika ili drugih radnji korisnika
+   - Pogreške u poreznim izračunima — korisnik je dužan provjeriti podatke s
+     ovlaštenim računovođom ili poreznim savjetnikom
+   - Štete nastale izravnom ili neizravnom upotrebom aplikacije
+   - Tehničke probleme, prekide rada ili nedostupnost aplikacije
+
+   Svaki korisnik koristi aplikaciju na vlastitu odgovornost.
+
+4. POHRANA PODATAKA
+   Aplikacija ne prikuplja, ne pohranjuje niti ne prenosi osobne podatke na vanjske
+   poslužitelje. Svi podaci ostaju isključivo na uređaju korisnika. Autor nije
+   odgovoran za podatke koje korisnik unosi niti za posljedice njihovog gubitka.
+
+5. IZMJENE UVJETA
+   Autor zadržava pravo izmjene ovih uvjeta u bilo kojem trenutku bez prethodne najave.
+
+Za upite vezane uz licenciranje ili poslovnu suradnju, obratite se autoru.

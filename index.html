@@ -1,0 +1,1936 @@
+<!DOCTYPE html>
+<!-- FotoKalk v1.3.0 | Kalkulator honorara za fotografe -->
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>FotoKalk</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b0c0e" id="themeColorMeta">
+<meta name="description" content="Kalkulator honorara za fotografe — Adriatic.hr i privatni najam (RH 2026)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FotoKalk">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#0b0c0e;--surf:#13151a;--surf2:#1a1d25;--surf3:#21252f;--brd:#272b36;--brd2:#323848;--acc:#f0c040;--acc2:#d4a030;--grn:#34d399;--red:#f87171;--blu:#60a5fa;--pur:#a78bfa;--txt:#e2e6f0;--mut:#636b80;--mut2:#8892a4;--mono:ui-monospace,'Cascadia Code','Source Code Pro','Courier New',monospace;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;--r:10px}
+body.light{--bg:#f0f2f5;--surf:#fff;--surf2:#e8eaf0;--surf3:#dde0e8;--brd:#d0d4de;--brd2:#b8bdd0;--txt:#1a1d25;--mut:#8892a4;--mut2:#636b80}
+body.light input,body.light select{background:#f8f9fc;border-color:#c8cdd8;color:#1a1a2e}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:var(--sans);min-height:100vh;padding-bottom:calc(80px + env(safe-area-inset-bottom));padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
+/* HEADER */
+header{background:var(--surf);border-bottom:1px solid var(--brd);padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:200}
+.theme-sl{position:relative;display:inline-flex;align-items:center;width:52px;height:28px;cursor:pointer;flex-shrink:0}
+.theme-sl-track{position:absolute;inset:0;border-radius:28px;background:var(--brd2);border:1px solid var(--brd2);transition:background .25s}
+body.light .theme-sl-track{background:#d0d4dd}
+.theme-sl-knob{position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .25s;display:flex;align-items:center;justify-content:center;font-size:12px;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+body.light .theme-sl-knob{transform:translateX(24px)}
+.tabs{display:flex;gap:3px;margin-left:auto}
+.tab{background:transparent;border:1px solid var(--brd);color:var(--mut2);font-family:var(--sans);font-size:.75rem;font-weight:700;padding:6px 12px;border-radius:6px;cursor:pointer;transition:all .18s}
+.icon-tab{padding:6px 10px;display:inline-flex;align-items:center;justify-content:center;min-width:36px}
+.tab.active{background:var(--acc);color:#000;border-color:var(--acc)}
+.tab:hover:not(.active){border-color:var(--acc);color:var(--acc)}
+.hbg{width:36px;height:30px;padding:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;flex-shrink:0}
+.hbg-l{display:block;width:14px;height:2px;background:var(--mut2);border-radius:2px}
+.hbg.active .hbg-l{background:#000}
+.hbg:hover:not(.active) .hbg-l{background:var(--acc)}
+/* MODE BAR */
+.mode-bar{background:var(--surf);border-bottom:2px solid var(--brd);padding:10px 14px;display:flex;justify-content:center}
+.mode-sw{display:flex;background:var(--surf2);border:1px solid var(--brd);border-radius:30px;padding:3px;gap:2px;max-width:320px;width:100%}
+.mode-btn{flex:1;padding:7px 10px;border-radius:26px;border:none;font-family:var(--sans);font-size:.82rem;font-weight:700;cursor:pointer;background:transparent;color:var(--mut2)}
+.mode-btn.active{background:var(--acc);color:#000}
+body.apt .mode-btn.active{background:var(--grn);color:#000}
+body.apt{--acc:var(--grn);--acc2:#22a374}
+/* MAIN */
+main{max-width:960px;margin:0 auto;padding:18px 14px 0}
+/* WRAPPERS */
+#aw{display:block}
+/* PAGES */
+.pg{display:none}
+.pg.on{display:block}
+/* CARD */
+.card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);padding:18px;margin-bottom:14px}
+.ct{font-size:.62rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--mut2);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.ct::after{content:'';flex:1;height:1px;background:var(--brd)}
+/* FORM */
+.row{display:grid;gap:10px;margin-bottom:10px}
+.row>div{min-width:0}
+.c2{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.c3{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)}
+label{font-size:.72rem;color:var(--mut2);font-weight:600;display:block;margin-bottom:4px}
+input,select{width:100%;background:var(--surf2);border:1px solid var(--brd);border-radius:7px;color:var(--txt);font-family:var(--mono);font-size:.85rem;padding:8px 10px;outline:none;transition:border-color .18s}
+input:focus,select:focus{border-color:var(--acc)}
+select option{background:var(--surf2)}
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+input[type=date]{min-width:0;width:100%}
+input[type=date]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.5;filter:invert(.5)}
+body.light input[type=date]::-webkit-calendar-picker-indicator{filter:none}
+/* iPad — date picker icon (flex suffix, no absolute) */
+.date-wrap{display:flex;align-items:stretch}
+.date-wrap input[type=date]{flex:1;min-width:0}
+.date-icon-btn{display:none;width:36px;flex-shrink:0;background:var(--surf3);border:1px solid var(--brd);border-left:none;border-radius:0 7px 7px 0;font-size:1.1rem;cursor:pointer;align-items:center;justify-content:center;padding:0;color:var(--mut2)}
+body.is-ipad .date-wrap input[type=date]{border-radius:7px 0 0 7px}
+body.is-ipad .date-wrap input[type=date]::-webkit-calendar-picker-indicator{display:none}
+body.is-ipad .date-icon-btn{display:flex}
+/* KAT */
+.kat-list{display:flex;flex-direction:column;gap:6px}
+.kat-row{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:9px 11px;transition:border-color .18s}
+.kat-row.on{border-color:var(--acc);background:rgba(240,192,64,.04)}
+body.apt .kat-row.on{background:rgba(52,211,153,.04)}
+.kat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.kat-nm{font-size:.8rem;font-weight:600}
+.kat-q{font-family:var(--mono);font-size:.8rem;color:var(--acc)}
+.kat-boxes{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.kbox{height:26px;border-radius:5px;border:1px solid var(--brd2);background:var(--surf3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.72rem;color:var(--mut);transition:all .15s;user-select:none}
+.kbox:hover{border-color:var(--acc)}
+.kbox.on{background:var(--acc);border-color:var(--acc);color:#000;font-weight:700}
+/* TOGGLES */
+.tog-box{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:11px 13px;display:flex;flex-direction:column;gap:9px}
+.tog-row{display:flex;align-items:center;gap:10px}
+.tog-row span{font-size:.82rem;font-weight:600}
+.tsw{position:relative;display:inline-flex;align-items:center;width:50px;height:26px;cursor:pointer;flex-shrink:0}
+.tsw-t{position:absolute;inset:0;border-radius:26px;background:var(--brd2);border:1px solid var(--brd2);transition:background .2s}
+.tsw.on .tsw-t{background:var(--acc);border-color:var(--acc)}
+.tsw-k{position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.tsw.on .tsw-k{transform:translateX(24px)}
+.dp{display:flex;align-items:center;gap:7px}.dp label{margin:0;font-size:.7rem;white-space:nowrap}.dp input{width:85px!important}
+/* OBRACUN */
+.op{background:var(--surf2);border:1px solid var(--brd);border-radius:var(--r);overflow:hidden}
+.os{padding:11px 14px;border-bottom:1px solid var(--brd)}.os:last-child{border-bottom:none}
+.ost{font-size:.58rem;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--mut);margin-bottom:7px}
+.or{display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:.82rem}
+.or .l{color:var(--mut2)}.or .v{font-family:var(--mono);font-size:.82rem}
+.or.hi .l{color:var(--txt);font-weight:600}.or.hi .v{color:var(--acc);font-size:.9rem}
+.or.rd .v{color:var(--red)}.or.bl .v{color:var(--blu)}
+/* NB */
+.nb{background:var(--txt);border-radius:8px;padding:13px 15px;display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.nb .l{font-size:.82rem;color:var(--bg);font-weight:700}
+.nb .v{font-family:var(--mono);font-size:1.5rem;color:var(--bg);font-weight:700}
+.nb2{background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:11px 14px;display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.nb2 .l{font-size:.8rem;color:var(--pur);font-weight:700}
+.nb2 .v{font-family:var(--mono);font-size:1rem;color:var(--pur)}
+/* INFO BOXES */
+.ib{background:rgba(96,165,250,.07);border:1px solid rgba(96,165,250,.2);border-radius:8px;padding:9px 12px;font-size:.72rem;color:var(--blu);line-height:1.6;margin-top:9px}
+.wb{background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.2);border-radius:8px;padding:9px 12px;font-size:.72rem;color:var(--red);line-height:1.6;margin-top:7px}
+/* BTNS */
+.btn{font-family:var(--sans);font-weight:700;font-size:.78rem;padding:9px 17px;border-radius:7px;border:none;cursor:pointer;transition:all .18s}
+.bp{background:var(--acc);color:#000}.bp:hover{background:var(--acc2)}
+.bo{background:transparent;border:1px solid var(--brd2);color:var(--mut2)}.bo:hover{border-color:var(--acc);color:var(--acc)}
+.bd{background:transparent;border:1px solid var(--red);color:var(--red);font-size:.72rem;padding:5px 10px}.bd:hover{background:var(--red);color:#fff}
+.br{display:flex;gap:8px;align-items:center;margin-top:13px;flex-wrap:wrap}
+/* HIST */
+.hi{background:var(--surf2);border:1px solid var(--brd);border-radius:var(--r);padding:13px 15px;margin-bottom:9px}
+.hi-h{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.hi-nm{font-size:.9rem;font-weight:700}.hi-dt{font-family:var(--mono);font-size:.68rem;color:var(--mut);margin-top:2px}
+.hi-am{text-align:right}.hi-br{font-family:var(--mono);font-size:1rem;color:var(--acc)}.hi-nt{font-family:var(--mono);font-size:.78rem;color:var(--grn)}
+.hi-tags{display:flex;flex-wrap:wrap;gap:5px}
+.tg{background:var(--surf3);border:1px solid var(--brd);border-radius:4px;font-family:var(--mono);font-size:.68rem;color:var(--mut2);padding:2px 6px}
+.hi-ft{display:flex;justify-content:flex-end;gap:6px;margin-top:9px;padding-top:8px;border-top:1px solid var(--brd);align-items:center}
+.bdg{display:inline-flex;align-items:center;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:20px;cursor:pointer;border:1px solid;user-select:none;transition:all .18s}
+.bdg.y{background:rgba(52,211,153,.12);color:var(--grn);border-color:rgba(52,211,153,.3)}
+.bdg.n{background:rgba(248,113,113,.1);color:var(--red);border-color:rgba(248,113,113,.3)}
+/* STATS */
+.sr{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:13px}
+.st{background:var(--surf2);border:1px solid var(--brd);border-radius:var(--r);padding:13px;text-align:center}
+.sv{font-family:var(--mono);font-size:1.2rem;color:var(--acc);margin-bottom:3px}
+.sl{font-size:.62rem;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
+.unp{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:8px;padding:9px 13px;display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+.unp .l{color:var(--red);font-weight:600;font-size:.8rem}
+.unp .v{font-family:var(--mono);color:var(--red);font-size:.95rem;font-weight:700}
+/* FILTER */
+.frow{display:flex;gap:5px;margin-bottom:11px;flex-wrap:wrap}
+.ft{background:transparent;border:1px solid var(--brd);color:var(--mut2);font-family:var(--sans);font-size:.72rem;font-weight:600;padding:4px 12px;border-radius:20px;cursor:pointer;transition:all .18s}
+.ft.on{background:var(--acc);color:#000;border-color:var(--acc)}
+/* SETTINGS ROWS */
+.setr{display:flex;align-items:center;gap:9px;background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:8px 11px;margin-bottom:7px}
+.setr label{flex:1;margin:0;font-size:.8rem;color:var(--txt)}.setr input{width:95px!important}
+.sbg{font-family:var(--mono);font-size:.65rem;background:rgba(240,192,64,.15);color:var(--acc);border:1px solid rgba(240,192,64,.2);border-radius:4px;padding:1px 6px}
+/* KLIJENTI */
+.plan-card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);padding:13px 15px;margin-bottom:9px;border-left:4px solid var(--brd)}
+.plan-card.ceka{border-left-color:var(--acc)}
+.plan-card.nodatum{border-left-color:var(--mut);border-style:dashed}
+.plan-card.obavljeno{border-left-color:var(--grn)}
+.plan-card.otkazano{border-left-color:var(--red);opacity:.65}
+.plan-dt{font-size:1rem;font-weight:700;margin-bottom:6px}
+.plan-stat{font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid;display:inline-block;margin-bottom:8px}
+.plan-stat.ceka{background:rgba(240,192,64,.12);color:var(--acc);border-color:rgba(240,192,64,.3)}
+.plan-stat.obavljeno{background:rgba(52,211,153,.12);color:var(--grn);border-color:rgba(52,211,153,.3)}
+.plan-stat.otkazano{background:rgba(248,113,113,.1);color:var(--red);border-color:rgba(248,113,113,.3)}
+.kl-btn{background:transparent;border:1px solid var(--brd2);color:var(--mut2);font-family:var(--sans);font-size:.78rem;font-weight:700;padding:7px 28px;border-radius:20px;cursor:pointer;transition:all .18s;letter-spacing:.3px}
+.kl-btn.on{background:var(--acc);color:#000;border-color:var(--acc)}
+.kl-btn:hover:not(.on){border-color:var(--acc);color:var(--acc)}
+.kl-card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);padding:14px 16px;margin-bottom:10px;position:relative}
+.kl-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
+.kl-ime{font-size:.95rem;font-weight:700}
+.kl-status{font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid;white-space:nowrap}
+.kl-status.ok{background:rgba(52,211,153,.12);color:var(--grn);border-color:rgba(52,211,153,.3)}
+.kl-status.no{background:rgba(248,113,113,.1);color:var(--red);border-color:rgba(248,113,113,.3)}
+.kl-row{font-size:.8rem;color:var(--mut2);margin-bottom:4px;display:flex;align-items:flex-start;gap:6px}
+.kl-row a{color:var(--blu);text-decoration:none;word-break:break-all}
+.kl-row a:hover{text-decoration:underline}
+.kl-actions{display:flex;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid var(--brd);justify-content:flex-end}
+.kl-note{font-size:.75rem;color:var(--mut);font-style:italic;margin-top:6px}
+/* KL-OBJ */
+.kl-obj{background:var(--surf2);border:1px solid var(--brd);border-radius:7px;padding:9px 11px;margin-bottom:6px}
+.kl-obj:last-child{margin-bottom:0}
+.kl-obj.obj-foto{border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.04)}
+.kl-objs{display:flex;flex-direction:column;gap:0}
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:flex-end;justify-content:center}
+.modal-bg.on{display:flex}
+/* ONBOARDING */
+#onboardModal{display:none;position:fixed;inset:0;background:var(--bg);z-index:900;overflow-y:auto;padding:0}
+#onboardModal.on{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh}
+.ob-wrap{max-width:420px;width:100%;padding:32px 24px 40px}
+.ob-logo{font-size:2.2rem;font-weight:800;color:var(--acc);letter-spacing:-1px;margin-bottom:4px}
+.ob-sub{font-size:.85rem;color:var(--mut2);margin-bottom:32px}
+.ob-title{font-size:1.1rem;font-weight:700;color:var(--txt);margin-bottom:6px}
+.ob-desc{font-size:.78rem;color:var(--mut2);margin-bottom:24px;line-height:1.5}
+.ob-field{margin-bottom:16px}
+.ob-field label{font-size:.72rem;color:var(--mut2);font-weight:600;display:block;margin-bottom:5px}
+.ob-field input,.ob-field select{width:100%;background:var(--surf2);border:1px solid var(--brd);border-radius:8px;color:var(--txt);font-family:var(--sans);font-size:.9rem;padding:11px 13px;outline:none;transition:border-color .18s}
+.ob-field input:focus,.ob-field select:focus{border-color:var(--acc)}
+.ob-note{font-size:.72rem;color:var(--mut);margin-top:5px;line-height:1.4}
+.ob-note.warn{color:var(--red)}
+.ob-btn{width:100%;padding:13px;background:var(--acc);color:#000;font-weight:700;font-size:.95rem;border:none;border-radius:10px;cursor:pointer;margin-top:8px;font-family:var(--sans)}
+.ob-skip{width:100%;padding:8px;background:transparent;color:var(--mut);font-size:.78rem;border:none;cursor:pointer;margin-top:6px;font-family:var(--sans)}
+.modal{background:var(--surf);border-radius:16px 16px 0 0;padding:20px 18px 32px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto}
+.modal-title{font-size:1rem;font-weight:700;margin-bottom:16px}
+.modal-actions{display:flex;gap:8px;margin-top:16px}
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:18px;background:var(--acc);color:#000;font-family:var(--sans);font-weight:700;font-size:.78rem;padding:8px 15px;border-radius:8px;z-index:999;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none}
+.toast.on{opacity:1;transform:translateY(0)}.toast.err{background:var(--red);color:#fff}
+.empty{text-align:center;padding:40px 20px;color:var(--mut);font-size:.8rem}
+@media(max-width:600px){.c2,.c3{grid-template-columns:1fr}}
+/* CUSTOM CONFIRM MODAL */
+.conf-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center}
+.conf-modal.on{display:flex}
+.conf-box{background:var(--surf);border-radius:14px;padding:22px 20px;width:300px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.conf-msg{font-size:.9rem;font-weight:600;margin-bottom:18px;line-height:1.5;color:var(--txt)}
+.conf-btns{display:flex;gap:8px;justify-content:flex-end}
+/* GDPR BAR */
+.gdpr-bar{position:fixed;bottom:0;left:0;right:0;background:var(--surf2);border-top:1px solid var(--brd);padding:10px 14px calc(10px + env(safe-area-inset-bottom));font-size:.72rem;color:var(--mut2);display:flex;align-items:center;gap:10px;z-index:290}
+/* TOUCH TARGETS mobile */
+@media(max-width:600px){.kbox{height:40px;font-size:.8rem}.kat-boxes{gap:6px}}
+@media print{
+  @page{margin:12mm;size:A4 portrait}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  header,.mode-bar,.br,.btn,.tabs,#postBtn{display:none!important}
+  #aw{display:block!important}
+  .pg{display:none!important}.pg.on{display:block!important}
+  body{background:#fff!important;color:#000!important}
+  .card{border:1px solid #ccc!important;background:#fff!important}
+  .hi{background:#f9f9f9!important;border:1px solid #ddd!important;page-break-inside:avoid}
+  .nb{background:#1a1d25!important}.nb .l,.nb .v{color:#fff!important}
+}
+/* PWA INSTALL BANNER */
+#installBanner{display:none;position:sticky;top:0;z-index:190;background:linear-gradient(135deg,var(--surf) 0%,var(--surf2) 100%);border-bottom:2px solid var(--acc);padding:10px 14px;align-items:center;gap:10px;animation:bannerSlide .3s ease}
+#installBanner.on{display:flex}
+@keyframes bannerSlide{from{transform:translateY(-100%);opacity:0}to{transform:translateY(0);opacity:1}}
+.inst-icon{width:38px;height:38px;border-radius:9px;overflow:hidden;flex-shrink:0;background:var(--surf3)}
+.inst-icon img{width:100%;height:100%;object-fit:cover}
+.inst-text{flex:1;min-width:0}
+.inst-title{font-size:.82rem;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inst-sub{font-size:.7rem;color:var(--mut2);margin-top:1px;line-height:1.35}
+.inst-actions{display:flex;gap:6px;align-items:center;flex-shrink:0}
+.inst-btn{font-family:var(--sans);font-weight:700;font-size:.75rem;padding:7px 13px;border-radius:7px;border:none;cursor:pointer;white-space:nowrap;transition:all .18s}
+.inst-btn.primary{background:var(--acc);color:#000}.inst-btn.primary:hover{background:var(--acc2)}
+.inst-btn.close{background:transparent;border:1px solid var(--brd2);color:var(--mut2);padding:6px 10px;font-size:.9rem;line-height:1}.inst-btn.close:hover{border-color:var(--red);color:var(--red)}
+/* iOS instructions inside banner */
+.inst-ios-steps{font-size:.7rem;color:var(--mut2);margin-top:4px;line-height:1.5}
+.inst-ios-steps strong{color:var(--txt)}
+</style>
+</head>
+<body class="light">
+
+<!-- PWA INSTALL BANNER -->
+<div id="installBanner" role="banner" aria-label="Instalacija aplikacije">
+  <div class="inst-icon">
+    <img src="icon-192.png" alt="FotoKalk">
+  </div>
+  <div class="inst-text">
+    <div class="inst-title">FotoKalk</div>
+    <div class="inst-sub" id="instSubText">Instaliraj aplikaciju za brži pristup i rad bez interneta.</div>
+  </div>
+  <div class="inst-actions">
+    <button class="inst-btn primary" id="instActionBtn" onclick="pwaInstall()">Instaliraj</button>
+    <button class="inst-btn close" onclick="pwaDismiss()" aria-label="Zatvori">✕</button>
+  </div>
+</div>
+
+<header>
+  <label class="theme-sl" onclick="toggleTheme();return false;">
+    <div class="theme-sl-track"></div>
+    <div class="theme-sl-knob" id="themeKnob">☀️</div>
+  </label>
+  <div class="tabs" id="tabsBar"></div>
+  <a href="upute.html" target="_blank" rel="noopener" id="helpBtn" title="Upute za korištenje" style="width:36px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid var(--brd);color:var(--mut2);font-family:var(--sans);font-size:.78rem;font-weight:700;text-decoration:none;flex-shrink:0;transition:all .18s" onmouseover="this.style.borderColor='var(--acc)';this.style.color='var(--acc)'" onmouseout="this.style.borderColor='var(--brd)';this.style.color='var(--mut2)'">?</a>
+  <button id="backupHeaderBtn" title="Backup podataka" onclick="openBackupModal()" style="width:36px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid var(--brd);color:var(--mut2);background:transparent;cursor:pointer;flex-shrink:0;transition:all .18s;padding:0" onmouseover="this.style.borderColor='var(--acc)';this.style.color='var(--acc)'" onmouseout="this.style.borderColor='var(--brd)';this.style.color='var(--mut2)'">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="M7 11l5 5 5-5"/><rect x="3" y="17" width="18" height="4" rx="1.5"/></svg>
+  </button>
+  <button class="tab hbg" id="postBtn" onclick="openPost()">
+    <span class="hbg-l"></span><span class="hbg-l"></span><span class="hbg-l"></span>
+  </button>
+</header>
+
+<div class="mode-bar">
+  <div class="mode-sw">
+    <button class="mode-btn" id="btnA" onclick="setMode('a')">Adriatic.hr</button>
+  </div>
+</div>
+
+
+<!-- KLIJENT MODAL -->
+<div class="modal-bg" id="klModal">
+  <div class="modal">
+    <div class="modal-title" id="klModalTitle">Novi klijent</div>
+    <div class="ct" style="margin-bottom:10px">Vlasnik</div>
+    <div class="row c2">
+      <div><label>Ime</label><input type="text" id="kl-ime1" placeholder="Ime"></div>
+      <div><label>Prezime</label><input type="text" id="kl-ime2" placeholder="Prezime"></div>
+    </div>
+    <div style="margin-bottom:12px"><label>Telefon</label><input type="tel" id="kl-tel" placeholder="+385 91 ..."></div>
+    <div id="kl-obj-section"><div class="ct" style="margin-bottom:10px">Objekt</div>
+    <div class="row c2">
+      <div><label>Šifra objekta</label><input type="text" id="kl-nm" placeholder="12345"></div>
+      <div><label>Broj ugovora</label><input type="text" id="kl-ug" placeholder="npr. 1191/2026"></div>
+    </div>
+    <div style="margin-bottom:10px"><label>Adresa objekta</label><input type="text" id="kl-adr" placeholder="Ul. i broj, Grad"></div>
+    <div class="row c2">
+      <div><label>GPS — Širina (lat)</label><input type="number" id="kl-lat" placeholder="44.8666" step="0.000001"></div>
+      <div><label>GPS — Duljina (lng)</label><input type="number" id="kl-lng" placeholder="13.8496" step="0.000001"></div>
+    </div>
+    <div class="row c2">
+      <div><label>Datum snimanja</label><input type="date" id="kl-dt"></div>
+      <div><label>Status</label>
+        <select id="kl-stat">
+          <option value="nije">Nije fotografiran</option>
+          <option value="jest">Fotografiran</option>
+          <option value="otkazano">Otkazano</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-bottom:12px"><label>Napomena</label><input type="text" id="kl-note" placeholder="Npr. klijent traži HDR, pristup dronom..."></div>
+    </div><!-- /kl-obj-section -->
+    <div class="modal-actions">
+      <button class="btn bp" onclick="klSave()">💾 Spremi</button>
+      <button class="btn bo" onclick="klCancel()">Odustani</button>
+      <button class="btn bd" id="klDelBtn" style="display:none" onclick="klObjDelete()">🗑 Obriši objekt</button>
+      <button class="btn bd" id="klOwnerDelBtn" style="display:none" onclick="klOwnerDelete()">🗑 Obriši vlasnika</button>
+    </div>
+  </div>
+</div>
+
+<!-- PLAN MODAL -->
+<div class="modal-bg" id="planModal">
+  <div class="modal">
+    <div class="modal-title" id="planModalTitle">Novi termin snimanja</div>
+    <div class="row c2">
+      <div><label>Datum snimanja</label><div class="date-wrap"><input type="date" id="pl-dt"><button class="date-icon-btn" type="button" onclick="document.getElementById('pl-dt').showPicker?.()" aria-label="Odaberi datum">📅</button></div></div>
+      <div><label>Šifra objekta</label><input type="text" id="pl-sifra" placeholder="npr. 12345"></div>
+    </div>
+    <div class="row c2">
+      <div><label>Ime vlasnika</label><input type="text" id="pl-ime1" placeholder="Ime"></div>
+      <div><label>Prezime vlasnika</label><input type="text" id="pl-ime2" placeholder="Prezime"></div>
+    </div>
+    <div class="row c2">
+      <div><label>Broj ugovora</label><input type="text" id="pl-ug" placeholder="npr. 1191/2026"></div>
+      <div><label>Telefon</label><input type="tel" id="pl-tel" placeholder="+385 91 ..."></div>
+    </div>
+    <div class="row c2">
+      <div><label>Status</label>
+        <select id="pl-stat">
+          <option value="ceka">Na čekanju</option>
+          <option value="obavljeno">Obavljeno</option>
+          <option value="otkazano">Otkazano</option>
+        </select>
+      </div>
+      <div></div>
+    </div>
+    <div style="margin-bottom:10px"><label>Adresa objekta</label><input type="text" id="pl-adr" placeholder="Ul. i broj, Grad"></div>
+    <div class="row c2">
+      <div><label>GPS — Širina (lat)</label><input type="number" id="pl-lat" placeholder="44.8666" step="0.000001"></div>
+      <div><label>GPS — Duljina (lng)</label><input type="number" id="pl-lng" placeholder="13.8496" step="0.000001"></div>
+    </div>
+    <div style="margin-bottom:10px"><label>Napomena</label><input type="text" id="pl-note" placeholder="Npr. klijent traži HDR..."></div>
+    <div class="modal-actions">
+      <button class="btn bp" onclick="planSave()">&#128190; Spremi</button>
+      <button class="btn bo" onclick="planCancel()">Odustani</button>
+      <button class="btn bd" id="planDelBtn" style="display:none" onclick="planDelete()">&#128465; Obriši</button>
+    </div>
+  </div>
+</div>
+
+<main>
+
+<!-- ══ ADRIATIC ══ -->
+<div id="aw">
+  <!-- KALK -->
+  <div class="pg" id="a-kalk">
+    <div class="card">
+      <div class="ct">Posao</div>
+      <div class="row c3">
+        <div><label>Šifra objekta</label><input type="text" id="a-sifra" placeholder="npr. 12345"></div>
+        <div><label>Datum</label><input type="date" id="a-dt"></div>
+        <div><label>Lokacija</label><input type="text" id="a-loc" placeholder="Pula, Rovinj…"></div>
+      </div>
+      <div class="row c3">
+        <div><label>Ime vlasnika</label><input type="text" id="a-ime1" placeholder="Ime"></div>
+        <div><label>Prezime vlasnika</label><input type="text" id="a-ime2" placeholder="Prezime"></div>
+        <div><label>Broj ugovora</label><input type="text" id="a-ugsifra" placeholder="npr. 1191/2026"></div>
+      </div>
+      <div style="margin-top:6px">
+        <select id="a-kl-pick" style="font-size:.75rem;padding:6px 8px;width:100%" onchange="posaoFromKlijent(this.value)">
+          <option value="">&#8681; Popuni iz klijenta...</option>
+        </select>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Fotografske kategorije — <span style="color:var(--acc);font-size:.7rem" id="a-kc">0 kat · 0 kom</span></div>
+      <div class="kat-list" id="a-kg"></div>
+      <div class="ib" style="margin-top:10px">ℹ️ Svaka kategorija = <strong id="a-cp">6,50 €</strong> bruto (čl.4)</div>
+    </div>
+    <div class="card">
+      <div class="ct">Fotografiranje dronom</div>
+      <div class="tog-box">
+        <div class="tog-row">
+          <div class="tsw" id="a-dron-sw" onclick="togDron()"><div class="tsw-t"></div><div class="tsw-k"></div></div>
+          <span>Fotografiranje dronom (min. 4 pozicije)</span>
+        </div>
+        <div class="dp"><label>Bruto (€)</label><input type="number" id="a-dron-p" value="32.50" step="0.5" oninput="aCalc()"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Putni troškovi</div>
+      <div class="row c3">
+        <div><label>Km — jedna relacija</label><input type="number" id="a-km" placeholder="0" min="0" oninput="aCheckKm();aCalc()"></div>
+        <div><label>€/km</label><input type="number" id="a-kmr" value="0.40" step="0.01" oninput="aCalc()"></div>
+        <div><label>Prag km</label><input type="number" id="a-kmt" value="5" step="1" min="0" oninput="aCheckKm();aCalc()"></div>
+      </div>
+      <div id="a-km-note" class="ib" style="display:none"></div>
+      <div style="margin-top:9px"><label>Dodatni troškovi — trajekt, cestarina (€)</label><input type="number" id="a-ext" placeholder="0.00" min="0" step="0.5" oninput="aCalc()"></div>
+    </div>
+    <div class="card">
+      <div class="ct">Otkazano snimanje</div>
+      <div class="tog-box">
+        <div class="tog-row">
+          <div class="tsw" id="a-ot-sw" onclick="togOtkaz()"><div class="tsw-t"></div><div class="tsw-k"></div></div>
+          <span>Snimanje otkazano po dolasku</span>
+        </div>
+        <div class="dp"><label>Propuštena dobit (€)</label><input type="number" id="a-ot-n" value="30.00" step="0.5" oninput="aCalc()"></div>
+      </div>
+      <div class="wb" id="a-ot-note" style="display:none">⚠️ Otkaz: putni troškovi + propratni + 30 € naknade za propuštenu dobit.</div>
+    </div>
+    <div class="card">
+      <div class="ct">Napomena</div>
+      <input type="text" id="a-note" placeholder="Npr. urgentno…">
+    </div>
+    <div class="card">
+      <div class="ct">Obračun — RH 2026</div>
+      <div class="op" id="a-op"></div>
+      <div class="nb"><span class="l">NETO</span><span class="v" id="a-neto">0,00 €</span></div>
+      <div class="ib" id="a-pi"></div>
+      <div class="br">
+        <button class="btn bp" onclick="aSave()">💾 Spremi</button>
+        <button class="btn bo" onclick="aReset()">↺ Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HIST -->
+  <div class="pg" id="a-hist">
+    <div class="nb" style="margin-bottom:10px;border-radius:10px"><span class="l" style="font-size:.9rem">UKUPNI NETO</span><span class="v" id="a-s3" style="font-size:1.7rem">0 €</span></div>
+    <div class="sr"><div class="st"><div class="sv" id="a-s1">0</div><div class="sl">Poslova</div></div><div class="st"><div class="sv" id="a-s2">0 €</div><div class="sl">Ukupno bruto</div></div></div>
+    <div class="unp" id="a-unp" style="display:none"><span class="l">⚠️ Neplaćeno</span><span class="v" id="a-unpv">0 €</span></div>
+    <div class="ib" id="a-pdv-warn" style="display:none;margin-bottom:9px">⚠️ <strong>PDV prag:</strong> Godišnji promet bliži se pragu od 60.000 € — moguća obveza upisa u registar PDV obveznika (od 1.1.2025.)!</div>
+    <div class="card">
+      <div class="ct">Zarada po mjesecima</div>
+      <div class="ch-wrap"><svg id="a-ch" height="110"></svg></div>
+    </div>
+    <div class="card">
+      <div class="ct" style="margin-bottom:9px">Evidencija — Adriatic.hr
+        <div style="margin-left:auto;display:flex;gap:5px">
+          <button class="btn bo" style="font-size:.7rem;padding:4px 10px" onclick="doXLSX('a')">⬇ Excel</button>
+          <button class="btn bo" style="font-size:.7rem;padding:4px 10px" onclick="aEvidencijaPrint()">🖨 Evidencija PDF</button>
+          <button class="btn bo" style="font-size:.7rem;padding:4px 10px" onclick="doJSON('a')">⬇ JSON</button>
+        </div>
+      </div>
+      <div class="frow">
+        <button class="ft on" onclick="setFilt('a','sve',this)">Sve</button>
+        <button class="ft" onclick="setFilt('a','nep',this)">Neplaćeno</button>
+        <button class="ft" onclick="setFilt('a','pl',this)">Plaćeno</button>
+      </div>
+      <div id="a-hl"></div>
+    </div>
+  </div>
+
+  <!-- POST -->
+  <div class="pg" id="a-post">
+    <div class="card">
+      <div class="ct">Naknade — Adriatic.hr čl.4</div>
+      <div class="setr"><label>Honorar/kategoriji (bruto €) <span class="sbg">čl.4</span></label><input type="number" id="a-s-cp" placeholder="0" step="0.5" onchange="aSaveCfg()"></div>
+      <div class="setr"><label>Honorar dron (bruto €) <span class="sbg">čl.4</span></label><input type="number" id="a-s-dp" placeholder="0" step="0.5" onchange="aSaveCfg()"></div>
+      <div class="setr"><label>€/km <span class="sbg">čl.4</span></label><input type="number" id="a-s-kr" placeholder="0" step="0.01" onchange="aSaveCfg()"></div>
+      <div class="setr"><label>Prag km <span class="sbg">čl.4</span></label><input type="number" id="a-s-kt" placeholder="0" step="1" onchange="aSaveCfg()"></div>
+      <div class="setr"><label>Propuštena dobit — otkaz (€) <span class="sbg">čl.4</span></label><input type="number" id="a-s-ot" placeholder="0" step="0.5" onchange="aSaveCfg()"></div>
+    </div>
+    <div class="card">
+      <div class="ct">Porezne stope — RH 2026</div>
+      <div class="setr"><label>Grad / općina</label><select id="a-s-grad" onchange="settingsGradChange('a-s-grad')"></select></div>
+      <div class="setr"><label>Paušalni izdaci (%) <span class="sbg">ZPD</span></label><input type="number" id="a-s-iz" value="30" step="1" onchange="aSaveCfg()"></div>
+      <div class="ib" style="margin-top:4px;font-size:.72rem">💡 <strong>Fotografska umjetnost:</strong> Uz potvrdu strukovne udruge moguće je primijeniti <strong>55% paušalnih izdataka</strong> (30% normirani + 25% neoporezivi primitak, čl.39. ZPD). Konzultirajte poreznog savjetnika.</div>
+      <div class="setr"><label>MIO doprinos (%) <span class="sbg">ZD</span></label><input type="number" id="a-s-mio" value="10" step="0.5" onchange="aSaveCfg()"></div>
+      <div class="setr"><label>Zdravstveno — naručiteljev trošak (%) <span class="sbg">ZD</span></label><input type="number" id="a-s-zo" value="7.5" step="0.5" onchange="aSaveCfg()"></div>
+      <div class="setr"><label for="a-s-pd" id="a-s-pd-label">Porez na dohodak Pula 2026 niža stopa (%) <span class="sbg">JLS</span></label><input type="number" id="a-s-pd" value="22" step="1" onchange="aSaveCfg()"></div>
+      <div class="ib" id="a-pd-info" style="margin-top:8px">ℹ️ Pula 2026: 22% niža stopa / 32% viša stopa. Prirez ukinut. ZO plaća Naručitelj.</div>
+      <div class="wb" id="a-umir-warn" style="margin-top:6px;display:none">⚠️ Umirovljenik: doprinosi se obračunavaju i na autorsku naknadu. Konzultacija s računovođom!</div>
+    </div>
+    <div class="card">
+      <div class="ct">Moj status</div>
+      <div class="setr">
+        <label>Status fotografa</label>
+        <select id="settings-status" onchange="settingsStatusChange()">
+          <option value="samostalni">Samostalni umjetnik / obrtnik</option>
+          <option value="zaposlen">Zaposlen kod poslodavca</option>
+          <option value="umirovljenik">Umirovljenik</option>
+        </select>
+      </div>
+      <div class="ib" id="settings-status-note" style="margin-top:6px;display:none"></div>
+    </div>
+    <div class="card">
+      <div class="ct">Kategorije objekta</div>
+      <div id="a-ksl"></div>
+      <div style="display:flex;gap:7px;margin-top:9px;align-items:flex-end">
+        <div style="flex:1"><label>Nova kategorija</label><input type="text" id="a-nk" placeholder="npr. Garaža"></div>
+        <button class="btn bp" onclick="aAddKat()">+ Dodaj</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">💾 Backup — sve podatke</div>
+      <div id="backupReminderBanner" style="display:none;align-items:center;gap:10px;background:rgba(240,192,64,.10);border:1px solid var(--acc);border-radius:8px;padding:10px 13px;margin-bottom:12px">
+        <span style="font-size:1.1rem">⏰</span>
+        <span style="font-size:.8rem;flex:1;color:var(--txt)">Nisi radio backup <strong id="backupDaysAgo"></strong> — preporučujemo da napraviš backup i pošalješ ga sebi.</span>
+        <button class="btn bd" style="font-size:.68rem;padding:3px 9px;flex-shrink:0" onclick="dismissBackupReminder()">✕</button>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn bp" onclick="backupAll()">⬇ Preuzmi backup</button>
+        <button class="btn bp" id="shareBackupBtn" onclick="shareBackup()" style="background:var(--blu);border-color:var(--blu);color:#fff">↗ Podijeli backup</button>
+        <button class="btn bo" onclick="g('importFileInput').click()">⬆ Uvezi backup</button>
+        <input type="file" id="importFileInput" accept=".json,.txt" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" onchange="importAll(event)">
+      </div>
+      <div class="ib" style="margin-top:8px">ℹ️ Backup sadrži sve podatke aplikacije i postavke. Podijeli ga WhatsApp-om, mailom, na Drive — gdje god želiš.</div>
+    </div>
+    <div class="card">
+      <div class="ct">⚠️ Opasna zona</div>
+      <button class="btn bd" onclick="clearData('a')">🗑 Obriši povijest Adriatic.hr</button>
+    </div>
+  </div>
+
+  <!-- KLIJENTI -->
+  <div class="pg" id="a-kl">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="ct" style="margin:0;flex:1">Klijenti — Adriatic.hr</div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button class="btn bo" style="font-size:.75rem;padding:7px 14px" onclick="klExportCSV()" title="Export CSV za Google Sheets">&#8681; CSV</button>
+        <button class="btn bo" style="font-size:.75rem;padding:7px 14px" onclick="document.getElementById('csvFileInput').click()" title="Uvezi CSV iz Google Sheets">&#8679; CSV</button>
+        <input type="file" id="csvFileInput" accept=".csv,.txt" style="display:none" onchange="klImportCSV(event)">
+        <button class="btn bp" style="font-size:.75rem;padding:7px 14px" onclick="openKlModal()">+ Novi</button>
+      </div>
+    </div>
+    <div class="frow">
+      <button class="ft on" onclick="klSetFilt('svi',this)">Svi</button>
+      <button class="ft" onclick="klSetFilt('nije',this)">Nije fotografiran</button>
+      <button class="ft" onclick="klSetFilt('jest',this)">Fotografiran</button>
+    </div>
+    <div id="a-kl-list"></div>
+  </div>
+
+  <!-- PLAN SNIMANJA -->
+  <div class="pg" id="a-plan">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="ct" style="margin:0;flex:1">Plan snimanja — Adriatic.hr</div>
+      <button class="btn bp" style="font-size:.75rem;padding:7px 14px;flex-shrink:0" onclick="openPlanModal()">+ Novo</button>
+    </div>
+    <div class="frow">
+      <button class="ft on" onclick="planSetFilt('svi',this)">Svi</button>
+      <button class="ft" onclick="planSetFilt('ceka',this)">Na čekanju</button>
+      <button class="ft" onclick="planSetFilt('obavljeno',this)">Obavljeno</button>
+      <button class="ft" onclick="planSetFilt('otkazano',this)">Otkazano</button>
+    </div>
+    <div id="a-plan-list"></div>
+  </div>
+</div><!-- /aw -->
+
+
+</main>
+
+<!-- CUSTOM CONFIRM MODAL -->
+<div class="conf-modal" id="confModal">
+  <div class="conf-box">
+    <div class="conf-msg" id="confMsg"></div>
+    <div class="conf-btns">
+      <button class="btn bo" id="confNo">Odustani</button>
+      <button class="btn bp" id="confYes">Potvrdi</button>
+    </div>
+  </div>
+</div>
+
+<!-- BACKUP MODAL -->
+<div class="modal-bg" id="backupModal" onclick="if(event.target===this)closeBackupModal()">
+  <div class="modal" style="padding:22px 18px 32px">
+    <div class="modal-title">💾 Backup podataka</div>
+    <div id="backupModalReminder" style="display:none;align-items:center;gap:10px;background:rgba(240,192,64,.10);border:1px solid var(--acc);border-radius:8px;padding:10px 13px;margin-bottom:14px">
+      <span style="font-size:1.1rem">⏰</span>
+      <span style="font-size:.8rem;flex:1;color:var(--txt)">Nisi radio backup <strong id="backupModalDaysAgo"></strong> — preporuča se backup.</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:9px">
+      <button class="btn bp" style="width:100%;justify-content:center;display:flex;align-items:center;gap:8px;font-size:.85rem;padding:11px 17px" onclick="backupAll();closeBackupModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="M7 11l5 5 5-5"/><rect x="3" y="17" width="18" height="4" rx="1.5"/></svg>
+        Preuzmi backup
+      </button>
+      <button class="btn" id="backupModalShareBtn" style="width:100%;justify-content:center;display:flex;align-items:center;gap:8px;font-size:.85rem;padding:11px 17px;background:var(--blu);color:#fff;border:none" onclick="shareBackup();closeBackupModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Podijeli backup
+      </button>
+      <button class="btn bo" style="width:100%;justify-content:center;display:flex;align-items:center;gap:8px;font-size:.85rem;padding:11px 17px" onclick="g('importFileInput').click();closeBackupModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-13"/><path d="M7 13l5-5 5 5"/><rect x="3" y="3" width="18" height="4" rx="1.5"/></svg>
+        Uvezi backup
+      </button>
+    </div>
+    <div class="ib" style="margin-top:12px">ℹ️ Backup sadrži sve podatke aplikacije i postavke. Podijeli ga WhatsApp-om, mailom, na Drive — gdje god želiš.</div>
+    <button class="btn bo" style="width:100%;margin-top:10px;font-size:.78rem" onclick="closeBackupModal()">Zatvori</button>
+  </div>
+</div>
+
+<!-- GDPR OBAVIJEST -->
+<!-- ONBOARDING -->
+<div id="onboardModal">
+  <div class="ob-wrap">
+    <div class="ob-logo">📷 FotoKalk</div>
+    <div class="ob-sub">Kalkulator honorara za fotografe — RH 2026</div>
+    <div class="ob-title">Dobrodošao/la! 👋</div>
+    <div class="ob-desc">Unesite nekoliko osnovnih podataka kako bi aplikacija bila što korisnija. Sve ostaje isključivo na ovom uređaju.</div>
+
+    <div class="ob-field">
+      <label>Ime i prezime <span style="color:var(--mut);font-weight:400">(neobavezno)</span></label>
+      <input type="text" id="ob-ime" placeholder="npr. Marko Horvat" autocomplete="name">
+      <div class="ob-note">💡 Koristit će se za automatsko popunjavanje ugovora.</div>
+    </div>
+
+    <div class="ob-field">
+      <label>Vaš status</label>
+      <select id="ob-status" onchange="onboardStatusChange()">
+        <option value="samostalni">Samostalni umjetnik / obrtnik</option>
+        <option value="zaposlen">Zaposlen kod poslodavca</option>
+        <option value="umirovljenik">Umirovljenik</option>
+      </select>
+      <div class="ob-note" id="ob-status-note"></div>
+    </div>
+
+    <div class="ob-field" id="ob-grad-field">
+      <label>Grad / općina <span style="color:var(--mut);font-weight:400">(za poreznu stopu)</span></label>
+      <select id="ob-grad" onchange="onboardGradChange()">
+      </select>
+      <div class="ob-note" id="ob-grad-note"></div>
+    </div>
+
+    <button class="ob-btn" onclick="onboardSave()">Pokrenuti aplikaciju →</button>
+    <button class="ob-skip" onclick="onboardSkip()">Preskoči, unesite naknadno u postavkama</button>
+  </div>
+</div>
+
+<div class="gdpr-bar" id="gdprBar" style="display:none">
+  ℹ️ Podaci (OIB, IBAN, GPS...) pohranjeni su <strong style="margin:0 3px">isključivo lokalno</strong> na ovom uređaju. Ništa se ne šalje na vanjske poslužitelje.
+  <button class="btn bp" style="font-size:.7rem;padding:4px 10px;flex-shrink:0;margin-left:auto" onclick="gdprOk()">Razumijem</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══ HELPERS ═══
+const g=id=>document.getElementById(id);
+const v=id=>{const e=g(id);return e?e.value:''};
+const m=n=>n.toFixed(2).replace('.',',')+' €';
+const esc=s=>s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'):'';
+const fmtD=s=>{if(!s)return'';if(s.includes('-')){const p=s.split('-');return p[2]+'.'+p[1]+'.'+p[0]}return s};
+const today=id=>{const d=new Date();const el=g(id);if(el)el.value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+function toast(msg,err=false){const t=g('toast');t.innerHTML=msg;t.className='toast on'+(err?' err':'');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2500)}
+function genUUID(){if(typeof crypto!=='undefined'&&crypto.randomUUID)return crypto.randomUUID();return'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&0x3|0x8)).toString(16)})}
+
+// ═══ THEME ═══
+function toggleTheme(){const l=document.body.classList.toggle('light');localStorage.setItem('fk_theme',l?'l':'d');const k=g('themeKnob');if(k)k.textContent=l?'☀️':'🌙';syncThemeColor();}
+
+// ═══ MODE ═══
+let mode='a';
+function setMode(m2){
+  mode='a';
+  localStorage.setItem('fk_mode','a');
+  g('btnA').classList.add('active');
+
+  // Build tabs
+  const tabs=g('tabsBar');tabs.innerHTML='';
+  const IC={plan:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/></svg>',kalk:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="14" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="10" y2="18"/><line x1="14" y1="18" x2="16" y2="18"/></svg>',hist:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v4H3z"/><path d="M3 10h18v4H3z"/><path d="M3 17h18v4H3z"/></svg>',ug:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>',kl:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'};
+  const defs=[['a-kalk',IC.kalk,'Kalkulator'],['a-hist',IC.hist,'Povijest'],['a-kl',IC.kl,'Klijenti'],['a-plan',IC.plan,'Plan snimanja']];
+  defs.forEach((d,i)=>{const b=document.createElement('button');b.className='tab icon-tab'+(i===0?' active':'');b.innerHTML=d[1];b.title=d[2];b.setAttribute('aria-label',d[2]);b.onclick=()=>showPg(d[0]);tabs.appendChild(b);});
+  g('postBtn').classList.remove('active');
+  showPgRaw('a-kalk');aBuildKG();aCalc();posaoPopulatePicker();
+}
+function showPg(id){
+  const wrap='aw';
+  g(wrap).querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  const pg=g(id);if(pg)pg.classList.add('on');
+  g('tabsBar').querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  const tabs=g('tabsBar').querySelectorAll('.tab');
+  const defs=['a-kalk','a-hist','a-kl','a-plan'];
+  const idx=defs.indexOf(id);if(idx>=0&&tabs[idx])tabs[idx].classList.add('active');
+  g('postBtn').classList.remove('active');
+  if(id==='a-hist')aRenderHist();
+  if(id==='a-post')aLoadCfg();
+  if(id==='a-kl')klRender();
+  if(id==='a-plan')planRender();
+  if(id==='a-kalk')posaoPopulatePicker();
+}
+function showPgRaw(id){
+  const wrap='aw';
+  g(wrap).querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  const pg=g(id);if(pg)pg.classList.add('on');
+}
+function openPost(){
+  const pid='a-post';
+  const pg=g(pid);
+  if(pg&&pg.classList.contains('on')){showPg('a-kalk');g('postBtn').classList.remove('active');}
+  else{showPg(pid);g('postBtn').classList.add('active');}
+}
+
+// ═══ ADRIATIC CONFIG ═══
+const AD={cp:0,dp:0,kr:0,kt:0,ot:0,iz:30,mio:10,zo:7.5,pd:22,cats:['Objekt (eksterijor)','Dvorište','Parkiralište','Dnevni boravak','Blagovaona','Kuhinja','Kupatilo','Hodnik','Soba','Terasa','Terasa s pogledom','Balkon','Balkon s pogledom']};
+function aCfg(){const s=localStorage.getItem('fk_a');return s?Object.assign({},AD,JSON.parse(s)):{...AD,cats:[...AD.cats]}}
+function aSaveCfg(){const c=aCfg();c.cp=+v('a-s-cp')||AD.cp;c.dp=+v('a-s-dp')||AD.dp;c.kr=+v('a-s-kr')||AD.kr;c.kt=+v('a-s-kt')||AD.kt;c.ot=+v('a-s-ot')||AD.ot;c.iz=+v('a-s-iz')||AD.iz;c.mio=+v('a-s-mio')||AD.mio;c.zo=+v('a-s-zo')||AD.zo;c.pd=+v('a-s-pd')||AD.pd;safeStore('fk_a',c);aBuildKG();aCalc();toast('Spremljeno')}
+function aLoadCfg(){const c=aCfg();[['a-s-cp',c.cp],['a-s-dp',c.dp],['a-s-kr',c.kr],['a-s-kt',c.kt],['a-s-ot',c.ot],['a-s-iz',c.iz],['a-s-mio',c.mio],['a-s-zo',c.zo],['a-s-pd',c.pd]].forEach(([id,val])=>{const el=g(id);if(el)el.value=val});aKSL()}
+function aKSL(){const c=aCfg();const l=g('a-ksl');if(!l)return;l.innerHTML='';c.cats.forEach((cat,i)=>{const r=document.createElement('div');r.className='setr';r.style.marginBottom='6px';r.innerHTML='<label style="flex:1">'+esc(cat)+'</label>';const b=document.createElement('button');b.className='btn bd';b.style.cssText='padding:3px 8px;font-size:.68rem';b.textContent='✕';b.onclick=()=>{const cc=aCfg();cc.cats.splice(i,1);localStorage.setItem('fk_a',JSON.stringify(cc));aKSL();aBuildKG();toast('Uklonjena')};r.appendChild(b);l.appendChild(r)})}
+function aAddKat(){const inp=g('a-nk');if(!inp||!inp.value.trim())return;const c=aCfg();c.cats.push(inp.value.trim());localStorage.setItem('fk_a',JSON.stringify(c));inp.value='';aKSL();aBuildKG();toast('Dodana')}
+
+// ═══ ADRIATIC STATE ═══
+let aDron=false,aOtkaz=false,aKQ={};
+function togDron(){aDron=!aDron;g('a-dron-sw').classList.toggle('on',aDron);aCalc()}
+function togOtkaz(){aOtkaz=!aOtkaz;g('a-ot-sw').classList.toggle('on',aOtkaz);const n=g('a-ot-note');if(n)n.style.display=aOtkaz?'block':'none';aCalc()}
+
+function aBuildKG(){
+  const c=aCfg();const gr=g('a-kg');if(!gr)return;
+  gr.innerHTML='';
+  c.cats.forEach(cat=>{
+    const qty=aKQ[cat]||0;
+    const row=document.createElement('div');row.className='kat-row'+(qty>0?' on':'');
+    const top=document.createElement('div');top.className='kat-top';
+    const nm=document.createElement('span');nm.className='kat-nm';nm.textContent=cat;
+    const qsp=document.createElement('span');qsp.className='kat-q';qsp.textContent=qty>0?'×'+qty:'';
+    top.appendChild(nm);top.appendChild(qsp);
+    const boxes=document.createElement('div');boxes.className='kat-boxes';
+    for(let i=1;i<=10;i++){
+      const b=document.createElement('div');b.className='kbox'+(i<=qty?' on':'');b.textContent=i<=qty?String(i):'';
+      const nq=(i<=qty&&i===qty)?i-1:i;
+      b.onclick=(function(cc,qq){return function(){aKQ[cc]=qq;if(aKQ[cc]===0)delete aKQ[cc];aBuildKG()}})(cat,nq);
+      boxes.appendChild(b);
+    }
+    row.appendChild(top);row.appendChild(boxes);gr.appendChild(row);
+  });
+  const tot=Object.values(aKQ).reduce((a,x)=>a+x,0);
+  const cats=Object.values(aKQ).filter(x=>x>0).length;
+  const kc=g('a-kc');if(kc)kc.textContent=cats+' kat · '+tot+' kom';
+  const cp=g('a-cp');if(cp)cp.textContent=m(aCfg().cp);
+  aCalc();
+}
+
+function aCalc(){
+  const c=aCfg();
+  const km=+v('a-km')||0,kr=+v('a-kmr')||c.kr,kt=+v('a-kmt')||c.kt;
+  const ext=+v('a-ext')||0,dp2=+v('a-dron-p')||c.dp,ot2=+v('a-ot-n')||c.ot;
+  let bKat=0,bKm=0,bDron=0,bOt=0,bExt=ext;
+  const tot=Object.values(aKQ).reduce((a,x)=>a+x,0);
+  if(!aOtkaz){bKat=tot*c.cp;if(aDron)bDron=dp2;if(km>kt)bKm=km*2*kr;}
+  else{if(km>kt)bKm=km*2*kr;bOt=ot2;}
+  const bruto=bKat+bDron+bKm+bOt+bExt;
+  const iz2=bruto*(c.iz/100);const osnD=bruto-iz2;
+  const mioI=osnD*(c.mio/100);const zoI=osnD*(c.zo/100);
+  const osnP=osnD-mioI;const porI=osnP*(c.pd/100);
+  const neto=bruto-mioI-porI;const b2=bruto+zoI;
+  const op=g('a-op');if(!op)return{bruto,neto,b2,mioI,zoI,porI,bKat,bDron,bKm,bExt,bOt};
+  let rows='';
+  if(bKat>0)rows+=or2('Kategorije ('+tot+' kom. × '+m(c.cp)+')',m(bKat),'');
+  if(bDron>0)rows+=or2('Fotografiranje dronom',m(bDron),'');
+  if(bKm>0)rows+=or2('Putni troškovi ('+(km*2)+' km × '+m(kr)+')',m(bKm),'');
+  if(bExt>0)rows+=or2('Dodatni troškovi',m(bExt),'');
+  if(bOt>0)rows+=or2('Naknada propuštena dobit',m(bOt),'');
+  if(bruto===0)rows+='<div class="or"><span class="l" style="font-style:italic;color:var(--mut)">Odaberi kategorije…</span><span class="v">—</span></div>';
+  op.innerHTML='<div class="os"><div class="ost">Bruto honorar</div>'+rows+'<div class="or hi" style="margin-top:5px;padding-top:5px;border-top:1px solid var(--brd)"><span class="l">BRUTO 1</span><span class="v">'+m(bruto)+'</span></div></div>'
+  +'<div class="os"><div class="ost">Porezni obračun</div>'
+  +'<div class="or"><span class="l">Paušalni izdaci ('+c.iz+'%)</span><span class="v rd">− '+m(iz2)+'</span></div>'
+  +'<div class="or rd"><span class="l">MIO ('+c.mio+'%)</span><span class="v">− '+m(mioI)+'</span></div>'
+  +'<div class="or rd"><span class="l">Porez '+getGrad()+' '+c.pd+'%</span><span class="v">− '+m(porI)+'</span></div>'
+  +'<div class="or bl"><span class="l" style="font-size:.73rem">ZO ('+c.zo+'%) → plaća Naručitelj</span><span class="v" style="font-size:.73rem">+ '+m(zoI)+'</span></div></div>';
+  const nv=g('a-neto');if(nv)nv.textContent=m(neto);
+  const pi=g('a-pi');if(pi){
+    const aGodAll=loadJ('a').reduce((a,j)=>a+j.bruto,0)+bruto;
+    const visaUpozorenje=aGodAll>50400?' ⚠️ <span style="color:var(--red);font-size:.72rem">Bruto prihod može prijeći 60.400 € — razmotri višu poreznu stopu!</span>':'';
+    pi.innerHTML='Bruto '+m(bruto)+' → MIO '+m(mioI)+' → porez '+m(porI)+' → <strong>Neto: '+m(neto)+'</strong>. ZO '+m(zoI)+' na teret adriatic.hr.'+visaUpozorenje;
+  }
+  return{bruto,neto,b2,mioI,zoI,porI,bKat,bDron,bKm,bExt,bOt};
+}
+function or2(l,vv,cls){return'<div class="or '+cls+'"><span class="l">'+l+'</span><span class="v">'+vv+'</span></div>'}
+function aCheckKm(){const km=+v('a-km')||0;const th=+v('a-kmt')||5;const n=g('a-km-note');if(!n)return;if(km>0&&km<=th){n.style.display='block';n.textContent='ℹ️ Unutar '+th+' km — putni troškovi se ne obračunavaju.'}else if(km>th){n.style.display='block';n.textContent='✓ '+km+' km — povratno: '+(km*2)+' km × '+v('a-kmr')+' €'}else n.style.display='none'}
+function aSave(){const nm=(v('a-sifra')||v('a-ime1')+' '+v('a-ime2')).trim();if(!nm){toast('Upiši šifru objekta ili ime vlasnika!',true);return}
+  const r=aCalc();const c=aCfg();
+  const j={id:Date.now(),name:nm,date:fmtD(v('a-dt')),loc:v('a-loc').trim(),note:v('a-note').trim(),sifra:v('a-sifra').trim(),ugsifra:v('a-ugsifra').trim(),ime1:v('a-ime1').trim(),ime2:v('a-ime2').trim(),cats:Object.entries(aKQ).map(([k,vv])=>k+(vv>1?' ×'+vv:'')),dron:aDron,otkaz:aOtkaz,km:+v('a-km')||0,ext:+v('a-ext')||0,...r,paid:false};
+  const jobs=loadJ('a');jobs.unshift(j);safeStore('fk_a_j',jobs);toast('Spremljeno ✓');aRenderHist()}
+function aReset(){aKQ={};aDron=false;aOtkaz=false;g('a-dron-sw').classList.remove('on');g('a-ot-sw').classList.remove('on');const n=g('a-ot-note');if(n)n.style.display='none';const kn=g('a-km-note');if(kn)kn.style.display='none';['a-sifra','a-loc','a-note','a-km','a-ext','a-ugsifra','a-ime1','a-ime2'].forEach(id=>{const e=g(id);if(e)e.value=''});today('a-dt');aBuildKG();aCalc()}
+
+// ═══ ADRIATIC HIST ═══
+let aFilt='sve';
+function setFilt(ns,f,btn){
+  if(ns==='a'){aFilt=f;g('a-hist').querySelectorAll('.ft').forEach(b=>b.classList.remove('on'));btn.classList.add('on');aRenderHist();}
+
+}
+function togPaid(id,ns){const jobs=loadJ(ns);const j=jobs.find(x=>String(x.id)===String(id));if(!j)return;j.paid=!j.paid;safeStore('fk_a_j',jobs);aRenderHist()}
+function aRenderHist(){
+  const all=loadJ('a');
+  const jobs=aFilt==='pl'?all.filter(j=>j.paid):aFilt==='nep'?all.filter(j=>!j.paid):all;
+  const l=g('a-hl');if(!l)return;
+  const unp=all.filter(j=>!j.paid).reduce((a,j)=>a+j.neto,0);
+  const ub=g('a-unp');if(ub)ub.style.display=unp>0?'flex':'none';const uv=g('a-unpv');if(uv)uv.textContent=m(unp);
+  l.innerHTML=jobs.length?jobs.map(j=>'<div class="hi"><div class="hi-h"><div><div class="hi-nm">'+esc(j.name)+'</div><div class="hi-dt">&#128197; '+j.date+(j.loc?' · '+esc(j.loc):'')+(j.km?' · 🚗 '+j.km+' km':'')+(j.dron?' · 🚁':'')+(j.otkaz?' · ⚠️':'')+' </div></div><div class="hi-am"><div class="hi-br">'+m(j.bruto)+'</div><div class="hi-nt">neto: '+m(j.neto)+'</div></div></div><div class="hi-tags">'+j.cats.map(c=>'<span class="tg">'+esc(c)+'</span>').join('')+'</div>'+(j.note?'<div style="font-size:.7rem;color:var(--mut);margin-top:6px">&#128221; '+esc(j.note)+'</div>':'')+'<div class="hi-ft"><span class="bdg '+(j.paid?'y':'n')+'" data-id="'+j.id+'" data-ns="a">'+(j.paid?'✓ Plaćeno':'✗ Neplaćeno')+'</span><span style="font-size:.65rem;color:var(--mut);font-family:var(--mono);margin-left:auto">MIO:'+m(j.mioI)+' Por:'+m(j.porI)+'</span><button class="btn bd" data-del="'+j.id+'" data-ns="a">✕</button></div></div>').join(''):'<div class="empty">Nema evidentiranih poslova</div>';
+  g('a-s1').textContent=all.length;g('a-s2').textContent=all.reduce((a,j)=>a+j.bruto,0).toFixed(2).replace('.',',')+' €';g('a-s3').textContent=all.reduce((a,j)=>a+j.neto,0).toFixed(2).replace('.',',')+' €';
+  drawChart('a-ch',all,'neto',false);
+  bindHist(l);
+  const aGod=all.filter(j=>j.date&&j.date.split('.').pop()==new Date().getFullYear().toString()).reduce((a,j)=>a+j.bruto,0);const aPdvW=g('a-pdv-warn');if(aPdvW)aPdvW.style.display=aGod>=55000?'block':'none';
+}
+
+
+// ═══ EVENT DELEGATION za paid/delete ═══
+function bindHist(container){
+  container.querySelectorAll('.bdg').forEach(b=>{b.onclick=()=>togPaid(b.dataset.id,b.dataset.ns)});
+  container.querySelectorAll('[data-del]').forEach(b=>{b.onclick=()=>customConfirm('Obrisati ovaj zapis?',()=>{const ns=b.dataset.ns;safeStore(ns==='p'?'fk_p_j':'fk_a_j',loadJ(ns).filter(j=>String(j.id)!==String(b.dataset.del)));aRenderHist();toast('Obrisano')})});
+}
+
+// ═══ CHART ═══
+function drawChart(svgId,jobs,field,isP){
+  const svg=g(svgId);if(!svg)return;
+  const now=new Date();const months=[];
+  for(let i=11;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push({k:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'),l:['Sij','Velj','Ožu','Tra','Svi','Lip','Srp','Kol','Ruj','Lis','Stu','Pro'][d.getMonth()],v:0})}
+  jobs.forEach(j=>{const val=j[field]||0;if(!j.date)return;const p=j.date.split('.');if(p.length<3)return;const k=p[2]+'-'+p[1].padStart(2,'0');const mo=months.find(x=>x.k===k);if(mo)mo.v+=val});
+  const mx=Math.max(...months.map(x=>x.v),1);
+  const W=300;const H=110;const bw=Math.floor((W-24)/months.length)-2;const gap=(W-months.length*bw)/(months.length+1);
+  const acc=isP?'#34d399':'#f0c040';const mut='#636b80';
+  let out='';
+  months.forEach((mo,i)=>{const x=gap+i*(bw+gap);const bh=mo.v>0?Math.max(4,Math.round(mo.v/mx*65)):2;const y=80-bh;
+    out+='<rect x="'+x+'" y="'+y+'" width="'+bw+'" height="'+bh+'" rx="2" fill="'+(mo.v>0?acc:'#323848')+'"/>';
+    out+='<text x="'+(x+bw/2)+'" y="96" text-anchor="middle" font-size="7" fill="'+mut+'">'+mo.l+'</text>';
+    if(mo.v>0)out+='<text x="'+(x+bw/2)+'" y="'+(y-3)+'" text-anchor="middle" font-size="7" fill="'+acc+'" font-weight="bold">'+Math.round(mo.v)+'</text>';
+  });
+  svg.setAttribute('width','100%');svg.setAttribute('height',H);svg.setAttribute('viewBox','0 0 '+W+' '+H);svg.setAttribute('preserveAspectRatio','xMidYMid meet');svg.innerHTML=out;
+}
+
+// ═══ JOBS ═══
+function loadJ(ns){return JSON.parse(localStorage.getItem('fk_a_j')||'[]')}
+
+// ═══ EXPORT ═══
+function doXLSX(ns){const jobs=loadJ(ns);if(!jobs.length){toast('Nema podataka',true);return}
+  const isA=ns==='a';const hdr=isA?['Datum','Objekt','Lokacija','Dron','Km','Bruto €','MIO I (7,5%) €','MIO II (2,5%) €','Porez €','ZO €','Neto €','Plaćeno','Napomena']:['Datum','Objekt','Lokacija','Km','Neto €','Bruto2 €','Plaćeno','Napomena'];
+  const rows=[hdr];
+  jobs.forEach(j=>rows.push(isA?[j.date,j.name,j.loc||'',j.dron?'Da':'Ne',j.km||0,j.bruto.toFixed(2),(j.mioI*0.75).toFixed(2),(j.mioI*0.25).toFixed(2),j.porI.toFixed(2),j.zoI.toFixed(2),j.neto.toFixed(2),j.paid?'Da':'Ne',j.note||'']:[j.date,j.name,j.loc||'',j.km||0,(j.neto||0).toFixed(2),(j.b2||0).toFixed(2),j.paid?'Da':'Ne',j.note||'']));
+  rows.push([]);rows.push(isA?['UKUPNO','','','','',jobs.reduce((a,j)=>a+j.bruto,0).toFixed(2),'','','','',jobs.reduce((a,j)=>a+j.neto,0).toFixed(2),'','']:['UKUPNO','','','',jobs.reduce((a,j)=>a+(j.neto||0),0).toFixed(2),'','','']);
+  const d=new Date();const fn='fotokalk_'+(ns==='p'?'apt_':'')+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+  if(typeof XLSX!=='undefined'){
+    const ws=XLSX.utils.aoa_to_sheet(rows);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Evidencija');
+    XLSX.writeFile(wb,fn+'.xlsx');toast('Excel preuzet &#10003;');
+  } else {
+    const csv=rows.map(r=>r.map(c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+    const b=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+    const a=document.createElement('a');const _cu=URL.createObjectURL(b);a.href=_cu;
+    a.download=fn+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(_cu),1500);
+    toast('CSV preuzet (xlsx.js nije dostupan offline)');
+  }
+}
+function doJSON(ns){const jobs=loadJ(ns);if(!jobs.length){toast('Nema podataka',true);return}const b=new Blob([JSON.stringify(jobs,null,2)],{type:'application/json'});const a=document.createElement('a');const _jurl=URL.createObjectURL(b);a.href=_jurl;setTimeout(()=>URL.revokeObjectURL(_jurl),1500);const d=new Date();a.download='fotokalk_'+(ns==='p'?'apt_':'')+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'.json';a.click();toast('JSON preuzet')}
+function aEvidencijaPrint(){
+  // Picker modal
+  const now=new Date();
+  const options=[];
+  for(let i=0;i<24;i++){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    const label=['Siječanj','Veljača','Ožujak','Travanj','Svibanj','Lipanj','Srpanj','Kolovoz','Rujan','Listopad','Studeni','Prosinac'][d.getMonth()]+' '+d.getFullYear();
+    options.push({key,label});
+  }
+  // Build inline picker dialog
+  const existing=document.getElementById('aEvidPickerOverlay');
+  if(existing)existing.remove();
+  const overlay=document.createElement('div');
+  overlay.id='aEvidPickerOverlay';
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;display:flex;align-items:center;justify-content:center';
+  overlay.innerHTML=`<div style="background:var(--surf);border-radius:12px;padding:22px 20px;width:300px;max-width:90vw">
+    <div style="font-size:.9rem;font-weight:700;margin-bottom:14px">Odaberi mjesec za ispis</div>
+    <select id="aEvidMjPick" style="width:100%;margin-bottom:16px;padding:8px 10px;font-size:.85rem;background:var(--surf2);border:1px solid var(--brd);border-radius:7px;color:var(--txt)">
+      ${options.map(o=>`<option value="${o.key}">${o.label}</option>`).join('')}
+    </select>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn bo" onclick="document.getElementById('aEvidPickerOverlay').remove()">Odustani</button>
+      <button class="btn bp" onclick="aEvidencijaDoPrint(document.getElementById('aEvidMjPick').value);document.getElementById('aEvidPickerOverlay').remove()">🖨 Ispiši</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+}
+
+function aEvidencijaDoPrint(mjesecKey){
+  const [god,mj]=mjesecKey.split('-').map(Number);
+  const mjNaziv=['Siječanj','Veljača','Ožujak','Travanj','Svibanj','Lipanj','Srpanj','Kolovoz','Rujan','Listopad','Studeni','Prosinac'][mj-1]+' '+god;
+  const sviPoslovi=loadJ('a');
+  // Filter po mjesecu — job.date je u formatu "d.m.yyyy"
+  const poslovi=sviPoslovi.filter(j=>{
+    if(!j.date)return false;
+    const p=j.date.split('.');
+    if(p.length<3)return false;
+    return parseInt(p[1])===mj&&parseInt(p[2])===god;
+  });
+  const now=new Date();
+  const dIspis=now.getDate()+'.'+(now.getMonth()+1)+'.'+now.getFullYear()+'.';
+  const w=window.open('','_blank');
+  if(!w){toast('Dozvoli popup prozore u browseru!',true);return;}
+  const css=`*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Helvetica Neue',Arial,sans-serif;font-size:10pt;color:#111;background:#fff}
+.page{max-width:190mm;margin:0 auto;padding:14mm 0}
+.header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:8mm;padding-bottom:4mm;border-bottom:2px solid #111}
+.h-title{font-size:13pt;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.h-sub{font-size:9pt;color:#555;margin-top:3pt}
+.h-date{font-size:9pt;color:#555;text-align:right}
+table{width:100%;border-collapse:collapse;margin-bottom:6mm}
+th{background:#111;color:#fff;font-size:8.5pt;font-weight:700;padding:5pt 7pt;text-align:left;letter-spacing:.3px}
+th.r{text-align:right}
+td{font-size:9pt;padding:5pt 7pt;border-bottom:1px solid #e8e8e8;vertical-align:top}
+td.r{text-align:right;font-family:'Courier New',monospace}
+tr:nth-child(even) td{background:#f9f9f9}
+.total-row td{border-top:2px solid #111;border-bottom:none;font-weight:700;font-size:9.5pt;background:#f0f0f0}
+.total-row td.r{font-family:'Courier New',monospace}
+.empty{text-align:center;padding:16pt;color:#888;font-style:italic}
+.foot{font-size:7.5pt;color:#888;text-align:center;padding-top:4mm;border-top:1px solid #ddd}
+@media print{body{margin:0}.page{padding:8mm 0;max-width:100%}}`;
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Evidencija ${mjNaziv}</title><style>${css}</style></head><body><div class="page">`);
+  w.document.write(`<div class="header"><div><div class="h-title">Evidencija — Adriatic.hr</div><div class="h-sub">${mjNaziv}</div></div><div class="h-date">Datum ispisa: ${dIspis}</div></div>`);
+  if(!poslovi.length){
+    w.document.write('<div class="empty">Nema evidentiranih poslova za odabrani mjesec.</div>');
+  } else {
+    w.document.write('<table><thead><tr><th>Rb.</th><th>Datum</th><th>Br. ugovora</th><th>Šifra obj.</th><th>Kat.</th><th class="r">Putni (€)</th><th class="r">Bruto (€)</th><th class="r">Neto (€)</th></tr></thead><tbody>');
+    let ukBruto=0,ukNeto=0,ukKm=0;
+    poslovi.forEach((j,i)=>{
+      const katBroj=j.cats?j.cats.reduce((a,c)=>{const m=c.match(/×(\d+)/);return a+(m?parseInt(m[1]):1)},0):0;
+      const putni=j.bKm||0;
+      // ugsifra fallback: stari zapisi mogu imati 'ug' polje
+      const brUg=j.ugsifra||j.ug||'';
+      ukBruto+=j.bruto||0;ukNeto+=j.neto||0;ukKm+=putni;
+      w.document.write(`<tr>
+        <td>${i+1}.</td>
+        <td>${esc(j.date||'—')}</td>
+        <td>${brUg?esc(brUg):'<span style="color:#bbb;font-style:italic">nije uneseno</span>'}</td>
+        <td>${esc(j.sifra||'—')}</td>
+        <td class="r">${katBroj||'—'}</td>
+        <td class="r">${putni>0?putni.toFixed(2):'—'}</td>
+        <td class="r">${(j.bruto||0).toFixed(2)}</td>
+        <td class="r">${(j.neto||0).toFixed(2)}</td>
+      </tr>`);
+    });
+    w.document.write(`<tr class="total-row">
+      <td colspan="5">UKUPNO — ${poslovi.length} ${poslovi.length===1?'posao':poslovi.length<5?'posla':'poslova'}</td>
+      <td class="r">${ukKm>0?ukKm.toFixed(2):'—'}</td>
+      <td class="r">${ukBruto.toFixed(2)}</td>
+      <td class="r">${ukNeto.toFixed(2)}</td>
+    </tr>`);
+    w.document.write('</tbody></table>');
+  }
+  w.document.write(`<div class="foot">FotoKalk · Adriatic.hr · Autorsko djelo · Zakon o autorskom pravu i srodnim pravima (NN 111/21, izmj. NN 32/24)</div>`);
+  w.document.write('</div></body></html>');
+  w.document.close();setTimeout(()=>w.print(),600);
+}
+
+function clearData(ns){customConfirm('Obrisati cijelu povijest?',()=>{localStorage.removeItem(ns==='p'?'fk_p_j':'fk_a_j');aRenderHist();toast('Obrisano')})}
+function buildBackupData(){return {
+  v:3,
+  ts:new Date().toISOString(),
+  a_j:loadJ('a'),
+  a_cfg:localStorage.getItem('fk_a'),
+  autor:localStorage.getItem('fk_autor'),
+  a_kl:localStorage.getItem('fk_kl_a'),
+  a_plan:localStorage.getItem('fk_plan_a'),
+  // Prethodno nedostajalo:
+  status:localStorage.getItem('fk_status'),
+  grad:localStorage.getItem('fk_grad'),
+  theme:localStorage.getItem('fk_theme'),
+  mode:localStorage.getItem('fk_mode'),
+  gdpr:localStorage.getItem('fk_gdpr'),
+  onboard:localStorage.getItem('fk_onboard')
+}}
+function backupFilename(){const d=new Date();return 'fotokalk_backup_'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'.json'}
+function markBackupDone(){localStorage.setItem('fk_last_backup',Date.now());checkBackupReminder()}
+function backupAll(){const data=buildBackupData();const b=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');const _burl=URL.createObjectURL(b);a.href=_burl;setTimeout(()=>URL.revokeObjectURL(_burl),1500);a.download=backupFilename();a.click();markBackupDone();toast('Backup preuzet ✓')}
+function shareBackup(){
+  const data=buildBackupData();
+  const json=JSON.stringify(data,null,2);
+  const filename=backupFilename();
+  const txtName=filename.replace('.json','.txt');
+
+  const doDownload=()=>{
+    const b=new Blob([json],{type:'application/json'});
+    const a=document.createElement('a');
+    const u=URL.createObjectURL(b);
+    a.href=u;a.download=filename;a.click();
+    setTimeout(()=>URL.revokeObjectURL(u),1500);
+    markBackupDone();toast('Backup preuzet ✓');
+  };
+
+  if(!navigator.share||!navigator.canShare){doDownload();return;}
+
+  const file=new File([json],txtName,{type:'text/plain'});
+
+  if(navigator.canShare({files:[file]})){
+    navigator.share({files:[file],title:'FotoKalk Backup',text:'FotoKalk backup datoteka'})
+      .then(()=>{markBackupDone();toast('Backup podijeljen ✓');})
+      .catch(e=>{if(e.name!=='AbortError')doDownload();});
+  } else {
+    navigator.share({title:'FotoKalk Backup',text:json})
+      .then(()=>{markBackupDone();toast('Backup podijeljen kao tekst ✓');})
+      .catch(e=>{if(e.name!=='AbortError')doDownload();});
+  }
+}
+function checkBackupReminder(){const last=parseInt(localStorage.getItem('fk_last_backup')||'0');const dismissed=parseInt(localStorage.getItem('fk_backup_dismissed')||'0');const banner=g('backupReminderBanner');if(!banner)return;const now=Date.now();const WEEK=7*24*60*60*1000;if((now-last>WEEK)&&(now-dismissed>WEEK)){const days=last?Math.floor((now-last)/(24*60*60*1000)):null;const el=g('backupDaysAgo');if(el)el.textContent=last?'već '+days+' dana':'još nikad';banner.style.display='flex'}else{banner.style.display='none'}}
+function dismissBackupReminder(){localStorage.setItem('fk_backup_dismissed',Date.now());const b=g('backupReminderBanner');if(b)b.style.display='none'}
+function openBackupModal(){
+  const last=parseInt(localStorage.getItem('fk_last_backup')||'0');
+  const rem=g('backupModalReminder');
+  if(rem){
+    const WEEK=7*24*60*60*1000;const now=Date.now();
+    if(now-last>WEEK){
+      const days=last?Math.floor((now-last)/(24*60*60*1000)):null;
+      const el=g('backupModalDaysAgo');
+      if(el)el.textContent=last?'već '+days+' dana':'još nikad';
+      rem.style.display='flex';
+    } else { rem.style.display='none'; }
+  }
+  g('backupModal').classList.add('on');
+}
+function closeBackupModal(){g('backupModal').classList.remove('on');}
+function importAll(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(!d.v){toast('Neispravan format',true);return}
+  if(d.a_j)localStorage.setItem('fk_a_j',JSON.stringify(d.a_j));
+  if(d.a_cfg)localStorage.setItem('fk_a',d.a_cfg);
+  if(d.autor)localStorage.setItem('fk_autor',d.autor);
+  if(d.a_kl)localStorage.setItem('fk_kl_a',d.a_kl);
+  if(d.p_kl)localStorage.setItem('fk_kl_p',d.p_kl);
+  if(d.a_plan)localStorage.setItem('fk_plan_a',d.a_plan);
+  // v3 polja
+  if(d.status)localStorage.setItem('fk_status',d.status);
+  if(d.grad)localStorage.setItem('fk_grad',d.grad);
+  if(d.theme)localStorage.setItem('fk_theme',d.theme);
+  if(d.mode)localStorage.setItem('fk_mode',d.mode);
+  if(d.gdpr)localStorage.setItem('fk_gdpr',d.gdpr);
+  if(d.onboard)localStorage.setItem('fk_onboard',d.onboard);
+  // Primijeni sve
+  aLoadCfg();aBuildKG();aRenderHist();klRender();planRender();
+  applyStatus(getStatus());applyGrad(getGrad());
+  if(d.theme){const isL=d.theme==='l';document.body.classList.toggle('light',isL);const k=g('themeKnob');if(k)k.textContent=isL?'☀️':'🌙';syncThemeColor();}
+  toast('Import OK ✓ (v'+(d.v||1)+')')
+}catch(err){toast('Greška pri importu',true)}};r.readAsText(f);e.target.value=''}
+
+// ═══ AUTOR & UGOVOR ═══
+function saveAutor(){const a={ime:v('p-a-ime'),oib:v('p-a-oib'),adr:v('p-a-adr'),iban:v('p-a-iban'),mj:v('p-a-mj')};localStorage.setItem('fk_autor',JSON.stringify(a));toast('Spremljeno')}
+function loadAutor(){const s=localStorage.getItem('fk_autor');if(!s)return{};const a=JSON.parse(s);[['p-a-ime',a.ime],['p-a-oib',a.oib],['p-a-adr',a.adr],['p-a-iban',a.iban],['p-a-mj',a.mj]].forEach(([id,val])=>{const el=g(id);if(el&&val)el.value=val});return a}
+
+let narucTip='fiz';
+function setNarucTip(tip,btn){
+  narucTip=tip;
+  ['fiz','obrt','pvt'].forEach(t=>{
+    const bl=g('ug-blok-'+t);if(bl)bl.style.display=t===tip?'block':'none';
+    const b=g('nt-'+t);if(b)b.classList.toggle('on',t===tip);
+  });
+}
+function ugNarucBlok(){
+  const a=loadAutor();
+  if(narucTip==='fiz'){
+    const ime=v('ug-nime')||'___',oib=v('ug-noib')||'___',adr=v('ug-nadr')||'___';
+    return{ident:'Fizička osoba',
+      naziv:ime,oib,adr,
+      linija1:ime,linija2:'OIB: '+oib,linija3:adr,
+      joppd:'Kako je Naručitelj fizička osoba bez registrirane djelatnosti, Autor je obvezan sam obračunati i uplatiti porez na dohodak i doprinose te predati JOPPD obrazac najkasnije na dan isplate (ili idući radni dan, čl.76 Pravilnika o JOPPD).',
+      isFiz:true,potpis_nm:ime,potpis_oib:'OIB: '+oib};
+  } else if(narucTip==='obrt'){
+    const vlasnik=v('ug-obrt-ime')||'___',nm=v('ug-obrt-nm')||'___',oib=v('ug-obrt-oib')||'___',mbr=v('ug-obrt-mbr')||'___',adr=v('ug-obrt-adr')||'___';
+    return{ident:'Obrtnik',
+      naziv:nm,vlasnik,oib,mbr,adr,
+      linija1:nm,linija2:'vlasnik: '+vlasnik+' · OIB: '+oib,linija3:'MBR: '+mbr+' · '+adr,
+      joppd:'Naručitelj (obrtnik) obvezan je obračunati i uplatiti doprinos za MIO i ZO te porez na dohodak u ime Autora i predati JOPPD obrazac.',
+      isFiz:false,potpis_nm:nm+' (vlasnik: '+vlasnik+')',potpis_oib:'OIB: '+oib};
+  } else {
+    const nm=v('ug-pvt-nm')||'___',oib=v('ug-pvt-oib')||'___',mbs=v('ug-pvt-mbs')||'___',zast=v('ug-pvt-zast')||'___',adr=v('ug-pvt-adr')||'___';
+    return{ident:'Pravna osoba',
+      naziv:nm,oib,mbs,zastupnik:zast,adr,
+      linija1:nm,linija2:'OIB: '+oib+' · MBS: '+mbs,linija3:'zastupnik: '+zast+' · '+adr,
+      joppd:'Naručitelj (pravna osoba) obvezan je obračunati i uplatiti doprinos za MIO i ZO te porez na dohodak u ime Autora i predati JOPPD obrazac.',
+      isFiz:false,potpis_nm:nm+' · zastupa: '+zast,potpis_oib:'OIB: '+oib};
+  }
+}
+
+
+
+// ═══ CSV IMPORT/EXPORT KLIJENTI ═══
+// Format: Ime,Prezime,Telefon,Šifra objekta,Broj ugovora,Adresa,Lat,Lng,Napomena
+function klExportCSV(){
+  const kls=klLoadMigrated();
+  if(!kls.length){toast('Nema klijenata za export',true);return;}
+  const header='Ime;Prezime;Telefon;Sifra objekta;Broj ugovora;Adresa;Lat;Lng;Napomena';
+  const rows=[];
+  kls.forEach(k=>{
+    if(!k.objekti||!k.objekti.length){
+      rows.push([k.ime1||'',k.ime2||'',k.tel||'','','','','','',''].map(csvEsc).join(';'));
+    } else {
+      k.objekti.forEach(obj=>{
+        rows.push([k.ime1||'',k.ime2||'',k.tel||'',obj.nm||'',obj.ug||'',obj.adr||'',obj.lat||'',obj.lng||'',obj.note||''].map(csvEsc).join(';'));
+      });
+    }
+  });
+  const csv=header+'\n'+rows.join('\n');
+  // Encode to Windows-1250 bytes manually
+  const bytes=toWin1250(csv);
+  const blob=new Blob([bytes],{type:'text/csv;charset=windows-1250'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  const d=new Date();a.download='klijenti_'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'.csv';
+  a.click();toast('CSV exportan ✓');
+}
+function csvEsc(v){
+  if(!v)return'';
+  v=String(v);
+  if(v.includes(';')||v.includes('"')||v.includes('\n'))return'"'+v.replace(/"/g,'""')+'"';
+  return v;
+}
+function toWin1250(str){
+  const map={
+    'Š':0x8A,'š':0x9A,'Ž':0x8E,'ž':0x9E,
+    'Č':0xC8,'č':0xE8,'Ć':0xC6,'ć':0xE6,
+    'Đ':0xD0,'đ':0xF0,
+    'Ä':0xC4,'ä':0xE4,'Ö':0xD6,'ö':0xF6,
+    'Ü':0xDC,'ü':0xFC,'ß':0xDF,
+    // Digraphs — substitute with closest single chars
+    'Lj':'Lj','lj':'lj','LJ':'LJ',
+    'Nj':'Nj','nj':'nj','NJ':'NJ',
+    'Dž':'D\xBE','dž':'d\xBE','DŽ':'D\xBE'
+  };
+  // Pre-process digraphs (multi-char → single replacement string)
+  str=str.replace(/Lj/g,'Lj').replace(/lj/g,'lj').replace(/LJ/g,'LJ')
+         .replace(/Nj/g,'Nj').replace(/nj/g,'nj').replace(/NJ/g,'NJ')
+         .replace(/Dž/g,'Dz').replace(/dž/g,'dz').replace(/DŽ/g,'DZ');
+  const bytes=new Uint8Array(str.length);
+  for(let i=0;i<str.length;i++){
+    const c=str[i];
+    if(map[c]!==undefined)bytes[i]=map[c];
+    else{const code=str.charCodeAt(i);bytes[i]=code<256?code:63;}
+  }
+  return bytes;
+}
+function klImportCSV(e){
+  const file=e.target.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const lines=ev.target.result.replace(/\r/g,'').split('\n').filter(l=>l.trim());
+      if(lines.length<2){toast('CSV je prazan',true);return;}
+      // Skip header row
+      const dataLines=lines[0].toLowerCase().includes('ime')?lines.slice(1):lines;
+      const kls=klLoadMigrated();
+      let added=0,updated=0;
+      dataLines.forEach(line=>{
+        const cols=csvParse(line);
+        if(cols.length<2)return;
+        const ime1=(cols[0]||'').trim();
+        const ime2=(cols[1]||'').trim();
+        const tel=(cols[2]||'').trim();
+        const nm=(cols[3]||'').trim();
+        const ug=(cols[4]||'').trim();
+        const adr=(cols[5]||'').trim();
+        const lat=(cols[6]||'').trim();
+        const lng=(cols[7]||'').trim();
+        const note=(cols[8]||'').trim();
+        if(!ime1&&!ime2&&!nm)return;
+        // Find existing owner by name
+        const imeKey=(ime1+' '+ime2).trim().toLowerCase();
+        let owner=imeKey?kls.find(k=>(k.ime1+' '+k.ime2).trim().toLowerCase()===imeKey):null;
+        const newObj={id:genUUID(),nm,ug,adr,lat,lng,dt:'',stat:'nije',note};
+        if(owner){
+          // Check if objekt with same sifra already exists
+          const exists=nm&&owner.objekti.find(o=>o.nm===nm);
+          if(!exists){owner.objekti.push(newObj);updated++;}
+        } else {
+          kls.push({id:genUUID(),ime1,ime2,tel,objekti:nm||adr?[newObj]:[]});
+          added++;
+        }
+        // Update tel if empty
+        if(owner&&tel&&!owner.tel)owner.tel=tel;
+      });
+      klSaveAll(kls);klRender();posaoPopulatePicker();
+      toast('Uvezeno: '+added+' novih, '+updated+' ažuriranih ✓');
+    }catch(err){toast('Greška pri uvozu: '+err.message,true);}
+  };
+  r.readAsText(file,'UTF-8');
+  e.target.value='';
+}
+function csvParse(line,sep){
+  // Auto-detect separator if not provided
+  if(!sep)sep=line.includes(';')?';':',';
+  const result=[];let cur='';let inQ=false;
+  for(let i=0;i<line.length;i++){
+    const ch=line[i];
+    if(ch==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+    else if(ch===sep&&!inQ){result.push(cur);cur='';}
+    else cur+=ch;
+  }
+  result.push(cur);
+  return result;
+}
+
+// ═══ KLIJENTI ═══
+// Nova struktura: { id, ime1, ime2, tel, objekti:[{id,nm,ug,adr,lat,lng,dt,stat,note}] }
+let klFilt='svi', klEditId=null, klEditObjId=null;
+function klNs(){return mode==='a'?'fk_kl_a':'fk_kl_p'}
+function klLoad(){return JSON.parse(localStorage.getItem(klNs())||'[]')}
+function klSaveAll(arr){localStorage.setItem(klNs(),JSON.stringify(arr))}
+function klSetFilt(f,btn){klFilt=f;const panelId=mode==='a'?'a-kl':'p-kl';g(panelId).querySelectorAll('.ft').forEach(b=>b.classList.remove('on'));btn.classList.add('on');klRender()}
+
+// Migracija stare strukture → nova
+function klMigrate(kls){
+  return kls.map(k=>{
+    if(k.objekti)return k; // već nova struktura
+    return{id:k.id,ime1:k.ime1||'',ime2:k.ime2||'',
+      tel:k.tel||'',
+      objekti:[{id:genUUID(),
+        nm:k.nm||'',ug:k.ug||'',adr:k.adr||'',
+        lat:k.lat||'',lng:k.lng||'',
+        dt:k.dt||'',stat:k.stat||'nije',note:k.note||''}]};
+  });
+}
+function klLoadMigrated(){
+  const raw=klLoad();
+  const migrated=klMigrate(raw);
+  // Spoji duplikate istog vlasnika (Ime+Prezime)
+  const merged=[];
+  migrated.forEach(k=>{
+    const key=(k.ime1+' '+k.ime2).trim().toLowerCase();
+    const existing=merged.find(m=>(m.ime1+' '+m.ime2).trim().toLowerCase()===key&&key!=='');
+    if(existing){
+      // Dodaj objekte koji ne postoje (po šifri)
+      k.objekti.forEach(obj=>{
+        if(!existing.objekti.find(o=>o.nm&&o.nm===obj.nm))
+          existing.objekti.push(obj);
+      });
+    } else {
+      merged.push({...k});
+    }
+  });
+  // Ako je migracija promijenila podatke, spremi
+  if(JSON.stringify(raw)!==JSON.stringify(merged))klSaveAll(merged);
+  return merged;
+}
+
+function klRender(){
+  const listId=mode==='a'?'a-kl-list':'p-kl-list';
+  const l=g(listId);if(!l)return;
+  let kls=klLoadMigrated();
+  // Filter: svi / nije (ima bar 1 nefotografiran) / jest (svi fotografirani)
+  if(klFilt==='nije')kls=kls.filter(k=>k.objekti.some(o=>o.stat==='nije'||o.stat==='otkazano'));
+  if(klFilt==='jest')kls=kls.filter(k=>k.objekti.every(o=>o.stat==='jest'));
+  if(!kls.length){l.innerHTML='<div class="empty">Nema klijenata. Dodaj prvog!</div>';return;}
+  l.innerHTML=kls.map(k=>{
+    const klIme=(k.ime1+' '+k.ime2).trim()||'---';
+    const sviFoto=k.objekti.every(o=>o.stat==='jest');
+    const nijedanFoto=k.objekti.every(o=>o.stat==='nije');
+    const objektiHTML=k.objekti.map(obj=>{
+      const mapsUrl=obj.lat&&obj.lng?'https://maps.google.com/?q='+obj.lat+','+obj.lng:(obj.adr?'https://maps.google.com/?q='+encodeURIComponent(obj.adr):'');
+      return '<div class="kl-obj'+(obj.stat==='jest'?' obj-foto':'')+'">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;gap:6px">'
+        +'<span style="font-size:.78rem;font-weight:700;font-family:var(--mono);color:var(--acc)">'+(obj.nm?'#'+esc(obj.nm):'—')+'</span>'
+        +(obj.stat==='jest'?'<span style="font-size:.65rem;color:var(--grn);font-weight:700">✓ Fotografiran</span>':obj.stat==='otkazano'?'<span style="font-size:.65rem;color:var(--red);font-weight:700">✗ Otkazano</span>':'<span style="font-size:.65rem;color:var(--mut)">○ Na čekanju</span>')
+        +'</div>'
+        +(obj.ug?'<div class="kl-row" style="font-size:.72rem">📄 '+esc(obj.ug)+'</div>':'')
+        +(obj.adr?'<div class="kl-row" style="font-size:.72rem">📍 <a href="'+mapsUrl+'" target="_blank">'+esc(obj.adr)+'</a></div>':'')
+        +(obj.dt?'<div class="kl-row" style="font-size:.72rem">📅 '+fmtD(obj.dt)+'</div>':'')
+        +(obj.note?'<div class="kl-note" style="font-size:.7rem">📝 '+esc(obj.note)+'</div>':'')
+        +'<div style="display:flex;gap:5px;margin-top:6px">'
+        +'<button class="btn bo" style="font-size:.68rem;padding:3px 9px" onclick="openKlObjModal(&quot;'+k.id+'&quot;,&quot;'+obj.id+'&quot;)">✏️ Uredi</button>'
+        +(mapsUrl?'<a href="'+mapsUrl+'" target="_blank" class="btn bo" style="font-size:.68rem;padding:3px 9px">🗺 Karta</a>':'')
+        +'</div>'
+        +'</div>';
+    }).join('');
+    return '<div class="kl-card">'
+      +'<div class="kl-head">'
+      +'<span class="kl-ime">'+esc(klIme)+'</span>'
+      +(sviFoto?'<span class="kl-status ok">✓ Sve fotografirano</span>':nijedanFoto?'':'<span class="kl-status" style="background:rgba(240,192,64,.12);color:var(--acc);border-color:rgba(240,192,64,.3)">djelomično</span>')
+      +'</div>'
+      +(k.tel?'<div class="kl-row" style="margin-bottom:8px"><a href="tel:'+esc(k.tel)+'">'+esc(k.tel)+'</a></div>':'')
+      +'<div class="kl-objs">'+objektiHTML+'</div>'
+      +'<div class="kl-actions" style="margin-top:10px">'
+      +'<button class="btn bo" style="font-size:.72rem;padding:5px 12px" onclick="openKlModal(&quot;'+k.id+'&quot;)">✏️ Uredi vlasnika</button>'
+      +'<button class="btn bp" style="font-size:.72rem;padding:5px 12px" onclick="openKlObjModal(&quot;'+k.id+'&quot;,null)">+ Objekt</button>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+}
+
+// Modal za vlasnika (ime, tel)
+function openKlModal(ownerId){
+  klEditId=ownerId||null;
+  klEditObjId=null;
+  g('klModalTitle').textContent=ownerId?'Uredi vlasnika':'Novi klijent';
+  g('klDelBtn').style.display='none';
+  g('klOwnerDelBtn').style.display=ownerId?'inline-flex':'none';
+  // Sakrij objekt sekciju, prikaži samo vlasnik polja
+  g('kl-obj-section').style.display='none';
+  if(ownerId){
+    const k=klLoadMigrated().find(x=>x.id===ownerId)||{};
+    g('kl-ime1').value=k.ime1||''; g('kl-ime2').value=k.ime2||'';
+    g('kl-tel').value=k.tel||'';
+  } else {
+    g('kl-ime1').value=''; g('kl-ime2').value=''; g('kl-tel').value='';
+  }
+  g('klModal').classList.add('on');
+}
+
+// Modal za objekt (nm, ug, adr, lat, lng, dt, stat, note)
+function openKlObjModal(ownerId, objId){
+  klEditId=ownerId;
+  klEditObjId=objId||null;
+  g('klModalTitle').textContent=objId?'Uredi objekt':'Novi objekt';
+  g('klDelBtn').style.display=objId?'inline-flex':'none';
+  g('klOwnerDelBtn').style.display='none';
+  // Prikaži objekt sekciju, popuni vlasnik polja (readonly feel)
+  g('kl-obj-section').style.display='block';
+  const k=klLoadMigrated().find(x=>x.id===ownerId)||{};
+  g('kl-ime1').value=k.ime1||''; g('kl-ime2').value=k.ime2||'';
+  g('kl-tel').value=k.tel||'';
+  if(objId){
+    const obj=k.objekti&&k.objekti.find(o=>o.id===objId)||{};
+    g('kl-nm').value=obj.nm||''; g('kl-ug').value=obj.ug||'';
+    g('kl-adr').value=obj.adr||''; g('kl-lat').value=obj.lat||''; g('kl-lng').value=obj.lng||'';
+    g('kl-dt').value=obj.dt||''; g('kl-stat').value=obj.stat||'nije'; g('kl-note').value=obj.note||'';
+  } else {
+    ['kl-nm','kl-ug','kl-adr','kl-lat','kl-lng','kl-note'].forEach(fid=>{const el=g(fid);if(el)el.value='';});
+    g('kl-stat').value='nije'; today('kl-dt');
+  }
+  g('klModal').classList.add('on');
+}
+
+function klEdit(id){openKlModal(id)}
+function klCancel(){g('klModal').classList.remove('on');klEditId=null;klEditObjId=null}
+
+function klSave(){
+  const kls=klLoadMigrated();
+  if(klEditObjId!==undefined&&klEditId){
+    // Spremi objekt
+    const idx=kls.findIndex(x=>x.id===klEditId);
+    if(idx<0)return;
+    // Ažuriraj i vlasnikove podatke (tel može biti promijenjen)
+    kls[idx].ime1=v('kl-ime1').trim();
+    kls[idx].ime2=v('kl-ime2').trim();
+    kls[idx].tel=v('kl-tel').trim();
+    const obj={id:klEditObjId||String(Date.now()),
+      nm:v('kl-nm').trim(),ug:v('kl-ug').trim(),
+      adr:v('kl-adr').trim(),lat:v('kl-lat')||'',lng:v('kl-lng')||'',
+      dt:v('kl-dt'),stat:v('kl-stat'),note:v('kl-note').trim()};
+    if(klEditObjId){
+      const oi=kls[idx].objekti.findIndex(o=>o.id===klEditObjId);
+      if(oi>=0)kls[idx].objekti[oi]=obj;else kls[idx].objekti.unshift(obj);
+    } else {
+      kls[idx].objekti.unshift(obj);
+    }
+    klSaveAll(kls);klCancel();klRender();toast('Objekt spremljen ✓');
+  } else {
+    // Spremi vlasnika (novi ili edit)
+    const ime1=v('kl-ime1').trim();const ime2=v('kl-ime2').trim();
+    if(!ime1&&!ime2){toast('Upiši ime vlasnika!',true);return;}
+    if(klEditId){
+      const idx=kls.findIndex(x=>x.id===klEditId);
+      if(idx>=0){kls[idx].ime1=ime1;kls[idx].ime2=ime2;kls[idx].tel=v('kl-tel').trim();}
+      klSaveAll(kls);klCancel();klRender();toast('Vlasnik ažuriran ✓');
+    } else {
+      const k={id:genUUID(),ime1,ime2,tel:v('kl-tel').trim(),objekti:[]};
+      kls.unshift(k);klSaveAll(kls);
+      // Odmah otvori modal za dodavanje prvog objekta
+      klCancel();
+      setTimeout(()=>openKlObjModal(k.id,null),100);
+      toast('Vlasnik kreiran — dodaj objekt');
+    }
+  }
+}
+
+function klObjDelete(){
+  customConfirm('Obrisati objekt?',()=>{
+    const kls=klLoadMigrated();
+    const idx=kls.findIndex(x=>x.id===klEditId);if(idx<0)return;
+    kls[idx].objekti=kls[idx].objekti.filter(o=>o.id!==klEditObjId);
+    if(!kls[idx].objekti.length)kls.splice(idx,1);
+    klSaveAll(kls);klCancel();klRender();toast('Objekt obrisan');
+  });
+}
+function klOwnerDelete(){
+  customConfirm('Obrisati vlasnika i sve njegove objekte?',()=>{
+    klSaveAll(klLoadMigrated().filter(x=>x.id!==klEditId));
+    klCancel();klRender();toast('Vlasnik obrisan');
+  });
+}
+
+// Close modal on bg click
+document.addEventListener('click',e=>{if(e.target===g('klModal'))klCancel()});
+
+// Posao ← odabrani klijent — value je "ownerId::objId"
+function posaoFromKlijent(val){
+  if(!val)return;
+  const[ownerId,objId]=val.split('::');
+  const kls=klLoadMigrated();
+  const k=kls.find(x=>x.id===ownerId);if(!k)return;
+  const obj=k.objekti&&k.objekti.find(o=>o.id===objId)||{};
+  const e1=g('a-ime1');const e2=g('a-ime2');const es=g('a-sifra');const el=g('a-loc');const ed=g('a-dt');const eu=g('a-ugsifra');
+  if(e1)e1.value=k.ime1||''; if(e2)e2.value=k.ime2||'';
+  if(es)es.value=obj.nm||''; if(el)el.value=obj.adr||'';
+  if(ed&&obj.dt)ed.value=obj.dt; if(eu)eu.value=obj.ug||'';
+  g('a-kl-pick').value='';
+  toast('Popunjeno iz Klijenta');}
+
+function posaoPopulatePicker(){
+  const sel=g('a-kl-pick');if(!sel)return;
+  const kls=klLoadMigrated();
+  sel.innerHTML='<option value="">&#8681; Iz Klijenta...</option>';
+  kls.forEach(k=>{
+    const vlasnik=(k.ime1+' '+k.ime2).trim()||'---';
+    // Prikaži samo objekte koji NISU fotografirani ni otkazani
+    const aktivni=(k.objekti||[]).filter(obj=>obj.stat==='nije');
+    if(!k.objekti||!k.objekti.length){
+      const opt=document.createElement('option');
+      opt.value=k.id+'::';opt.textContent=vlasnik;sel.appendChild(opt);
+    } else {
+      aktivni.forEach(obj=>{
+        const opt=document.createElement('option');
+        opt.value=k.id+'::'+obj.id;
+        opt.textContent=vlasnik+(obj.nm?' — #'+obj.nm:'');
+        sel.appendChild(opt);
+      });
+    }
+  });
+}
+
+
+
+// ═══ PLAN SNIMANJA ═══
+let planFilt='svi', planEditId=null;
+function planLoad(){return JSON.parse(localStorage.getItem('fk_plan_a')||'[]')}
+function planSaveAll(arr){localStorage.setItem('fk_plan_a',JSON.stringify(arr))}
+function planSetFilt(f,btn){planFilt=f;g('a-plan').querySelectorAll('.ft').forEach(b=>b.classList.remove('on'));btn.classList.add('on');planRender()}
+function planStatLabel(s){return s==='obavljeno'?'&#10003; Obavljeno':s==='otkazano'?'&#10007; Otkazano':'&#9711; Na &#269;ekanju'}
+function planRender(){
+  const l=g('a-plan-list');if(!l)return;
+  let plans=planLoad();
+  // Sort by date ascending
+  plans.sort((a,b)=>{
+    if(!a.dt&&!b.dt)return 0;
+    if(!a.dt)return 1;  // bez datuma idu na kraj
+    if(!b.dt)return -1;
+    return a.dt>b.dt?1:-1;
+  });
+  if(planFilt!=='svi')plans=plans.filter(p=>p.stat===planFilt);
+  if(!plans.length){l.innerHTML='<div class="empty">Nema termina. Dodaj prvi!</div>';return;}
+  l.innerHTML=plans.map(p=>{
+    const mapsUrl=p.lat&&p.lng?'https://maps.google.com/?q='+p.lat+','+p.lng:(p.adr?'https://maps.google.com/?q='+encodeURIComponent(p.adr):'');
+    const ime=(p.ime1+' '+p.ime2).trim()||'---';
+    return '<div class="plan-card '+p.stat+(p.dt?'':' nodatum')+'">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start">'
+      +(p.dt?'<div class="plan-dt">&#128197; '+fmtD(p.dt)+'</div>':'<div class="plan-dt" style="color:var(--mut);font-weight:400;font-size:.82rem">&#128197; datum nije dogovoren</div>')
+      +'<span class="plan-stat '+p.stat+'">'+planStatLabel(p.stat)+'</span>'
+      +'</div>'
+      +(p.sifra?'<div class="kl-row">&#35; Šifra: <strong>'+esc(p.sifra)+'</strong></div>':'')
+      +(p.ug?'<div class="kl-row">&#128196; Ugovor: <strong>'+esc(p.ug)+'</strong></div>':'')
+      +'<div class="kl-row"><strong>'+esc(ime)+'</strong></div>'
+      +(p.tel?'<div class="kl-row">&#128222; <a href="tel:'+esc(p.tel)+'">'+esc(p.tel)+'</a></div>':'')
+      +(p.adr?'<div class="kl-row">&#128205; <a href="'+mapsUrl+'" target="_blank">'+esc(p.adr)+'</a></div>':'')
+      +(p.lat&&p.lng?'<div class="kl-row">&#128752; <a href="'+mapsUrl+'" target="_blank">'+p.lat+', '+p.lng+'</a></div>':'')
+      +(p.note?'<div class="kl-note">&#128221; '+esc(p.note)+'</div>':'')
+      +'<div class="kl-actions">'
+      +'<button class="btn bo" style="font-size:1.1rem;padding:6px 11px" onclick="openPlanModal(\''+p.id+'\')">&#9998;</button>'
+      +(p.stat!=='obavljeno'?'<button class="btn bp" style="font-size:1.1rem;padding:6px 11px" onclick="planQuickStat(\''+p.id+'\',\'obavljeno\')">&#10003;</button>':'')
+      +(p.stat==='ceka'?'<button class="btn bd" style="font-size:1.1rem;padding:6px 11px" onclick="planQuickStat(\''+p.id+'\',\'otkazano\')">&#10007;</button>':'')
+      +(p.stat!=='ceka'?'<button class="btn bo" style="font-size:1.1rem;padding:6px 11px;border-color:var(--acc);color:var(--acc)" onclick="planQuickStat(\''+p.id+'\',\'ceka\')">&#8617;</button>':'')
+      +(mapsUrl?'<a href="'+mapsUrl+'" target="_blank" class="btn bo" style="padding:6px 11px;display:inline-flex;align-items:center" title="Google Maps"><img src="data:image/jpeg;base64,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" style="width:22px;height:22px;object-fit:contain;border-radius:4px;display:block"></a>':'')
+      +(p.lat&&p.lng?'<a href="https://waze.com/ul?ll='+p.lat+','+p.lng+'&navigate=yes" target="_blank" class="btn bo" style="padding:6px 11px;display:inline-flex;align-items:center;border-color:#05c8f7" title="Otvori u Waze"><img src="data:image/jpeg;base64,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" style="width:22px;height:22px;object-fit:contain;border-radius:4px;display:block"></a>':p.adr?'<a href="https://waze.com/ul?q='+encodeURIComponent(p.adr)+'&navigate=yes" target="_blank" class="btn bo" style="padding:6px 11px;display:inline-flex;align-items:center;border-color:#05c8f7" title="Otvori u Waze"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAkACQAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCAEDAQYDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD1Oiiiv6DP4sCiiigAooooAKKKKACiiigAooooAKKKKBO/RBRRSUtSmmlcWikox7UXHyy7BmlopKasK0uwtFJijHNK6FeK3FooopgFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUEYGT0pA24ZByPWjzZSTekQJx2J+nakYiMAtnH94DiodS1Wy0K1a51K6isrcDPmTNtX868t8RftV/Dfw2zg68l+69Y7Ng6/zrhqY2jS0cl956WHyrGYn4YN/JnrWB1zSgZ6EH8a+VdX/b78MQB/sGjXM7DOPNfAP865W4/wCChjq/7rwrCV/67/8A2NeS89wP/PxnvU+Ds2l/y6/FH2psPt+dG0jtketfEy/8FELgEH/hFIuP+nj/AOxre0X/AIKDaVeOBqnhw247tHcbz+W0U455hG7Qlc6JcG5vBXjC34n1yzKB8rBj6AU5QChJ4PpXhnhv9sr4c65tSa9m0yQnG64UIg/WvV/DvjLQfF8IuNF1e01SP+9BIGIr06WOw9XaS+9HgYjKMwwt/a0nb0Zt0UqoWGQMigKSCQOB1rvTT1R4zTW4lFHQ470UXJCiiimFwooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACk3KvLHaKcQAm8kBR1JNfNHx4/bB0zwIs2jeGxHqetDKSznBjh+nqfwrz8RjaOGi3N6nr5bleJzWqqeFjfue6eOPH2g+AtMa+1zULe02jKxNIPMb6D/61fJXxP/byu7iaew8I2K2MSkr9ul5kf3HYflXy7418c61471KS91e/mu5GbIDsSBnsB2/CvRvgZ+yD8Sfj5eqPD2hTDTS2H1O7zHBGPXOCT+VfnWNz+tUk4Utj91yvgzBYKKqYzWXY8/8AFnxT8S+NLqSXVdXurtmbP7xzj8hWJpug6lrdx5Vjp97qMrfw2ULSn8gDX63/AAb/AOCSPgjwylteeN9Sn8S6kAC9tE7Qwxn1BUjcO2CK+yvB3wQ8C/D2zhttA8K6TYxxjAkSzj80/V9uT+dfLyqVKkuaTP0CnSoUY8tFWR+C3hH9j/4veNmA03wVqKhuhuYjCP8Ax/Fek6d/wTF+PeoDcPC0MIHXffwDP/j9fu0sSKoCjao7LxTlG3pWJufhdef8Etfj3Cm5PDds+BnAv4Of/H64fxH+wx8bfBySHUfBVy8ajJNs6zH/AMcJr+grpTAgBJPOfWgTk1oj+ZrXvAXibwnIy6poGp6bt6m5tJEH5kVBpHijUdAuEuLC/ms5UOQEc9fwr+k3xF4H8N+KIpYNY0LTdSWRcf6XaRyZ/Fga+WPjF/wTC+EvxPE1xpVtN4T1ZwT59kxKA/8AXPIXHbpW8ajjtuZSpRqK01dH5sfDL9tnxT4ZENrrpXW9PXAJn++o9iCP1r66+FX7QXhT4q2wXTb5LO+blrC6cKxP+yTjNfLv7QX/AATh+J3wVkuL+wsj4o8Px5Y3lgCWRf8AbXAwfpmvmOzvL3QL7zIXlsbuF+GBMbqR9Oa97BZ9Xwr5KmqPis14RwGOi5QjyS8tj9jZNodQqkcck9RTScV8VfAb9sy708w6H4zYXVpwsepEAPH9fUfWvsrSNVstcsY7+wuo7y0kXdG6Hhx6j3r9FwOZ0MXBOL1PxDN8hxGVzaavHuWwc0tJ+lLXsN62PmE4OL01CiiimSFFFFABRRRQAUUUUAFFFFABRRRQAUUUlA0m9gJwM0rlY4ZJXdUjRSzMxwABzSZyD2NfH37Xv7SJ0uOXwb4eugJ2G2+nhP3R12A+/BJ/CvLx+Op4KneT16H0OSZNWzeuoQ+HqZX7Tn7Wb30k/hjwdclbRcpd30ZwZexCn+7155zxXyloOiax448QW+n6baT6hqV1JsSCGMuzH147e9WPBvgvXPib4ottC0Sxlv8AVb6QRxRRDJLE45PQDmv2r/Yu/YZ0L9nXw9Dq+rLFqnjS7jBnuZEyttkfcjBHT3xnk1+RY7GVcZUbmz+mcryyhlVGNOirNLfqzwz9kP8A4Jc6fo4tPE3xYRNSvJQstvoikGJB1Hmdd304r9GdF8P2Xh3T4LHTLSKys4ECRRRLtVFHQYq5GXBC7R8o4c1YXO0Z615iVlY9h6y5nqyLymODnB746U5Yyh45HvUlFDV+orIbg0YNOopjG4NABp1FAEckQkC5GcHNNkhZww3bQfTrU1FKwrXKz22+HypEWRSMEdvyr5C/aq/4J3+CvjjZXGq6JFF4a8VYZvtEKhYZ3xxvHqemc19jVXlI3MDjbkYyM5NWnYabWl9D+cT4x/Bfxb8DPEsuh+KdMlsbiJz5c239zOOzKeh49DXYfs9ftL6j8KdUisr6V7nQZGAlt2ydh9V9K/bn4+/s++E/2g/CFxofiTTI5ZHUiG7UYlt3xwwI7e3vX4aftK/s1eJP2bvHN1oWrW7yWJJez1JVyk6Z9fXp+db0MTUw01OmcWMwmHx1N0Ksdz9JfCvijTvGeh2mq6XcpPa3K7lIbkexHatUNnNfnB+zJ+0FcfC3xBFYagxuNBvXCSoxz5R7EfpX6MWOowapaxXNvMlxBKokjljOVKEZX8cV+tZbmKxVJcz94/mziTI55NiNvcfUnpaaetOr6B6WPjpW3jsJ1paQDFLQLToFFFFAgooooAKKKKACikJxS0m7bjsFNZypGBnHP1PpSk4qK5vYbCJri4YJbxKXlYngKB1pTfLFtmsaVSc4witWeS/tN/GKP4S+B2W2mVdb1ANFbqDzGMDL/hnivzVuJLjxHrmSzXN5ey7Qc5ZpGP65Nd5+0P8AEyf4nfEa/vmlb7FExhto2OQsYJx+JzX1T/wS8/ZZh+JPjKX4geILHz9G0Z/9DikQ7bib19wAT+Ir8fzTFvHVm29In9PcO5PDKcHGS+KR9bf8E9f2K7T4IeDrXxZ4jtVfxnqcQk2yLzaIRkKM9Dzz9K+1CpOzgYHrTIotyDDALjAwMVKsZUAZyAK+evfU+uV+oEBuvNPHSk20tAwoopN3y5x+FAC0UUUAFFFFABRRRQAUYGc459aCcUZzQBWvFIUFRjJwze1eS/tI/AHQf2hfh/e+HNWhjW5EbNZ3hQF7Z8cMD2HT8q9glQuBg4wfzqGa0MvUjn73v7UeRE4+0XLtbqfzbfFr4Xa38HvH+r+F9atHtr6wlI+cY8xeqsv1BFfUH7EXx4a6J8D6vPl926wllbPPdOe3I/KvsX/gpn+yyvxT+HB8aaFaq3iLRFLSGNfnuIM8j6jJP0Ffjz4d1+88K+ILTUrQmG5tJA6kcHj1r08Di5YavGV9Dyc2y6nmmFlQqK76M/YgmJDklhjgk9yelLXH/CTx9B8SfAOma7EVe6kTbcR5+4+Oc/hiuwr9lo1fb0ozR/KeLw8sHiJ0ZqyQUUUV1HClbQKKKKYBRRRQAUUUUAIaWiiplrYa1uuwhHNeG/tcfEpPBPwzuNNifZfar+5DA8iPncfzAr3JG3vt9a/Pn9u3xkutfFCLSLVt0GmwKmQeNzKrMPzr57PMY8Nhny7n3HCGAeYY+EpbI8D8M+G73x14t0zQrBC95qV0lvF3+Z2Cj9TX9Dv7P3wos/g38J/DnhOxiECWlqpmZRgtIfmfJ9dxP4V+TX/BKX4Uw+Pv2hpddu4fNsfD1t9oZccCR9wjP4MtftlivyFN3bfU/pmy5VFdBY/unjHNOoHSiptbQYUZoqGUopG7oT+ooAkeQJjPSqM2v6fBN5T3lur+jSqD/Ovi3/gpB+17qv7P3hvTvDfhadbfxDrKs8lx/HDDyNy++QB+Nfj5rfxH8T+INW/tHUNdvr7VHbc1zNKdzUAf0xxyJKoZGV1PQqcg06vyU/4JwftteIn8d2Pw+8bapLqmnXyGLTp5WJeCQAnBPoQMfjX6zW4wGwcr2z1980AS0UUUAFBOBRWf4h1eDQNB1HU7olbazt5LiQg4+VFLH9BQBYubyG1TdNNHEv8Aedgo/WorbU7W7fbDcwzN6RyBj+lfg7+1j+2p4y+PfjTU4INWuNO8JwTMlnptuxVXjBwsjf7WMfma8r+Ff7QXjn4ReJrfWfD3iS8tJonUld7FZVz8yHnoRwfrQB/SErZ96WvGv2UPjvZ/tD/CDSfFUEJtbt1MV3b5zslUlWP4kEj617LQBQ1Swj1LT7m0ljDwXCtFIjDIKsMEY+hr8Bf24vgefgP8e9d0qGMx6beSG+s+ONjncVH03AV/QOARnceK/PX/AIK6/BiHXPhdpXju2jLXmjTm2baMny5PmY/+QxSs3sVG19T5I/YP+IrW+uX3hW6kKw3kZmhBPSRQSf0UV9sZr8lPhD4qn8G+PdG1GFipiuo95/2SwB/TNfrLa3Ud1ZW9xEQ0c0CzKR33AH+tfqfDeLdei6cuh/PvHWW+wxCrxXxE9FIF2Kq+gxS19ifli0CiiigAooooAKKKKAEIzRRSmpe6HBWn6kbSC1Esx/gVpWz2AH/1q/JX4ua5NrvxE1+5c7y9/MVJOcrvbH6V+qPjy9OmeDteu1bBSxmAPp+7NfkPq88l7q1y/O95CSfxr8+4oqO8Ydz9t8PqVo1ZpbH7D/8ABIj4dQ6F8C9Q8UyweTqGr6hJEXx9+FFQp+rtX3vt56189/sFeHB4d/ZQ+HkRXDz6el04xzuYAH+VfQtfAN33P2RJLYAMUUUUhhULuoZg3IGDzU1RvGH3Eg//AKqAPyW/4LHeA9TTx/4U8UrE8mkyWbWplUZCSbiwH5CvzfDFhjdtPqa/pW+Kvwk8O/GTwnc+HvE2nR31hOuAXA3xH+8p7GvhHWv+CNHhq41p5dN8aXVhphb5bZ7TznH/AAPeP5UAfDP7Dfw71bx1+0j4SttOhkdbWf7VcSp92JVBPzEdM4x+Nf0C2qhI9vGQf4ST/OvEP2b/ANknwZ+zHo08Hh21afUrlQl1qUq5lkGRwO4GecZr3GCMxKVJ70ASUUUUAFcZ8ZtAn8UfCvxVpdsxW4udOnSPBIJbYcDj1PFdnSOMr3/CgD+YnxFo174Z1y+0vUYWtr22keKWN1IKupxn+dUrcmZXViFznJI6kdAMd6/cj9pb/gnP4G/aB1afXrdn8N+I5ifNurdd0cv+0yDGT+NebfCP/gkN4L8FeILbUvFGv3PimO3k8xbdYfsyMRyu4bmyM9R3FAHbf8EqvAureD/2cY7rVYJbY6pctcQRSjBVAWAP49fxr7Pqho+mW+i2UFhZwLbWdvGscUUa7VRQAAAPpV+gBoQhSpYnPevIv2rfAqfED9n7xroZQySXGnSeTgZIkxwR79a9fqlq0aTWc0cq7o2jYEHvx0ovYD+Y0O+nalIvR4nK/iDX6p/AbxC/in4ReG7/AOVnW3ERwc5K/Lz+Vfmd8WNF/wCEe+JniLTgpT7PeSLtIxjnP9a+9f2JtUNz8F7e3DeZ9luGHHOMljivseG5uGLcI7M/NOOaaqYBVXumvyPfiMMfc5ooJziiv1E/nZNtahRRRTGFFFFABRRRQAhpaQ9qWom7WZrGz+Rx/wAX5PJ+GfiNv+nKT/0E1+TBO7VF/wBtwP1r9YfjV/ySzxL7WcmPyNfk3nF/EPSQfzr824ov7eJ+8eHqTwlWXdo/os/ZUt/sn7Onw+hX+DSIR/OvWK8t/ZfH/FgPAZ7nSof5V6lXxB+rBRRRQAUUUUAFFNkJGCDjHUY61St9ZtZpPK+1Qedz8iyAkEdRigC/RUe8tnYQccEe9PTOOTk0ALRRRQAUUUjEhTtAJ96AFoqubhh8xwEzjPv6VWj1q3uGZIbiGSQdVRwSB64oA0aKihkaTkggfTr71LQAVBeKHiYH+6anqC9JWFmBxhT/ACqZdAezP50v2poEtv2hfHUaHgam4x+Ar63/AGDH/wCLUah/1+j+Rr41/aH1NdZ+N/jS+Vgwm1FyGH4CvtD9hqza1+EN1JggS3gK/QBga+r4f0x1vI/P+NLRyu77r8mfRuc4ooIA4FFfrJ/NgUUUUwCiiigAooooAQ0A0tJ3ounoVGLbsupxPxudYvhV4mZmAH2NgTnpkGvydPzanGo5JkX+dffv7avxdtdC8Fy+FbO5jk1G9fF0IT9xRggH8q+Jvhb4Kv8A4g/EPQNB06MzXl9dIiKOp5ya/J+IK6q4i3Y/o7gnAzwuBcnsz+g/9mNTF8A/Acbgq66VDkHtwa9QrC8GaBF4Z8NaXpsC7Y7a2SEAdAAK3a+UP0MKKKKACiiigDzL9pfxJrPg/wCBHjPWfDyu2s2liXt9gywO5QSPoCa/Afw7+0B478OePIPGFrr96Nbil80zNISGOcnI9K/o41rT4NV0u5srlFkt7iNonVhkFSMHNfg9+3h+yxffs8fFO8eyt3PhXVJHuLGZR8kSk58on1UECgD9kf2avjdpXx6+E2jeJ9PmSS4lhC3kIb5klHBDeh6H8a9XgcMGx90Y4Hb1r8Av2Pf2vNd/ZY8YpOu+/wDDV8wS+04tkMvTevow49Olft18I/jZ4P8AjR4Ztda8K6xb3yTIrG2EmJIiRkqy+o6GgD0gMCcAgmlqupzGCy55H3eDmp91AAXAOCcH3pk0gEbc846YpJDtcOTkDtivn79pn9sbwV+zn4cuJbu+gv8AX3Q/ZdNhfczydg3oPxoA4D/gof8AtSN8BfhO+laLfLb+KtbHlWqocSW8eDukx1GCV/Ovyk+AHxm8b+GfjV4c1TSdZvpr+81OCGeMyF/OR5FDLjvkE/nXMfGr4xa98dPHl/4n8RXrSXt1IfLiZspapniNR6dBnqcc19sf8EtP2TrjxH4lPxO8TaeV0mxz/Zkc6Y82Uj/WAegypH0oA/WHSJ5rixtZZlMcksKO6N1ViASKvVDCpDkk7sj8qmoAK5r4k+IY/CfgXW9YlkEUdlavMzn+EAda6Wvln/gpL8So/h9+y34mgWby7vWU/s6IA4b51bJH0wPzotcTPwv8Q3T6r4k1C5kbc01zI5bPX5jX6Vfsn6O+i/A7QxMmySZpJSBzkb2wfyNfmjoOnS6trNjaqC73E6RIPUswH9a/XLwbo8XhvwnommRgKtvZxRsP9raM/rmvtuF6aqYmdR9EflHiFiXSwdOkurN49aKNhj4PWiv0tO6ufg0lZ2CiiiqJCiikPSgdr6C0hjkYZjwW54NFMJKBsEgNms+blbL+2onkfx6/aQ0r4IXFjazWDanfSpueBJfLwOec4NfN/jn9vbXtX0+W20HS4tG8z/lq7ebIv0OBV39v3QLmPxVouqLxbS2/lq5H8WTkflXzf8NfBT/Efx7ofhkahbaZJqd0lsLy6z5cRJxubHavzTNszqrESoRdj+guHMgyytg6eJqR5p6+m5kaxrmp+KdVlur65lu7yc5eSQksxPbNfp5/wTH/AGLL7w/cwfFPxjp7Wl1jOkWtwmHUH/lrg9Dxwe4Nen/szf8ABMbwT8I9Stdd8UXK+MNZTDohGLVD1DKCAc/Umvt2xto7aERW0aRRINqoowABwABXyNSTb11P0mmoxhy01aKJh8u0E7VOMAVNTUUhQDg06sTQKKKKACiiigBky74yMBs9jXnXxz+B/hr4/eBLvwv4ltUntZ+YpdoLwOAcMp7EZr0d1LDg4NNaIsowdrD0oA/n+/am/Yt8Z/s2a/cNe2kuo+GXkIt9XgjJQjPAfsp7Yz/OvJvh38UfFHwm8QR6l4U1q50a8Qht9tKQG9jjGa/pF8QeEtL8VaXPp2sWcOo2MwKvBcIGUg9q+G/jx/wSX8D+Ory41TwZqL+FL2TLC0xutt35Fv1oA+Z/h5/wV7+I/hy0it/EmlWXiBI8DzVXyXb6nDc16XJ/wWhlmsG8n4c7bnHEjal8ufp5deHeMf8AglD8ZtAlYaTBZeIolPD2sqx5/B2FcTF/wTa+P0t0Im8FtECfvm8gx/6HQB3fxT/4Kr/Fvx3bzWeiSWfha2dceZa8zL64kGP5V8feINc1TxfrEuo6nc3F/qV026Se4cySSH1ya+2fh7/wSO+KHiG5h/4SHUrDw7CG+cOfMfHttyK+3PgB/wAE1vhp8G54b7UIm8WazGQwuL8fJG3+yAB+uaAPhn9in/gnbrXxi1Cx8VeN7STSPCETB47eZSkt6M8YB6KfXnqK/ZLwx4b03wloFjpGk2cdjp1nGIoLeJcKijsBVy306CzjjjgijijQAKiLtUD2AqyAFGB0oAQKASQOT1paRmIxgZzSM+1gMdaAI1kOCQS3GQD6V+P/APwVs+OY8VfEfS/AtjdGWy0eJnu1VsqZn2kZ91ww/Gv02/aE+LumfBD4W+IfE9/Ls+zwHyEDAM8pwFAz7kGv55vHHi6++IvjbVvEGpStcXupXL3Lk84ZmLbfwzTTs9BO1tT1P9kf4ep43+Kli0wL21j/AKU5IyFK5K/qBX6U+WvAwMCvnv8AY3+GI8C+AW1m7hEWp6qRww5WIYx+ua+hRya/W8gwf1ah7RrWR/OHGGZRxmOcE7xWg4sWOScmiiivplsfnrXK7BRRRTEFIaWigGFNLgOokHA5FOpKSXctu8Uup5V+0d8L/wDhafwwvrNY/M1Kxzc2gA5YjqPyJr8yJ47jw9qRwZLS6t2yGUkMjj0Pav2MyQQf4eQw9sV8M/tlfs+vo14/jPRIi9hdEi8RBkxSdSxH+1yfwr4HPstvfEQWp+x8DZ6qD+pV5b7H6OfsBftTWH7Qvwrt9PvptvivRo0iv4ieZAMbZR7Hgfga+r7Z9+44wc4xX84/wH+N3iP4CfEPT/E/h6VopIXAntznbcRZ+ZT+Gee1fu/+zl+0L4W/aH8BWviLw/cr5pXF3YscSwSjhhtPOM5wcYPWvzy9k1Lc/a17t+brsev0VWXmUZ5HUc9ferNRcoKKZlRIf7xpHRQcsRg9jVASUVGQT3YH601JVBKKGIHcjigCaimINrHHSn0AFMkBLAc4+mafRQBE4UAc4A54OKcpDjIIYfSn4ooAgKnzCUUZ9zipEOSBkD2FPooAKKKaetABIxUfL1qC9votPt2mnYKo5JPai8mWCEu7rGo5Lvwq+5Nfmd/wUZ/bxt7K3v8A4Y+BL7zLxw0Wq6jbPlY+xRGHB75wT2oeiuK+tkeBf8FHv2uf+F4fED/hE9AuHPhXRJCjENgXMozljjqBnH/Aa8K/Zr+E8nxW+IFpauhXToXEty+PuoDXnnhrQb/xj4gtNOsoXvby6k2AKCTknk/1Nfp78CfhBafB/wAGQaeqq+pzASXk4/ibH3QfQZIr6XKcseLqxlLY+L4pzqnlWFlBP35bHodpaw2dpBBCg2QoI1QDAGKkpaK/WoQ5IqMeh/MtacqzcpPW4gpaKK0IbuFFFFAgooooAKKKKAD68juKo6vpFnr2m3On30K3FncjE0LjIer1JUSjGouWSNI1vZSUofEj82/2kv2dr/4Va7Neacs1zoU7ExSqM+X/ALB/z3rmvgD+0L4s+AHje117w/dFUQg3Fk7EQzoOoIr9PNc0Sy8Q6VPpep2kV5Z3KlHjcZGP8e9fAn7RP7KWp+ALmTWPD8L3uhM5YmNSZIPYj0HrX5jnGTunJ16a0P3/AIZ4qhjoRw2Ldp9Gfrn+zF+154M/aP8ADVvPYXSWOvIoNxpMzASREj+HnkHnv2r3g3JXduXlRkgV/NF4S8Z698MvEFrrWgX8+j6pbyB1ngYqykHPb+Vfo18Af+CuMcWhSWHxNsZWvreE+VqVkhY3DAfKrL/Dn1ya+PcbaM/S1K6uj9C/it8bfCPwc8OS6z4p1aDT7ZASis37yQjsor84fi//AMFhNUfUri28BeGYUswdsd/qLHzOD1CglT+NfF/7SP7R/iD9o/4gXeva1M62gciysN58u3iz8oHvjGT3xXklxKHQKWOV+6B0/wDrVJotj7Cb/gqt8cmvvP8A7VtBFn/UfZYsfnszXtHwi/4LDazb31vbePvDkFzp7YSS608/vQe7FTgY+lfmbuqdGwUI4IHc0DP6RfhD8dPB/wAafDkGr+EtVi1K3cZkiU/vIT6MDXoKysyEgDOeOeo9a/nQ/Zz/AGhPEX7PPj2z13Q7p1iMgF5bbjsnizypH6/hX74/Br4raL8Zfh3pPi7QZCbDUIlZY85MT4yYz6EZwaAPQqKQOCOooLqOpFAC0U3zFP8AEKcDmgApHbauf50pIHeo7h1SB3Z9iqMls4xQAhuAudwIGcD3qnrOt2eg2M15fXMVpbQoZJZpmCqigZJJr5y+Pv7evww+B1s8M+qwa7r6ghLHT3EhVh2cjO38q/Kv9pn9u34gftG3c1jcXb6L4XLZj0q1clWHYSYxu7dqAPp79t7/AIKaf2nDfeCPhi+LdiYrrXB/GOhWMeme+B0r83bDS9R8UausECS317cNwQSzyMfc8k/WtXwZ4G1z4ga1DZaTp8167cHapZEGepPYV+gf7Pn7MemfCm3TVL1EvPEjKCHKgrD7L/jXuZfls8bNJrQ+WzviDDZRSfM7z6L/ADKf7Lv7Odv8MNIGs6rGkuv3KAIjj/j3U84Hv7+9fQH04Hp/OmIhkZGChJRnczGlUYJ65zX6vg8JDB01TifzZmuYVMdiHUxDvKX3IdRRRXoHkBRRRQAUUUUAFFFFABRRRQAUUUUAFR3NvHd2zwzxJNC/DJIMg1JRngjAI9DUTs1aWxUZSg+aG584fGj9jXRvHrS3/h2RNI1Mgs8Df6t/pXw78Sfhprvw01pdN1q2NvNgtG/Z1zjNfra0QYc5JHINfCX7fscy+PtJZyzq1j+7JPA+Y18FnuW0KNN14rU/a+Ds/wARiprCVHofJUrb3zjFNp833h06dqZX55ufs7XK7BUnO0Z6VHUg+YAUXaBW3Y5FZsnsPev0f/4Jh/tY+Gvhb4d8ReFvG+uxaVpyOtxYGZXYKTu3gYB/2a/OKMZkA9PWrENu0kwRAznvtGcVXI38BEoycfaN2R/QAf26/gZj/kfrEf8AbGX/AOJpD+3P8Dm5/wCFgWfHpDL/APE1+AEum3KHP2d/++TTksLlkP7iUH2U03CrHZaE89Frmb19T995/wBvb4FWyMx8fWZCgk4t5c/+gVwXib/gqR8EtAR3s9YudZcDhLeFlz/30or8PXtmVnD4Rl52ngiqwYg571L9DRRaSl3P1R+IX/BZa1VZYvB3gySV8fJcas42g/RGBr45+Ln7dfxc+MLzpf8Aie403TpODYWOETGc4DYz+tfOgYg+v1pQ5Jxng9qcdJIC5e3dzfzNczzSTysctJK+5iaiGRtOeMZphzhfpT4y7KQMBSckUt7gtkz9Hv2MrTQ7z4R211aWEdvfI7LPJj52O44/DFe+7nkXehww6V84/sIxyj4Y6pM3Mb3ahN3+6c19IKoU5FftWUq2DgfyvxLK+a1vUUZwM9aWiivYPlmFFFFBIUUUUAFFFFABRRRQAUUUUAFFFFABRRSVL2Dm5NRVG5gPXjmvlr9uLwHceIfCOma5bwGSWwkaCYjqsZyc/mRX1I3SqOv6HaeI9LutNv4lltLiIxyKRng9x79K83McOsVh3E+gyXGvLMbCqtj8bZ7Z0mZQM49Dmodhr3L4/fs9at8LvEdy1vBLPosjFre5UZ+U9Aa8XlgNuWRhubufSvxqvQlQm1NH9TYTGUMZSjUou9yrsNSKM4wOnWpF4HKZp0YBBJH0AFcyvJ2ijvUW9Hp6jQCWOFJzxnHSvub9iX4TWv8Awiuo+IdZ06G7W7ZYbdJ0ycLnJA/EfWvnv4CfAHWfin4ltw0L2+kgh5p5BgbQe3vX6U+HNAtPCWh22nabEFsrRFiRgMHjgGvtMiyyU589ZaH5RxnnsaFD6lhp+++xXHgfw7j/AJAdiP8AtlQ3gXw86MP7FsVwMk+XW51prKJEKnP4V+gvCUVBpRPw2WNxSppqbPz0/bU+Gx8J+P21CytFg03UUEqlFwobnK/yr5l2NnpX61fGD4V23xb8FT6JdhBdoC9rcEcq+PlBPpkCvzP+Ifwy1r4ea3Pp+qWrpJE5CyEfI3uK/MM3wE6NTnjHQ/onhXOaWMwkaU5e8jh/Ib0pVgYsAByae24yNkYOeRS8cDBU5618y5JPRH6A1fZbhsJYAcmprK0e6nSKMEszYx6+1JDbmXPl5POBjqTX1T+yt+zXceI9YtvEWv2rwaVbMJYY5BgyuvI49Old+CwVbFVFFLQ8rM8wo5bh3OpLVH1H+zf4Ik8B/CPQ7OePyrm4jNxKmeRkkrn8CK9PpNqgKUUIu3bsHQAdAPwpa/aMLRVCjGmuh/KWY4r65ip1u7Ciiius824UUUUCCiiigAooooAKKKKACiiigAooooAKTNLSEc0DsnoxaQZyD3HT2paKzjezTQneej0KOs6LY67psthqVrFd2Mw2vFMm8H6CvnX4ifsL+FvEUjT6Dfvo0jnPlyLuQH2HGK+mD8wxkqPVev60iKIwQpJz3bmvOr4CjilapE9vL86xuWP9xNnxB/w7z1YTc+JLdYP7/l/03V6H8Pv2GPDHh6aK51rUm1qRGDGFE2o31HNfTh5/hX65NCgqWydwIwBjFcUMlw8Hotj26/F+bV4OE6mj7GdoWg2Hh6wWx07T4dPs4z8kUKgD61pAkDAPFIFAC4GCBggdKWvchBU48sUfGTqVJybqS5m+oUnI6GlorXYlSfwPYayqVYFcg8ketc541+HHh/4macbTXtLjvFQYjcAF0+hrpaXPHyjyz6r3rKrThVjySje51UK9TBz56EtT5D8VfsAafqN1LPoWtm1jPSCePcQfrkVz1h/wT01MXCm58SW0aZ6GL/7Kvtr5s5BwfalPKnPLeteDLIcK3ex9ZT4xzdR5faWX9eR4N8Pv2NvBXgwxXOoRtrd6hDDfgx5+le7wosEMcUUYgijGEjQYCj0FCRKp3ZOaea9bDYOlhI8sEfPY7NMXjnetNsQUtFFdx5CCiiigYUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAf/2Q==" style="width:22px;height:22px;object-fit:contain;border-radius:4px;display:block"></a>':'')
+      +(p.dt?'<a href="'+gcalUrl(p)+'" target="_blank" class="btn bo" style="font-size:1.1rem;padding:6px 11px;border-color:#4285f4;color:#4285f4" title="Dodaj u Google kalendar">&#128197;</a>':'')
+      +'</div></div></div>';
+  }).join('');
+}
+function planQuickStat(id,stat){
+  const plans=planLoad();const p=plans.find(x=>x.id===id);if(!p)return;
+  p.stat=stat;planSaveAll(plans);planRender();
+  // Sync to klijenti - find matching objekt by sifra or vlasnik name
+  planSyncKlijent(p,stat);
+  toast(stat==='obavljeno'?'Označeno kao obavljeno':stat==='otkazano'?'Označeno kao otkazano':'↩ Vraćeno na čekanje');
+}
+function planSyncKlijent(p,stat){
+  const kls=klLoadMigrated();
+  const imeKey=(p.ime1+' '+p.ime2).trim().toLowerCase();
+  let changed=false;
+  const klStat=stat==='obavljeno'?'jest':stat==='otkazano'?'otkazano':'nije';
+  for(const k of kls){
+    // Match by vlasnik name
+    const kIme=(k.ime1+' '+k.ime2).trim().toLowerCase();
+    if(imeKey&&kIme&&kIme===imeKey){
+      for(const obj of k.objekti){
+        // Match by sifra if available, otherwise match first objekt
+        if(!p.sifra||obj.nm===p.sifra){
+          obj.stat=klStat;changed=true;break;
+        }
+      }
+    }
+  }
+  if(changed){klSaveAll(kls);if(g('a-kl-list'))klRender();}
+}
+function openPlanModal(id){
+  planEditId=id||null;
+  g('planModalTitle').textContent=id?'Uredi termin':'Novi termin snimanja';
+  g('planDelBtn').style.display=id?'inline-flex':'none';
+  if(id){
+    const p=planLoad().find(x=>x.id===id)||{};
+    g('pl-dt').value=p.dt||''; g('pl-sifra').value=p.sifra||'';
+    g('pl-ime1').value=p.ime1||''; g('pl-ime2').value=p.ime2||'';
+    g('pl-tel').value=p.tel||''; g('pl-ug').value=p.ug||'';
+    g('pl-adr').value=p.adr||'';
+    g('pl-lat').value=p.lat||''; g('pl-lng').value=p.lng||'';
+    g('pl-stat').value=p.stat||'ceka'; g('pl-note').value=p.note||'';
+  } else {
+    ['pl-sifra','pl-ime1','pl-ime2','pl-tel','pl-ug','pl-adr','pl-lat','pl-lng','pl-note'].forEach(fid=>g(fid).value='');
+    g('pl-stat').value='ceka'; g('pl-dt').value='';
+  }
+  g('planModal').classList.add('on');
+}
+function planCancel(){g('planModal').classList.remove('on');planEditId=null}
+function gcalUrl(p){
+  if(!p.dt)return '';
+  // Date format: YYYYMMDD
+  const d=p.dt.replace(/-/g,'');
+  const ime=(p.ime1+' '+p.ime2).trim();
+  const title=encodeURIComponent('Snimanje'+(p.sifra?' #'+p.sifra:'')+(ime?' — '+ime:''));
+  const details=encodeURIComponent(
+    (p.sifra?'Šifra: '+p.sifra+'\n':'')
+    +(p.ug?'Ugovor: '+p.ug+'\n':'')
+    +(ime?'Vlasnik: '+ime+'\n':'')
+    +(p.tel?'Tel: '+p.tel+'\n':'')
+    +(p.note?'Napomena: '+p.note:'')
+  );
+  const loc=encodeURIComponent(p.adr||(p.lat&&p.lng?p.lat+','+p.lng:''));
+  return 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+    +'&text='+title
+    +'&dates='+d+'T080000%2F'+d+'T180000'
+    +'&details='+details
+    +(loc?'&location='+loc:'')
+    +'&sf=true&output=xml';
+}
+function planSave(){
+  const dt=v('pl-dt');
+  const stat=(!dt)?'ceka':v('pl-stat');
+  const plans=planLoad();
+  const isNew=!planEditId;
+  const obj={id:planEditId||String(Date.now()),dt,sifra:v('pl-sifra').trim(),
+    ime1:v('pl-ime1').trim(),ime2:v('pl-ime2').trim(),tel:v('pl-tel').trim(),
+    ug:v('pl-ug').trim(),
+    adr:v('pl-adr').trim(),lat:v('pl-lat')||'',lng:v('pl-lng')||'',
+    stat,note:v('pl-note').trim()};
+  if(planEditId){const idx=plans.findIndex(x=>x.id===planEditId);if(idx>=0)plans[idx]=obj;else plans.unshift(obj);}
+  else plans.unshift(obj);
+  planSaveAll(plans);
+  if(isNew)planAutoKlijent(obj);
+  planCancel();planRender();
+  toast('Termin spremljen &#10003;');
+  if(obj.dt){
+    const cal=gcalUrl(obj);
+    customConfirm('Dodati termin u Google kalendar?',()=>window.open(cal,'_blank'));
+  }
+}
+
+// Auto-kreira klijenta pri novom planu (ne pri editiranju)
+function planAutoKlijent(p){
+  const kls=klLoadMigrated();
+  const noviObj={id:genUUID(),
+    nm:p.sifra||'',ug:p.ug||'',
+    adr:p.adr||'',lat:p.lat||'',lng:p.lng||'',
+    dt:p.dt||'',stat:'nije',note:''};
+  // Ako ima šifru — provjeri postoji li već objekt s tom šifrom
+  if(p.sifra){
+    for(const k of kls){
+      if(k.objekti&&k.objekti.find(o=>o.nm===p.sifra)){
+        toast('Termin spremljen · klijent već postoji &#10003;');klRender();return;
+      }
+    }
+  }
+  // Traži vlasnika po Ime+Prezime
+  const imeKey=(p.ime1+' '+p.ime2).trim().toLowerCase();
+  const existing=imeKey?kls.find(k=>(k.ime1+' '+k.ime2).trim().toLowerCase()===imeKey):null;
+  if(existing){
+    // Dodaj objekt postojećem vlasniku
+    existing.objekti.unshift(noviObj);
+    klSaveAll(kls);klRender();
+    toast('Termin spremljen · objekt dodan klijentu &#10003;');
+  } else {
+    // Novi vlasnik + objekt
+    const kl={id:genUUID(),
+      ime1:p.ime1||'',ime2:p.ime2||'',
+      tel:p.tel||'',objekti:[noviObj]};
+    kls.unshift(kl);klSaveAll(kls);klRender();
+    toast('Termin spremljen · klijent kreiran &#10003;');
+  }
+}
+function planDelete(){
+  customConfirm('Obrisati termin?',()=>{
+    planSaveAll(planLoad().filter(x=>x.id!==planEditId));
+    planCancel();planRender();toast('Obrisano');
+  });
+}
+document.addEventListener('click',e=>{
+  if(e.target===g('klModal'))klCancel();
+  if(e.target===g('planModal'))planCancel();
+});
+
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape')return;
+  if(g('klModal')?.classList.contains('on'))klCancel();
+  if(g('planModal')?.classList.contains('on'))planCancel();
+  if(g('confModal')?.classList.contains('on'))g('confModal').classList.remove('on');
+});
+
+// ═══ SAFE STORAGE ═══
+function safeStore(key, val) {
+  try {
+    const s = typeof val === 'string' ? val : JSON.stringify(val);
+    localStorage.setItem(key, s);
+    return true;
+  } catch(e) {
+    if(e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED' || e.code === 22) {
+      toast('⚠️ Nema prostora na uređaju! Napravite backup i obrišite stare podatke.', true);
+    } else {
+      toast('Greška pri pohrani podataka.', true);
+    }
+    return false;
+  }
+}
+
+// ═══ CUSTOM CONFIRM DIALOG ═══
+let _confCb = null;
+function customConfirm(msg, onYes, onNo) {
+  const modal = g('confModal');
+  const msgEl = g('confMsg');
+  if (!modal || !msgEl) {
+    // fallback na nativni confirm ako modal nije dostupan
+    if (window.confirm(msg)) { if (onYes) onYes(); } else { if (onNo) onNo(); }
+    return;
+  }
+  msgEl.textContent = msg;
+  g('confYes').onclick = () => { modal.classList.remove('on'); if (onYes) onYes(); };
+  g('confNo').onclick  = () => { modal.classList.remove('on'); if (onNo) onNo(); };
+  modal.classList.add('on');
+}
+// Zatvori na klik izvan boxa
+document.addEventListener('click', e => {
+  if (e.target && e.target.id === 'confModal') g('confModal').classList.remove('on');
+});
+
+// ═══ GDPR OBAVIJEST ═══
+function gdprOk() {
+  localStorage.setItem('fk_gdpr', '1');
+  const b = g('gdprBar'); if (b) b.style.display = 'none';
+}
+
+// ═══ ONBOARDING ═══
+const STATUS_NOTES = {
+  samostalni: '',
+  zaposlen: '⚠️ Kao zaposlena osoba koja prima autorsku naknadu, doprinose obračunava naručitelj. Savjetujte se s računovođom o eventualnom drugom dohotku.',
+  umirovljenik: '⚠️ Umirovljenici plaćaju doprinose i na autorsku naknadu. Obavezno konzultirajte računovođu!'
+};
+function onboardStatusChange(){
+  const s=g('ob-status')?.value;
+  const n=g('ob-status-note');
+  if(!n)return;
+  n.textContent=STATUS_NOTES[s]||'';
+  n.className='ob-note'+(s==='umirovljenik'?' warn':'');
+}
+function onboardGradChange(){
+  const grad=g('ob-grad')?.value||'';
+  const n=g('ob-grad-note');
+  if(!grad||!n)return;
+  const stopa=getGradStopa(grad);
+  n.textContent='Niža stopa poreza na dohodak: '+stopa.niza+'% · Viša: '+stopa.visa+'%';
+}
+function onboardPopulateGrad(){
+  const sel=g('ob-grad');
+  if(!sel)return;
+  const saved=getGrad();
+  sel.innerHTML='';
+  SVI_GRADOVI.forEach(g2=>{
+    const o=document.createElement('option');
+    o.value=g2;o.textContent=g2;
+    if(g2===saved||g2.replace('Pula-Pola','Pula')===saved)o.selected=true;
+    sel.appendChild(o);
+  });
+  onboardGradChange();
+}
+function onboardSave(){
+  const ime=(g('ob-ime')?.value||'').trim();
+  const status=g('ob-status')?.value||'samostalni';
+  const grad=g('ob-grad')?.value||'Pula';
+  localStorage.setItem('fk_status',status);
+  localStorage.setItem('fk_grad',grad);
+  if(ime){
+    const a=JSON.parse(localStorage.getItem('fk_autor')||'{}');
+    a.ime=ime;
+    localStorage.setItem('fk_autor',JSON.stringify(a));
+    const el=g('p-a-ime');if(el)el.value=ime;
+  }
+  localStorage.setItem('fk_onboard','1');
+  g('onboardModal').classList.remove('on');
+  applyStatus(status);
+  applyGrad(grad);
+  if(!localStorage.getItem('fk_gdpr')){const b=g('gdprBar');if(b)b.style.display='flex';}
+}
+function onboardSkip(){
+  localStorage.setItem('fk_onboard','1');
+  localStorage.setItem('fk_status','samostalni');
+  localStorage.setItem('fk_grad','Pula');
+  g('onboardModal').classList.remove('on');
+  if(!localStorage.getItem('fk_gdpr')){const b=g('gdprBar');if(b)b.style.display='flex';}
+}
+function applyStatus(status){
+  // Prikaži/sakrij umirovljenik upozorenje u postavkama
+  const w=g('a-umir-warn');
+  if(w)w.style.display=status==='umirovljenik'?'block':'none';
+  const w2=g('p-umir-warn');
+  if(w2)w2.style.display=status==='umirovljenik'?'block':'none';
+  // Sync settings select
+  const sel=g('settings-status');
+  if(sel)sel.value=status;
+  // Status note in settings
+  const note=g('settings-status-note');
+  if(note){
+    const msgs={
+      samostalni:'',
+      zaposlen:'⚠️ Kao zaposlena osoba koja prima autorsku naknadu, doprinose obračunava naručitelj. Savjetujte se s računovođom o drugom dohotku.',
+      umirovljenik:'⚠️ Umirovljenici plaćaju doprinose i na autorsku naknadu. Obavezno konzultirajte računovođu!'
+    };
+    note.textContent=msgs[status]||'';
+    note.style.display=status!=='samostalni'?'block':'none';
+  }
+}
+function settingsStatusChange(){
+  const status=g('settings-status')?.value||'samostalni';
+  localStorage.setItem('fk_status',status);
+  applyStatus(status);
+  toast('Status spremljen');
+}
+function getStatus(){return localStorage.getItem('fk_status')||'samostalni'}
+
+// ═══ BAZA GRADOVA / POREZNE STOPE 2026 ═══
+// Gradovi s posebnim stopama (niža/viša). Ostali: 20/30 (zakonski default)
+const GRADOVI_STOPE = {
+  'Beli Manastir':    {niza:21, visa:27},
+  'Civljane':         {niza:15, visa:25},
+  'Daruvar':          {niza:21, visa:30},
+  'Ivanić-Grad':      {niza:21, visa:31},
+  'Nova Rača':        {niza:17, visa:27},
+  'Novalja':          {niza:15, visa:25},
+  'Otok (Sinj)':      {niza:17, visa:27},
+  'Pula':             {niza:22, visa:32},
+  'Rijeka':           {niza:20, visa:25},
+  'Trnovec Bartolovečki': {niza:20, visa:30},
+  'Tučepi':           {niza:17, visa:30},
+  'Veliko Trojstvo':  {niza:20, visa:30},
+  'Vrlika':           {niza:18, visa:28},
+  'Zagreb':           {niza:23, visa:33},
+};
+// Svi gradovi RH abecednim redom (samo naziv — stopa se dohvati iz GRADOVI_STOPE ili default)
+const SVI_GRADOVI = [
+  'Bakar','Beli Manastir','Belišće','Benkovac','Biograd na Moru','Bjelovar','Buzet',
+  'Cres','Crikvenica','Čabar','Čakovec','Čazma','Daruvar','Delnice','Donja Stubica',
+  'Donji Miholjac','Drniš','Dubrovnik','Dugo Selo','Đakovo','Đurđevac','Garešnica',
+  'Glina','Gospić','Grubišno Polje','Hrv. Bjelovar','Hvar','Ilok','Imotski',
+  'Ivanec','Ivanić-Grad','Jastrebarsko','Karlovac','Kastav','Kaštela','Klanjec',
+  'Knin','Komiža','Koprivnica','Korčula','Kostajnica','Kraljevica','Krapina',
+  'Križevci','Krk','Kutina','Kutjevo','Labin','Lepoglava','Lipik','Ludbreg',
+  'Makarska','Mali Lošinj','Metković','Mursko Središće','Nova Gradiška','Nova Rača',
+  'Novalja','Novska','Obrovac','Ogulin','Omiš','Opuzen','Orahovica','Oroslavje',
+  'Osijek','Otok (Sinj)','Ozalj','Pakrac','Pazin','Petrinja','Pleternica','Ploče',
+  'Popovača','Poreč','Požega','Pregrada','Prelog','Pula','Pula-Pola','Rab','Rijeka',
+  'Rovinj','Senj','Sinj','Sisak','Skradin','Slavonski Brod','Solin','Split',
+  'Stari Grad','Supetar','Sveta Nedjelja','Sveti Ivan Zelina','Šibenik','Trilj',
+  'Trogir','Trnovec Bartolovečki','Tučepi','Ugljan','Umag','Varaždin','Varaždinske Toplice',
+  'Velika Gorica','Veliko Trojstvo','Virovitica','Vis','Vodice','Vodnjan','Vojnić',
+  'Vrgorac','Vrlika','Vukovar','Zabok','Zadar','Zagreb','Zaprešić','Zlatar','Županja'
+];
+function getGradStopa(grad){
+  // Normalizacija: Pula-Pola → Pula
+  const key = grad.replace('Pula-Pola','Pula');
+  return GRADOVI_STOPE[key]||{niza:20,visa:30};
+}
+function getGrad(){return localStorage.getItem('fk_grad')||'Pula'}
+function populateGradSelects(selected){
+  ['a-s-grad','p-s-grad','ob-grad'].forEach(id=>{
+    const sel=g(id); if(!sel)return;
+    if(sel.options.length>0&&sel.value===selected)return; // already populated
+    sel.innerHTML='';
+    SVI_GRADOVI.forEach(gr=>{
+      const o=document.createElement('option');
+      o.value=gr;o.textContent=gr;
+      if(gr===selected)o.selected=true;
+      sel.appendChild(o);
+    });
+  });
+}
+function settingsGradChange(srcId){
+  // srcId passed explicitly from onchange to avoid relying on activeElement (unreliable on iOS PWA)
+  const src=srcId||'a-s-grad';
+  const grad=g(src)?.value||getGrad();
+  localStorage.setItem('fk_grad',grad);
+  applyGrad(grad);
+  // Sync both selects to same value
+  const sA=g('a-s-grad');if(sA)sA.value=grad;
+  const sP=g('p-s-grad');if(sP)sP.value=grad;
+}
+function applyGrad(grad){
+  const stopa = getGradStopa(grad);
+  const gradLabel = grad+' 2026 niža stopa (%)';
+  const lA=g('a-s-pd-label'); if(lA)lA.innerHTML=gradLabel+' <span class="sbg">JLS</span>';
+  const lP=g('p-s-pd-label'); if(lP)lP.innerHTML=gradLabel+' <span class="sbg">JLS</span>';
+  const elA=g('a-s-pd'); if(elA)elA.value=stopa.niza;
+  const elP=g('p-s-pd'); if(elP)elP.value=stopa.niza;
+  // Update info text
+  const infoA=g('a-pd-info');
+  if(infoA)infoA.textContent='ℹ️ '+grad+' 2026: '+stopa.niza+'% niža stopa / '+stopa.visa+'% viša stopa. Prirez ukinut. ZO plaća Naručitelj.';
+  // Sync selects
+  populateGradSelects(grad);
+  // Save to config
+  const ac=aCfg(); ac.pd=stopa.niza; safeStore('fk_a',ac);
+  if(typeof aCalc==='function')aCalc();
+}
+
+// ═══ THEME COLOR META SYNC ═══
+function syncThemeColor() {
+  const meta = document.getElementById('themeColorMeta');
+  if (!meta) return;
+  meta.content = document.body.classList.contains('light') ? '#f0f2f5' : '#0b0c0e';
+}
+
+// ═══ SERVICE WORKER ═══
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+
+// ═══ INIT ═══
+// ─── PWA INSTALL BANNER ──────────────────────────────────────
+(function(){
+  // Ne prikazuj ako je već instaliran (standalone mode)
+  const isStandalone =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true;
+  if(isStandalone) return;
+
+  // Ne prikazuj ako je korisnik odbio u zadnjih 30 dana
+  const DISMISS_KEY = 'fk_install_dismissed';
+  const dismissed = parseInt(localStorage.getItem(DISMISS_KEY) || '0');
+  const MONTH = 30 * 24 * 60 * 60 * 1000;
+  if(Date.now() - dismissed < MONTH) return;
+
+  const banner = document.getElementById('installBanner');
+  const subText = document.getElementById('instSubText');
+  const actionBtn = document.getElementById('instActionBtn');
+  if(!banner) return;
+
+  // Detect iOS Safari
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+  let deferredPrompt = null;
+
+  if(isIOS && isSafari) {
+    // iOS ne podržava beforeinstallprompt — prikaži upute
+    subText.innerHTML = 'Dodaj na početni zaslon: tapni <strong>↑ Dijeli</strong> → <strong>Dodaj na početni zaslon</strong>';
+    actionBtn.textContent = 'Kako?';
+    actionBtn.onclick = function(){
+      subText.innerHTML =
+        '<span class="inst-ios-steps">' +
+        '1. Tapni ikonu <strong>↑ Dijeli</strong> u donjoj traci<br>' +
+        '2. Skrolaj do <strong>„Dodaj na početni zaslon"</strong><br>' +
+        '3. Tapni <strong>„Dodaj"</strong> — gotovo!</span>';
+      actionBtn.style.display = 'none';
+    };
+    banner.classList.add('on');
+  } else {
+    // Chrome / Edge / Android — čekaj beforeinstallprompt
+    window.addEventListener('beforeinstallprompt', function(e){
+      e.preventDefault();
+      deferredPrompt = e;
+      banner.classList.add('on');
+    });
+    // Ako je već instaliran kroz drugi put
+    window.addEventListener('appinstalled', function(){
+      banner.classList.remove('on');
+      deferredPrompt = null;
+    });
+  }
+
+  window.pwaInstall = async function(){
+    if(!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice;
+    if(choice.outcome === 'accepted'){
+      banner.classList.remove('on');
+    }
+    deferredPrompt = null;
+  };
+
+  window.pwaDismiss = function(){
+    banner.classList.remove('on');
+    localStorage.setItem(DISMISS_KEY, Date.now());
+  };
+})();
+</script>
+<script>
+// ═══ iPAD DETECTION ═══
+(function(){
+  const ua = navigator.userAgent;
+  const isIPad = /iPad/.test(ua) ||
+    (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  if(isIPad) document.body.classList.add('is-ipad');
+})();
+
+document.addEventListener('DOMContentLoaded',()=>{
+  // Theme
+  const th=localStorage.getItem('fk_theme');
+  if(th==='d'){document.body.classList.remove('light');const k=g('themeKnob');if(k)k.textContent='🌙';}
+  syncThemeColor();
+  // Onboarding — samo prvi put
+  if(!localStorage.getItem('fk_onboard')){
+    populateGradSelects(getGrad());
+    onboardPopulateGrad();  // BUG FIX: ob-grad se mora puniti zasebno pri prvom pokretanju
+    g('onboardModal').classList.add('on');
+  } else {
+    applyStatus(getStatus());
+    applyGrad(getGrad());
+    if(!localStorage.getItem('fk_gdpr')){const b=g('gdprBar');if(b)b.style.display='flex';}
+  }
+  // Mode
+  setMode('a');
+  showPg('a-plan');
+  today('a-dt');
+  checkBackupReminder();
+});
+</script>
+</body>
+</html>
