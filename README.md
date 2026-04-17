@@ -30,7 +30,7 @@ Aplikacija zahtijeva prijavu. Korisnici se **ne mogu sami registrirati** — adm
 
 **Podaci se čuvaju na dva mjesta:**
 - **Lokalno** u `localStorage` preglednika (brz pristup, radi offline)
-- **Supabase cloud** — ručnim klikom na "Spremi na oblak" u ☰ izborniku
+- **Supabase cloud** — ručnim klikom na "Spremi na oblak" u  izborniku
 
 Svaki korisnik vidi i može mijenjati **isključivo vlastite podatke** — Row Level Security (RLS) na razini baze onemogućava pristup tuđim podacima.
 
