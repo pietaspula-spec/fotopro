@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- FotoKalk PRO v1.1.0 | Kalkulator honorara za fotografe -->
+<!-- FotoKalk PRO v1.0.2 | Kalkulator honorara za fotografe -->
 <html lang="hr">
 <head>
 <meta charset="UTF-8">
@@ -296,7 +296,7 @@ body.pre-login header,body.pre-login .mode-bar{visibility:hidden;pointer-events:
 
 <div class="mode-bar">
   <div class="mode-sw">
-    <button class="mode-btn" id="btnA" onclick="setMode('a')">FotoKalk PRO v1.1.0</button>
+    <button class="mode-btn" id="btnA" onclick="setMode('a')">FotoKalk PRO v1.0.2</button>
   </div>
 </div>
 
@@ -1269,9 +1269,8 @@ function klExportCSV(){
     }
   });
   const csv=header+'\n'+rows.join('\n');
-  // Encode to Windows-1250 bytes manually
-  const bytes=toWin1250(csv);
-  const blob=new Blob([bytes],{type:'text/csv;charset=windows-1250'});
+  // UTF-8 BOM (\uFEFF) — Excel automatski prepoznaje encoding i prikazuje dijakritike ispravno
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
   const d=new Date();a.download='klijenti_'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'.csv';
   a.click();toast('CSV exportan ✓');
