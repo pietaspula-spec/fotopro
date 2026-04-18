@@ -2164,7 +2164,7 @@ async function cloudPullSilent(){
       return;
     }
     const d = rows[0].sadrzaj;
-    if(!d || !d.v){ throw new Error('Neispravan format podataka u oblaku'); }
+    if(!d){ throw new Error('Neispravan format podataka u oblaku'); }
 
     if(d.a_j)    localStorage.setItem('fk_a_j',    JSON.stringify(d.a_j));
     if(d.a_cfg)  localStorage.setItem('fk_a',       d.a_cfg);
@@ -2271,7 +2271,7 @@ async function cloudPull(){
       if(!rows||!rows.length||!rows[0].sadrzaj){ throw new Error('Nema podataka u oblaku.'); }
 
       const d = rows[0].sadrzaj;
-      if(!d.v){ throw new Error('Neispravan format podataka u oblaku.'); }
+      if(!d){ throw new Error('Neispravan format podataka u oblaku.'); }
 
       // Primijeni podatke (ista logika kao importAll)
       if(d.a_j)   localStorage.setItem('fk_a_j',   JSON.stringify(d.a_j));
@@ -2292,6 +2292,7 @@ async function cloudPull(){
       if(d.theme){const isL=d.theme==='l';document.body.classList.toggle('light',isL);const k=g('themeKnob');if(k)k.textContent=isL?'☀️':'🌙';syncThemeColor();}
       // Rebuild tab ikone koje se ne prikažu bez ovog poziva
       setMode(mode);
+      showPg('a-plan');
 
       toast('Podaci preuzeti iz oblaka ✓');
     } catch(e){
