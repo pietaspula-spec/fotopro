@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- FotoKalk PRO v1.0.3 | Kalkulator honorara za fotografe -->
+<!-- FotoKalk PRO v1.1.0 | Kalkulator honorara za fotografe -->
 <html lang="hr">
 <head>
 <meta charset="UTF-8">
@@ -232,6 +232,8 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
 .gdpr-bar{position:fixed;bottom:0;left:0;right:0;background:var(--surf2);border-top:1px solid var(--brd);padding:10px 14px calc(10px + env(safe-area-inset-bottom));font-size:.72rem;color:var(--mut2);display:flex;align-items:center;gap:10px;z-index:290}
 /* TOUCH TARGETS mobile */
 @media(max-width:600px){.kbox{height:40px;font-size:.8rem}.kat-boxes{gap:6px}}
+/* Sakrij header/mode-bar dok traje login (body.pre-login) */
+body.pre-login header,body.pre-login .mode-bar{visibility:hidden;pointer-events:none}
 @media print{
   @page{margin:12mm;size:A4 portrait}
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
@@ -294,7 +296,7 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
 
 <div class="mode-bar">
   <div class="mode-sw">
-    <button class="mode-btn" id="btnA" onclick="setMode('a')">FotoKalk PRO v1.0.3</button>
+    <button class="mode-btn" id="btnA" onclick="setMode('a')">FotoKalk PRO v1.1.0</button>
   </div>
 </div>
 
@@ -547,7 +549,9 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
     </div>
     <div class="card">
       <div class="ct">⚠️ Opasna zona</div>
-      <button class="btn bd" onclick="clearData('a')" style="margin-bottom:8px">🗑 Obriši povijest Adriatic.hr</button>
+      <button class="btn bd" onclick="deleteCloudData()" style="width:100%;padding:10px 17px;font-size:.82rem;margin-bottom:8px">
+        ☁️ Obriši podatke u oblaku
+      </button>
       <div style="height:1px;background:var(--brd);margin:10px 0"></div>
       <div style="font-size:.72rem;color:var(--mut2);margin-bottom:8px;line-height:1.5">
         ⚠️ <strong style="color:var(--red)">Brisanje svih podataka</strong> — briše sve zapise, klijente, plan snimanja i postavke. Login token ostaje. Radnja je nepovratna.
@@ -604,9 +608,29 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
 <div id="loginModal" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:950;overflow-y:auto;align-items:center;justify-content:center">
   <div style="max-width:400px;width:100%;margin:0 auto;padding:40px 24px 48px">
     <div style="font-size:2rem;font-weight:800;color:var(--acc);letter-spacing:-1px;margin-bottom:4px">📷 FotoKalk PRO</div>
-    <div style="font-size:.85rem;color:var(--mut2);margin-bottom:36px">Kalkulator honorara za fotografe</div>
-    <div style="font-size:1.05rem;font-weight:700;color:var(--txt);margin-bottom:6px">Prijava</div>
-    <div style="font-size:.78rem;color:var(--mut2);margin-bottom:24px;line-height:1.5">Unesite podatke za pristup aplikaciji i cloud sinkronizaciji.</div>
+    <div style="font-size:.85rem;color:var(--mut2);margin-bottom:28px">Kalkulator honorara za fotografe</div>
+
+    <!-- Odabir tipa korisnika -->
+    <div style="display:flex;gap:8px;margin-bottom:24px">
+      <button id="lb-mode-existing" onclick="setLoginMode('existing')"
+        style="flex:1;padding:11px 10px;border-radius:10px;border:2px solid var(--acc);background:var(--acc);color:#000;font-weight:700;font-size:.85rem;cursor:pointer;font-family:var(--sans);transition:all .18s">
+        👤 Postojeći korisnik
+      </button>
+      <button id="lb-mode-new" onclick="setLoginMode('new')"
+        style="flex:1;padding:11px 10px;border-radius:10px;border:2px solid var(--brd2);background:transparent;color:var(--mut2);font-weight:700;font-size:.85rem;cursor:pointer;font-family:var(--sans);transition:all .18s">
+        ✨ Novi korisnik
+      </button>
+    </div>
+
+    <!-- Opis ovisno o modu -->
+    <div id="lb-desc-existing" style="font-size:.78rem;color:var(--mut2);margin-bottom:20px;line-height:1.5">
+      Prijavite se — aplikacija će automatski povući vaše podatke iz oblaka.
+    </div>
+    <div id="lb-desc-new" style="display:none;font-size:.78rem;color:var(--mut2);margin-bottom:20px;line-height:1.5">
+      Prijavite se — nakon toga ćete podesiti aplikaciju prema svom profilu.
+    </div>
+
+    <!-- Forma (ista za oba moda) -->
     <div style="margin-bottom:14px">
       <label style="font-size:.72rem;color:var(--mut2);font-weight:600;display:block;margin-bottom:5px">E-mail</label>
       <input type="email" id="lb-email" placeholder="your@email.com" autocomplete="email"
@@ -621,10 +645,9 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
     </div>
     <div id="lb-err" style="font-size:.75rem;color:var(--red);margin-bottom:12px;display:none"></div>
     <button id="lb-btn" onclick="loginSubmit()"
-      style="width:100%;padding:13px;background:var(--acc);color:#000;font-weight:700;font-size:.95rem;border:none;border-radius:10px;cursor:pointer;font-family:var(--sans);margin-bottom:10px">
+      style="width:100%;padding:13px;background:var(--acc);color:#000;font-weight:700;font-size:.95rem;border:none;border-radius:10px;cursor:pointer;font-family:var(--sans)">
       Prijava →
     </button>
-
   </div>
 </div>
 
@@ -681,14 +704,13 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
   </div>
 </div>
 
-<!-- GDPR OBAVIJEST -->
-<!-- ONBOARDING -->
-<div id="onboardModal">
-  <div class="ob-wrap">
-    <div class="ob-logo">📷 FotoKalk PRO</div>
-    <div class="ob-sub">Kalkulator honorara za fotografe — RH 2026</div>
-    <div class="ob-title">Dobrodošao/la! 👋</div>
-    <div class="ob-desc">Unesite nekoliko osnovnih podataka kako bi aplikacija bila što korisnija. Sve ostaje isključivo na ovom uređaju.</div>
+<!-- ONBOARDING MODAL (bottom-sheet, bez zaobilaženja) -->
+<div id="onboardModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:800;flex-direction:row;align-items:flex-end;justify-content:center">
+  <div style="background:var(--surf);border-radius:20px 20px 0 0;padding:24px 20px calc(32px + env(safe-area-inset-bottom));width:100%;max-width:600px;max-height:90vh;overflow-y:auto">
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:1.6rem;font-weight:800;color:var(--acc);letter-spacing:-1px;margin-bottom:2px">📷 FotoKalk PRO</div>
+      <div style="font-size:.82rem;color:var(--mut2)">Postavi aplikaciju — samo jednom</div>
+    </div>
 
     <div class="ob-field">
       <label>Ime i prezime <span style="color:var(--mut);font-weight:400">(neobavezno)</span></label>
@@ -706,15 +728,15 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
       <div class="ob-note" id="ob-status-note"></div>
     </div>
 
-    <div class="ob-field" id="ob-grad-field">
+    <div class="ob-field">
       <label>Grad / općina <span style="color:var(--mut);font-weight:400">(za poreznu stopu)</span></label>
-      <select id="ob-grad" onchange="onboardGradChange()">
-      </select>
+      <select id="ob-grad" onchange="onboardGradChange()"></select>
       <div class="ob-note" id="ob-grad-note"></div>
     </div>
 
-    <button class="ob-btn" onclick="onboardSave()">Pokrenuti aplikaciju →</button>
-    <button class="ob-skip" onclick="onboardSkip()">Preskoči, unesite naknadno u postavkama</button>
+    <button class="ob-btn" onclick="onboardSave()" style="margin-top:8px">
+      Pokrenuti aplikaciju →
+    </button>
   </div>
 </div>
 
@@ -1044,6 +1066,65 @@ function clearAllData(){
     if(uid)   localStorage.setItem('fk_sb_uid', uid);
     window.location.reload();
   });
+}
+
+// ═══ GDPR — BRISANJE PODATAKA U OBLAKU ═══
+function deleteCloudData(){
+  // Custom GDPR popup — objašnjava radnju, daje pravo na brisanje
+  const existing = document.getElementById('gdprDeleteOverlay');
+  if(existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'gdprDeleteOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1100;display:flex;align-items:flex-end;justify-content:center';
+  overlay.innerHTML = `
+    <div style="background:var(--surf);border-radius:20px 20px 0 0;padding:24px 20px calc(28px + env(safe-area-inset-bottom));width:100%;max-width:600px">
+      <div style="font-size:.6rem;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--red);margin-bottom:12px">⚠️ Pravo na brisanje podataka — GDPR čl. 17</div>
+      <div style="font-size:.88rem;font-weight:700;color:var(--txt);margin-bottom:10px">Brisanje osobnih podataka u oblaku</div>
+      <div style="font-size:.78rem;color:var(--mut2);line-height:1.6;margin-bottom:16px">
+        Sukladno Uredbi (EU) 2016/679 (GDPR), čl. 17 — pravo na brisanje („pravo na zaborav"),
+        ova radnja trajno briše sve vaše podatke pohranjene u oblaku (Supabase baza podataka).<br><br>
+        <strong style="color:var(--txt)">Što se briše:</strong> svi poslovi, klijenti, plan snimanja i postavke pohranjeni na serveru.<br>
+        <strong style="color:var(--txt)">Što ostaje:</strong> lokalni podaci na ovom uređaju ostaju nepromijenjeni.<br><br>
+        <strong style="color:var(--red)">Radnja je nepovratna.</strong> Obrisani podaci ne mogu se povratiti.
+      </div>
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <button class="btn bd" style="width:100%;padding:12px 17px;font-size:.85rem" onclick="confirmDeleteCloudData()">
+          🗑 Trajno obriši moje podatke u oblaku
+        </button>
+        <button class="btn bo" style="width:100%;padding:12px 17px;font-size:.85rem" onclick="document.getElementById('gdprDeleteOverlay').remove()">
+          Odustani
+        </button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if(e.target === overlay) overlay.remove(); });
+}
+
+async function confirmDeleteCloudData(){
+  document.getElementById('gdprDeleteOverlay')?.remove();
+  if(!sbToken || !sbUserId){
+    loginOpen(()=>deleteCloudData());
+    return;
+  }
+  toast('Brišem podatke u oblaku…');
+  try {
+    const res = await fetch(SB_URL+'/rest/v1/podaci?user_id=eq.'+sbUserId, {
+      method: 'DELETE',
+      headers: sbHeaders()
+    });
+    if(res.status === 401 || res.status === 403){
+      sbToken=null; sbUserId=null;
+      localStorage.removeItem('fk_sb_token');
+      localStorage.removeItem('fk_sb_uid');
+      toast('Sesija istekla — prijavi se ponovo', true);
+      return;
+    }
+    if(!res.ok){ throw new Error('HTTP '+res.status); }
+    toast('Podaci u oblaku su obrisani ✓');
+  } catch(e){
+    toast('Greška: '+e.message, true);
+  }
 }
 function buildBackupData(){return {
   v:3,
@@ -1785,17 +1866,11 @@ function onboardSave(){
     const el=g('p-a-ime');if(el)el.value=ime;
   }
   localStorage.setItem('fk_onboard','1');
-  g('onboardModal').classList.remove('on');
+  const modal=g('onboardModal');if(modal)modal.style.display='none';
   applyStatus(status);
   applyGrad(grad);
   if(!localStorage.getItem('fk_gdpr')){const b=g('gdprBar');if(b)b.style.display='flex';}
-}
-function onboardSkip(){
-  localStorage.setItem('fk_onboard','1');
-  localStorage.setItem('fk_status','samostalni');
-  localStorage.setItem('fk_grad','Pula');
-  g('onboardModal').classList.remove('on');
-  if(!localStorage.getItem('fk_gdpr')){const b=g('gdprBar');if(b)b.style.display='flex';}
+  checkBackupReminder();
 }
 function applyStatus(status){
   // Prikaži/sakrij umirovljenik upozorenje u postavkama
@@ -1940,6 +2015,7 @@ function loginOpen(cb){
   const modal = g('loginModal');
   modal.style.display = 'flex';
   modal.style.flexDirection = 'column';
+  document.body.classList.add('pre-login');
   setTimeout(()=>{ const em=g('lb-email'); if(em)em.focus(); }, 100);
 }
 
@@ -1951,12 +2027,16 @@ function loginOpenStartup(){
   const modal = g('loginModal');
   modal.style.display = 'flex';
   modal.style.flexDirection = 'column';
+  document.body.classList.add('pre-login');
+  setLoginMode('existing'); // uvijek otvori na "Postojeći korisnik"
   setTimeout(()=>{ const em=g('lb-email'); if(em)em.focus(); }, 150);
 }
 
 function loginClose(){
   const modal = g('loginModal');
   modal.style.display = 'none';
+  // Otkrij header i mode-bar tek nakon što modal nestane
+  setTimeout(()=>{ document.body.classList.remove('pre-login'); }, 50);
   _loginCallback = null;
   _loginStartup  = false;
 }
@@ -1971,6 +2051,30 @@ function logoutApp(){
     // Reload stranice — čisti in-memory state i service worker cache
     window.location.reload();
   });
+}
+
+// ── ODABIR MODA LOGIN ──────────────────────────────────────
+let _loginMode = 'existing'; // 'existing' | 'new'
+
+function setLoginMode(m) {
+  _loginMode = m;
+  const isExisting = m === 'existing';
+  const btnEx = g('lb-mode-existing');
+  const btnNw = g('lb-mode-new');
+  if(btnEx) {
+    btnEx.style.background  = isExisting ? 'var(--acc)' : 'transparent';
+    btnEx.style.color       = isExisting ? '#000' : 'var(--mut2)';
+    btnEx.style.borderColor = isExisting ? 'var(--acc)' : 'var(--brd2)';
+  }
+  if(btnNw) {
+    btnNw.style.background  = !isExisting ? 'var(--acc)' : 'transparent';
+    btnNw.style.color       = !isExisting ? '#000' : 'var(--mut2)';
+    btnNw.style.borderColor = !isExisting ? 'var(--acc)' : 'var(--brd2)';
+  }
+  const descEx = g('lb-desc-existing');
+  const descNw = g('lb-desc-new');
+  if(descEx) descEx.style.display = isExisting ? 'block' : 'none';
+  if(descNw) descNw.style.display = !isExisting ? 'block' : 'none';
 }
 
 async function loginSubmit(){
@@ -1994,18 +2098,102 @@ async function loginSubmit(){
     sbUserId = data.user?.id || null;
     localStorage.setItem('fk_sb_token', sbToken);
     if(sbUserId) localStorage.setItem('fk_sb_uid', sbUserId);
+    // VAŽNO: spremi lokalno PRIJE loginClose() koji resetira _loginStartup i _loginCallback
+    const wasStartup = _loginStartup;
+    const wasMode    = _loginMode;
+    const wasCb      = _loginCallback;
     loginClose();
     toast('Prijava uspješna ✓');
-    if(_loginStartup){
-      appInit(); // nastavi normalni startup flow
-    } else if(_loginCallback){
-      _loginCallback();
+    if(wasStartup){
+      if(wasMode === 'new'){
+        appInitNew();
+      } else {
+        appInitExisting();
+      }
+    } else if(wasCb){
+      wasCb();
     }
   } catch(e){
     errEl.textContent = e.message;
     errEl.style.display = 'block';
   } finally {
     if(btn){ btn.disabled=false; btn.textContent='Prijava →'; }
+  }
+}
+
+// ── INIT ZA POSTOJEĆEG KORISNIKA (nakon login) ────────────
+function appInitExisting(){
+  // Postavi onboard flag da se onboarding ne prikazuje
+  localStorage.setItem('fk_onboard','1');
+  applyStatus(getStatus());
+  applyGrad(getGrad());
+  if(!localStorage.getItem('fk_gdpr')){const b=g('gdprBar');if(b)b.style.display='flex';}
+  setTimeout(()=>{
+    setMode('a');
+    showPg('a-plan');
+    today('a-dt');
+    // Auto cloud pull — povuci podatke bez confirm dijaloga
+    cloudPullSilent();
+  }, 200);
+}
+
+// ── CLOUD PULL BEZ POTVRDE (za automatski pull pri loginu) ──
+async function cloudPullSilent(){
+  if(!sbToken || !sbUserId){
+    console.warn('cloudPullSilent: nema tokena ili userId-a', {sbToken:!!sbToken, sbUserId});
+    return;
+  }
+  toast('Povlačim podatke iz oblaka…');
+  try {
+    const res = await fetch(SB_URL+'/rest/v1/podaci?user_id=eq.'+sbUserId+'&select=sadrzaj', {
+      headers: sbHeaders()
+    });
+    if(res.status===401||res.status===403){
+      sbToken=null; sbUserId=null;
+      localStorage.removeItem('fk_sb_token');
+      localStorage.removeItem('fk_sb_uid');
+      toast('Sesija istekla — prijavi se ponovo', true);
+      return;
+    }
+    if(!res.ok){
+      const txt = await res.text();
+      throw new Error('HTTP '+res.status+': '+txt);
+    }
+    const rows = await res.json();
+    if(!rows || !rows.length || !rows[0].sadrzaj){
+      toast('Nema podataka u oblaku ✓');
+      return;
+    }
+    const d = rows[0].sadrzaj;
+    if(!d || !d.v){ throw new Error('Neispravan format podataka u oblaku'); }
+
+    if(d.a_j)    localStorage.setItem('fk_a_j',    JSON.stringify(d.a_j));
+    if(d.a_cfg)  localStorage.setItem('fk_a',       d.a_cfg);
+    if(d.autor)  localStorage.setItem('fk_autor',   d.autor);
+    if(d.a_kl)   localStorage.setItem('fk_kl_a',   d.a_kl);
+    if(d.a_plan) localStorage.setItem('fk_plan_a',  d.a_plan);
+    if(d.status) localStorage.setItem('fk_status',  d.status);
+    if(d.grad)   localStorage.setItem('fk_grad',    d.grad);
+    if(d.theme)  localStorage.setItem('fk_theme',   d.theme);
+    if(d.mode)   localStorage.setItem('fk_mode',    d.mode);
+    if(d.gdpr)   localStorage.setItem('fk_gdpr',    d.gdpr);
+    if(d.onboard)localStorage.setItem('fk_onboard', d.onboard);
+
+    // Primijeni sve — rebuild UI
+    aLoadCfg(); aBuildKG(); aRenderHist(); klRender(); planRender();
+    applyStatus(getStatus()); applyGrad(getGrad());
+    if(d.theme){
+      const isL = d.theme==='l';
+      document.body.classList.toggle('light', isL);
+      const k = g('themeKnob'); if(k) k.textContent = isL ? '☀️' : '🌙';
+      syncThemeColor();
+    }
+    setMode('a');
+    showPg('a-plan');
+    toast('Podaci preuzeti iz oblaka ✓');
+  } catch(e){
+    console.error('cloudPullSilent greška:', e);
+    toast('Cloud pull nije uspio: '+e.message, true);
   }
 }
 
@@ -2219,26 +2407,35 @@ document.addEventListener('DOMContentLoaded',()=>{
 
   // Startup login — prikaži ako nema tokena
   if(!sbToken){
+    document.body.classList.add('pre-login'); // sakrij header dok traje login
     loginOpenStartup();
   } else {
     appInit();
   }
 });
 
-// ─── GLAVNI INIT (poziva se nakon prijave ili preskakanja) ───
+// ─── INIT ZA NOVOG KORISNIKA — login + onboarding ───
+function appInitNew(){
+  populateGradSelects(getGrad());
+  onboardPopulateGrad();
+  const modal = g('onboardModal');
+  if(modal) modal.style.display = 'flex'; // CSS već ima align-items:flex-end
+  setTimeout(()=>{
+    setMode('a');
+    showPg('a-plan');
+    today('a-dt');
+  }, 200);
+}
+
+// ─── INIT KAD POSTOJI VALIDAN TOKEN (reload bez logina) ───
 function appInit(){
-  // Onboarding — samo prvi put
   if(!localStorage.getItem('fk_onboard')){
-    populateGradSelects(getGrad());
-    onboardPopulateGrad();
-    g('onboardModal').classList.add('on');
-  } else {
-    applyStatus(getStatus());
-    applyGrad(getGrad());
-    if(!localStorage.getItem('fk_gdpr')){const b=g('gdprBar');if(b)b.style.display='flex';}
+    appInitNew();
+    return;
   }
-  // setTimeout osigurava da browser dovrši repaint (sakrije login modal)
-  // prije nego što setMode gradi tab ikone — 200ms za pouzdanost na iOS PWA
+  applyStatus(getStatus());
+  applyGrad(getGrad());
+  if(!localStorage.getItem('fk_gdpr')){const b=g('gdprBar');if(b)b.style.display='flex';}
   setTimeout(()=>{
     setMode('a');
     showPg('a-plan');
