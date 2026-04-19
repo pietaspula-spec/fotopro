@@ -1209,7 +1209,7 @@ function importAll(e){const f=e.target.files[0];if(!f)return;const r=new FileRea
   if(d.autor)localStorage.setItem('fk_autor',d.autor);
   if(d.a_kl)localStorage.setItem('fk_kl_a',d.a_kl);
   if(d.p_kl)localStorage.setItem('fk_kl_p',d.p_kl);
-  if(d.a_plan)localStorage.setItem('fk_plan_a',d.a_plan);
+  if(d.a_plan)planApplyFromServer(d.a_plan);
   // v3 polja
   if(d.status)localStorage.setItem('fk_status',d.status);
   if(d.grad)localStorage.setItem('fk_grad',d.grad);
@@ -1633,6 +1633,15 @@ function posaoPopulatePicker(){
 let planFilt='ceka', planEditId=null;
 function planLoad(){return JSON.parse(localStorage.getItem('fk_plan_a')||'[]')}
 function planSaveAll(arr){localStorage.setItem('fk_plan_a',JSON.stringify(arr))}
+function planApplyFromServer(rawPlan){
+  try{
+    const arr=typeof rawPlan==='string'?JSON.parse(rawPlan):rawPlan;
+    if(!Array.isArray(arr)){localStorage.setItem('fk_plan_a',typeof rawPlan==='string'?rawPlan:JSON.stringify(arr));return;}
+    const deletedIds=new Set(JSON.parse(localStorage.getItem('fk_plan_deleted')||'[]'));
+    const filtered=arr.filter(p=>!deletedIds.has(String(p.id)));
+    localStorage.setItem('fk_plan_a',JSON.stringify(filtered));
+  }catch(e){localStorage.setItem('fk_plan_a',typeof rawPlan==='string'?rawPlan:JSON.stringify(rawPlan));}
+}
 function planSetFilt(f,btn){planFilt=f;g('a-plan').querySelectorAll('.ft').forEach(b=>b.classList.remove('on'));btn.classList.add('on');planRender()}
 function planStatLabel(s){return s==='obavljeno'?'&#10003; Obavljeno':s==='otkazano'?'&#10007; Otkazano':'&#9711; Na &#269;ekanju'}
 function planRender(){
@@ -1796,7 +1805,6 @@ function planAutoKlijent(p){
 function planDelete(){
   customConfirm('Obrisati termin?',()=>{
     planSaveAll(planLoad().filter(x=>x.id!==planEditId));
-    // Tombstone — zapamti obrisani ID da ga merge ne vrati sa servera
     const deleted=JSON.parse(localStorage.getItem('fk_plan_deleted')||'[]');
     if(!deleted.includes(String(planEditId)))deleted.push(String(planEditId));
     localStorage.setItem('fk_plan_deleted',JSON.stringify(deleted));
@@ -2208,7 +2216,7 @@ async function cloudPullSilent(){
     if(d.a_cfg)  localStorage.setItem('fk_a',       d.a_cfg);
     if(d.autor)  localStorage.setItem('fk_autor',   d.autor);
     if(d.a_kl)   localStorage.setItem('fk_kl_a',   d.a_kl);
-    if(d.a_plan) localStorage.setItem('fk_plan_a',  d.a_plan);
+    if(d.a_plan) planApplyFromServer(d.a_plan);
     if(d.status) localStorage.setItem('fk_status',  d.status);
     if(d.grad)   localStorage.setItem('fk_grad',    d.grad);
     if(d.theme)  localStorage.setItem('fk_theme',   d.theme);
@@ -2276,6 +2284,7 @@ async function cloudSave(){
 
     // 3. Merge: lokalni nalozi imaju prioritet (fotograf ih je mijenjao),
     //    server nalozi kojih nema lokalno se dodaju (kreirani iz Adriatica)
+    //    ali NE oni koje je fotograf namjerno obrisao (tombstone lista)
     const localIds = new Set(localPlan.map(p => String(p.id)));
     const deletedIds = new Set(JSON.parse(localStorage.getItem('fk_plan_deleted')||'[]'));
     const missing = serverPlan.filter(p => !localIds.has(String(p.id)) && !deletedIds.has(String(p.id)));
@@ -2347,7 +2356,7 @@ async function cloudPull(){
       if(d.a_cfg) localStorage.setItem('fk_a',      d.a_cfg);
       if(d.autor) localStorage.setItem('fk_autor',  d.autor);
       if(d.a_kl)  localStorage.setItem('fk_kl_a',  d.a_kl);
-      if(d.a_plan)localStorage.setItem('fk_plan_a', d.a_plan);
+      if(d.a_plan)planApplyFromServer(d.a_plan);
       if(d.status)localStorage.setItem('fk_status', d.status);
       if(d.grad)  localStorage.setItem('fk_grad',   d.grad);
       if(d.theme) localStorage.setItem('fk_theme',  d.theme);
