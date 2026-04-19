@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- FotoKalk PRO v2.0.2. | Kalkulator honorara za fotografe -->
+<!-- FotoKalk PRO v2.0.3. | Kalkulator honorara za fotografe -->
 <html lang="hr">
 <head>
 <meta charset="UTF-8">
@@ -296,7 +296,7 @@ body.pre-login header,body.pre-login .mode-bar{visibility:hidden;pointer-events:
 
 <div class="mode-bar">
   <div class="mode-sw">
-    <button class="mode-btn" id="btnA" onclick="setMode('a')">FotoKalk PRO v.2.0.2</button>
+    <button class="mode-btn" id="btnA" onclick="setMode('a')">FotoKalk PRO v.2.0.3</button>
   </div>
 </div>
 
@@ -1796,6 +1796,10 @@ function planAutoKlijent(p){
 function planDelete(){
   customConfirm('Obrisati termin?',()=>{
     planSaveAll(planLoad().filter(x=>x.id!==planEditId));
+    // Tombstone — zapamti obrisani ID da ga merge ne vrati sa servera
+    const deleted=JSON.parse(localStorage.getItem('fk_plan_deleted')||'[]');
+    if(!deleted.includes(String(planEditId)))deleted.push(String(planEditId));
+    localStorage.setItem('fk_plan_deleted',JSON.stringify(deleted));
     planCancel();planRender();toast('Obrisano');
   });
 }
@@ -2273,7 +2277,8 @@ async function cloudSave(){
     // 3. Merge: lokalni nalozi imaju prioritet (fotograf ih je mijenjao),
     //    server nalozi kojih nema lokalno se dodaju (kreirani iz Adriatica)
     const localIds = new Set(localPlan.map(p => String(p.id)));
-    const missing = serverPlan.filter(p => !localIds.has(String(p.id)));
+    const deletedIds = new Set(JSON.parse(localStorage.getItem('fk_plan_deleted')||'[]'));
+    const missing = serverPlan.filter(p => !localIds.has(String(p.id)) && !deletedIds.has(String(p.id)));
     const mergedPlan = [...localPlan, ...missing];
 
     payload.a_plan = JSON.stringify(mergedPlan);
