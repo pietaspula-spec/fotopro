@@ -2399,7 +2399,9 @@ async function cloudSaveQuiet(){
           const serverNow=typeof rawNow==='string'?JSON.parse(rawNow):rawNow;
           if(Array.isArray(serverNow)){
             const uploadedIds=new Set(mergedPlan.map(p=>String(p.id)));
-            const lostItems=serverNow.filter(p=>!uploadedIds.has(String(p.id)));
+            // FIX: koristi deletedIds i u verify fazi — inače lažno detektira
+            // admin naloge kao "izgubljene" i ulazi u beskonačnu sync petlju
+            const lostItems=serverNow.filter(p=>!uploadedIds.has(String(p.id))&&!deletedIds.has(String(p.id)));
             if(lostItems.length>0){
               // Admin je dodao naloge između fetha i upsertion — ponovi sync
               _syncPending=true;
