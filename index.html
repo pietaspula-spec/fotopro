@@ -488,6 +488,18 @@ body.pre-login header,body.pre-login .mode-bar{visibility:hidden;pointer-events:
   <!-- POST -->
   <div class="pg" id="a-post">
     <div class="card">
+      <div class="ct">👤 Ime fotografa</div>
+      <div class="setr">
+        <label>Ime</label>
+        <input type="text" id="set-foto-ime" placeholder="npr. Marko" autocomplete="given-name">
+      </div>
+      <div class="setr">
+        <label>Prezime</label>
+        <input type="text" id="set-foto-prezime" placeholder="npr. Horvat" autocomplete="family-name">
+      </div>
+      <button class="btn bp" onclick="setFotoIme()" style="width:100%;margin-top:6px">💾 Spremi ime</button>
+    </div>
+    <div class="card">
       <div class="ct">Upute</div>
       <a href="upute.html" target="_blank" rel="noopener" class="btn bp" style="display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;font-size:.9rem;padding:13px 17px;width:100%">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -800,7 +812,7 @@ function openPost(){
   const pid='a-post';
   const pg=g(pid);
   if(pg&&pg.classList.contains('on')){showPg('a-kalk');g('postBtn').classList.remove('active');}
-  else{showPg(pid);g('postBtn').classList.add('active');}
+  else{showPg(pid);g('postBtn').classList.add('active');loadFotoIme();}
 }
 
 // ═══ ADRIATIC CONFIG ═══
@@ -1213,6 +1225,28 @@ function importAll(e){const f=e.target.files[0];if(!f)return;const r=new FileRea
 }catch(err){toast('Greška pri importu',true)}};r.readAsText(f);e.target.value=''}
 
 // ═══ AUTOR & UGOVOR ═══
+function setFotoIme(){
+  const ime=g('set-foto-ime')?.value.trim()||'';
+  const prezime=g('set-foto-prezime')?.value.trim()||'';
+  const punoIme=(ime+' '+prezime).trim();
+  if(!punoIme){toast('Upiši ime!',true);return;}
+  // Spremi u fk_autor (ime polje = puno ime, za kompatibilnost s ugovorima)
+  const a=JSON.parse(localStorage.getItem('fk_autor')||'{}');
+  a.ime=punoIme;
+  localStorage.setItem('fk_autor',JSON.stringify(a));
+  // Ažuriraj i p-a-ime ako postoji (ugovor stranica)
+  const el=g('p-a-ime');if(el)el.value=punoIme;
+  toast('Ime fotografa spremljeno ✓');
+}
+function loadFotoIme(){
+  const a=JSON.parse(localStorage.getItem('fk_autor')||'{}');
+  if(!a.ime)return;
+  // Razdvoji puno ime na ime+prezime (prvi token = ime, ostatak = prezime)
+  const parts=a.ime.trim().split(/\s+/);
+  const el1=g('set-foto-ime');const el2=g('set-foto-prezime');
+  if(el1)el1.value=parts[0]||'';
+  if(el2)el2.value=parts.slice(1).join(' ')||'';
+}
 function saveAutor(){const a={ime:v('p-a-ime'),oib:v('p-a-oib'),adr:v('p-a-adr'),iban:v('p-a-iban'),mj:v('p-a-mj')};localStorage.setItem('fk_autor',JSON.stringify(a));toast('Spremljeno')}
 function loadAutor(){const s=localStorage.getItem('fk_autor');if(!s)return{};const a=JSON.parse(s);[['p-a-ime',a.ime],['p-a-oib',a.oib],['p-a-adr',a.adr],['p-a-iban',a.iban],['p-a-mj',a.mj]].forEach(([id,val])=>{const el=g(id);if(el&&val)el.value=val});return a}
 
