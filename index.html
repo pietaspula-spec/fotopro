@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- FotoKalk PRO v2 | Kalkulator honorara za fotografe -->
+<!-- FotoKalk PRO v2.0.2. | Kalkulator honorara za fotografe -->
 <html lang="hr">
 <head>
 <meta charset="UTF-8">
@@ -296,7 +296,7 @@ body.pre-login header,body.pre-login .mode-bar{visibility:hidden;pointer-events:
 
 <div class="mode-bar">
   <div class="mode-sw">
-    <button class="mode-btn" id="btnA" onclick="setMode('a')">FotoKalk PRO v.rc2</button>
+    <button class="mode-btn" id="btnA" onclick="setMode('a')">FotoKalk PRO v.2.0.2</button>
   </div>
 </div>
 
@@ -2214,10 +2214,37 @@ async function cloudSave(){
   if(btn) btn.disabled = true;
 
   try {
-    const payload = buildBackupData();
+    // 1. Dohvati trenutni sadrzaj iz baze (zbog naloga koje je Adriatic dodao)
+    let serverPlan = [];
+    try {
+      const fetchRes = await fetch(SB_URL+'/rest/v1/podaci?user_id=eq.'+sbUserId+'&select=sadrzaj', {
+        headers: sbHeaders()
+      });
+      if(fetchRes.ok){
+        const rows = await fetchRes.json();
+        if(rows && rows[0] && rows[0].sadrzaj && rows[0].sadrzaj.a_plan){
+          const raw = rows[0].sadrzaj.a_plan;
+          serverPlan = typeof raw === 'string' ? JSON.parse(raw) : raw;
+          if(!Array.isArray(serverPlan)) serverPlan = [];
+        }
+      }
+    } catch(e){ /* nastavi s lokalnim ako fetch ne uspije */ }
 
-    // UPSERT — jedan red po korisniku (user_id je UNIQUE)
-    // ?on_conflict=user_id — PostgREST mora znati koji je conflict target
+    // 2. Lokalni plan
+    const payload = buildBackupData();
+    let localPlan = [];
+    try { localPlan = JSON.parse(payload.a_plan || '[]'); } catch(e){}
+    if(!Array.isArray(localPlan)) localPlan = [];
+
+    // 3. Merge: lokalni nalozi imaju prioritet (fotograf ih je mijenjao),
+    //    server nalozi kojih nema lokalno se dodaju (kreirani iz Adriatica)
+    const localIds = new Set(localPlan.map(p => String(p.id)));
+    const missing = serverPlan.filter(p => !localIds.has(String(p.id)));
+    const mergedPlan = [...localPlan, ...missing];
+
+    payload.a_plan = JSON.stringify(mergedPlan);
+
+    // 4. UPSERT merged — jedan red po korisniku (user_id je UNIQUE)
     const res = await fetch(SB_URL+'/rest/v1/podaci?on_conflict=user_id', {
       method: 'POST',
       headers: sbHeaders({'Prefer':'resolution=merge-duplicates,return=minimal'}),
@@ -2234,6 +2261,9 @@ async function cloudSave(){
       }
       throw new Error('Greška: '+res.status+' '+t);
     }
+
+    // 5. Spremi merged plan lokalno — sljedeći save već ima sve
+    planSaveAll(mergedPlan);
 
     markBackupDone();
     toast('Podaci spremljeni u oblak ✓');
