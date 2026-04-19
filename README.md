@@ -13,10 +13,10 @@
 - **Evidencija klijenata i objekata** — vlasnici, šifre objekata, ugovori, GPS koordinate, status fotografiranja
 - **Plan snimanja** — termini s jasnim statusima (na čekanju / obavljeno / otkazano), zadani prikaz "Na čekanju"
 - **Kalkulator honorara** — automatski izračun bruto i neto iznosa prema čl. 4 ugovora:
-  - Kategorije objekta (6,50 € bruto/kat)
-  - Snimanje dronom (32,50 € bruto)
-  - Putni troškovi (€/km, prag km)
-  - Naknade za otkazana snimanja (30 € propuštena dobit)
+  - Kategorije objekta
+  - Snimanje dronom 
+  - Putni troškovi 
+  - Naknade za otkazana snimanja 
 - **Porezni obračun za RH 2026** — prilagođen gradu/općini i statusu fotografa (samostalni umjetnik, zaposleni, umirovljenik)
 - **Statistike** — zarada po mjesecima, ukupni neto, neplaćeni iznosi, PDV prag upozorenje
 - **Izvoz podataka** — Excel, PDF, JSON, CSV
