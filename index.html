@@ -2271,6 +2271,39 @@ async function cloudPullSilent(){
 // ── AUTO-SYNC ENGINE ───────────────────────────────────────
 let _autoSyncTimer = null;
 let _syncPending = false;
+// ── MERGE HELPER ──────────────────────────────────────────
+// Admin smije mijenjati: sifra, ug, ime1, ime2, tel, adr, lat, lng, note
+// Fotograf drži: stat, dt, id — i sve što admin NIJE postavio (ostatak)
+const ADMIN_FIELDS = ['sifra','ug','ime1','ime2','tel','adr','lat','lng','note'];
+
+function mergeAdminFields(localPlan, serverPlan){
+  // Mapiraj server naloge po id-u radi brzog lookupa
+  const serverMap = new Map(serverPlan.map(p => [String(p.id), p]));
+  const deletedIds = new Set(JSON.parse(localStorage.getItem('fk_plan_deleted')||'[]'));
+
+  // 1. Za svaki lokalni nalog — preuzmi admin polja sa servera ako postoje
+  const merged = localPlan.map(local => {
+    const srv = serverMap.get(String(local.id));
+    if(!srv) return local; // nalog postoji samo lokalno — ostavi ga
+    // Prepiši admin polja iz servera (admin je mogao promijeniti)
+    const updated = { ...local };
+    ADMIN_FIELDS.forEach(f => {
+      // Koristi server vrijednost — admin ima autoritet nad tim poljima
+      // Prazna server vrijednost NE briše lokalnu (fotograf može imati vlastiti unos)
+      if(srv[f] !== undefined && srv[f] !== null) updated[f] = srv[f];
+    });
+    return updated;
+  });
+
+  // 2. Dodaj naloge koje je admin kreirao a nisu lokalno (nisu ni obrisani)
+  const localIds = new Set(localPlan.map(p => String(p.id)));
+  const adminNew = serverPlan.filter(p =>
+    !localIds.has(String(p.id)) && !deletedIds.has(String(p.id))
+  );
+
+  return [...merged, ...adminNew];
+}
+
 let _syncInProgress = false; // sprječava rekurziju: cloudSaveQuiet → planSaveAll → autoSyncTrigger
 
 let _syncToastTimer = null;
@@ -2367,10 +2400,9 @@ async function cloudSaveQuiet(){
     let localPlan=[];
     try{localPlan=JSON.parse(payload.a_plan||'[]');}catch(e){}
     if(!Array.isArray(localPlan))localPlan=[];
-    const localIds=new Set(localPlan.map(p=>String(p.id)));
-    const deletedIds=new Set(JSON.parse(localStorage.getItem('fk_plan_deleted')||'[]'));
-    const missing=serverPlan.filter(p=>!localIds.has(String(p.id))&&!deletedIds.has(String(p.id)));
-    const mergedPlan=[...localPlan,...missing];
+
+    // Merge: admin polja sa servera imaju prioritet, fotograf drži stat/dt
+    const mergedPlan = mergeAdminFields(localPlan, serverPlan);
     payload.a_plan=JSON.stringify(mergedPlan);
     const res=await fetch(SB_URL+'/rest/v1/podaci?on_conflict=user_id',{
       method:'POST',
@@ -2399,9 +2431,8 @@ async function cloudSaveQuiet(){
           const serverNow=typeof rawNow==='string'?JSON.parse(rawNow):rawNow;
           if(Array.isArray(serverNow)){
             const uploadedIds=new Set(mergedPlan.map(p=>String(p.id)));
-            // FIX: koristi deletedIds i u verify fazi — inače lažno detektira
-            // admin naloge kao "izgubljene" i ulazi u beskonačnu sync petlju
-            const lostItems=serverNow.filter(p=>!uploadedIds.has(String(p.id))&&!deletedIds.has(String(p.id)));
+            const _deletedIds=new Set(JSON.parse(localStorage.getItem('fk_plan_deleted')||'[]'));
+            const lostItems=serverNow.filter(p=>!uploadedIds.has(String(p.id))&&!_deletedIds.has(String(p.id)));
             if(lostItems.length>0){
               // Admin je dodao naloge između fetha i upsertion — ponovi sync
               _syncPending=true;
@@ -2481,13 +2512,8 @@ async function cloudSave(){
     try { localPlan = JSON.parse(payload.a_plan || '[]'); } catch(e){}
     if(!Array.isArray(localPlan)) localPlan = [];
 
-    // 3. Merge: lokalni nalozi imaju prioritet (fotograf ih je mijenjao),
-    //    server nalozi kojih nema lokalno se dodaju (kreirani iz Adriatica)
-    //    ali NE oni koje je fotograf namjerno obrisao (tombstone lista)
-    const localIds = new Set(localPlan.map(p => String(p.id)));
-    const deletedIds = new Set(JSON.parse(localStorage.getItem('fk_plan_deleted')||'[]'));
-    const missing = serverPlan.filter(p => !localIds.has(String(p.id)) && !deletedIds.has(String(p.id)));
-    const mergedPlan = [...localPlan, ...missing];
+    // 3. Merge: admin polja sa servera imaju prioritet (sifra, ug, ime1...), fotograf drži stat/dt
+    const mergedPlan = mergeAdminFields(localPlan, serverPlan);
 
     payload.a_plan = JSON.stringify(mergedPlan);
 
