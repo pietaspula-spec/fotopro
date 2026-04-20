@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- FotoKalk PRO v1. | Kalkulator honorara za fotografe -->
+<!-- FotoKalk PRO v2 | Kalkulator honorara za fotografe -->
 <html lang="hr">
 <head>
 <meta charset="UTF-8">
@@ -301,7 +301,7 @@ body.pre-login header,body.pre-login .mode-bar{visibility:hidden;pointer-events:
 
 <div class="mode-bar">
   <div class="mode-sw">
-    <button class="mode-btn" id="btnA" onclick="setMode('a')">FotoKalk PRO v1.0.0.</button>
+    <button class="mode-btn" id="btnA" onclick="setMode('a')">FotoKalk PRO v2.</button>
   </div>
 </div>
 
@@ -2281,15 +2281,19 @@ function mergeAdminFields(localPlan, serverPlan){
   const serverMap = new Map(serverPlan.map(p => [String(p.id), p]));
   const deletedIds = new Set(JSON.parse(localStorage.getItem('fk_plan_deleted')||'[]'));
 
-  // 1. Za svaki lokalni nalog — preuzmi admin polja sa servera ako postoje
+  // 1. Za svaki lokalni nalog — preuzmi admin polja sa servera ako su novija
   const merged = localPlan.map(local => {
     const srv = serverMap.get(String(local.id));
     if(!srv) return local; // nalog postoji samo lokalno — ostavi ga
-    // Prepiši admin polja iz servera (admin je mogao promijeniti)
-    const updated = { ...local };
+
+    // _adminTs: server je noviji (ili lokalni nema timestamp) → admin pobijedi
+    const srvTs   = srv._adminTs   || 0;
+    const localTs = local._adminTs || 0;
+    if(srvTs <= localTs) return local; // lokalni je noviji ili isti — ne diraj
+
+    // Server _adminTs je noviji — preuzmi sva admin polja sa servera
+    const updated = { ...local, _adminTs: srvTs };
     ADMIN_FIELDS.forEach(f => {
-      // Koristi server vrijednost — admin ima autoritet nad tim poljima
-      // Prazna server vrijednost NE briše lokalnu (fotograf može imati vlastiti unos)
       if(srv[f] !== undefined && srv[f] !== null) updated[f] = srv[f];
     });
     return updated;
@@ -2421,7 +2425,7 @@ async function cloudSaveQuiet(){
     localStorage.setItem('fk_plan_a',JSON.stringify(mergedPlan));
     markBackupDone();
 
-    // FIX-3: TOCTOU zaštita — provjeri je li admin dodao nalog između našeg fetha i upsertion
+    // FIX-3: TOCTOU zaštita — provjeri je li admin dodao ili promijenio nalog između fetcha i uploada
     try{
       const verifyRes=await fetch(SB_URL+'/rest/v1/podaci?user_id=eq.'+sbUserId+'&select=sadrzaj',{headers:sbHeaders()});
       if(verifyRes.ok){
@@ -2431,10 +2435,16 @@ async function cloudSaveQuiet(){
           const serverNow=typeof rawNow==='string'?JSON.parse(rawNow):rawNow;
           if(Array.isArray(serverNow)){
             const uploadedIds=new Set(mergedPlan.map(p=>String(p.id)));
+            const uploadedMap=new Map(mergedPlan.map(p=>[String(p.id),p]));
             const _deletedIds=new Set(JSON.parse(localStorage.getItem('fk_plan_deleted')||'[]'));
+            // Novi nalozi koje admin je dodao između fetcha i uploada
             const lostItems=serverNow.filter(p=>!uploadedIds.has(String(p.id))&&!_deletedIds.has(String(p.id)));
-            if(lostItems.length>0){
-              // Admin je dodao naloge između fetha i upsertion — ponovi sync
+            // Postojeći nalozi gdje je admin napravio izmjenu (noviji _adminTs) između fetcha i uploada
+            const changedItems=serverNow.filter(p=>{
+              const up=uploadedMap.get(String(p.id));
+              return up && (p._adminTs||0) > (up._adminTs||0);
+            });
+            if(lostItems.length>0 || changedItems.length>0){
               _syncPending=true;
               localStorage.setItem('fk_sync_pending','1');
               setTimeout(()=>autoSyncTrigger(),1000);
