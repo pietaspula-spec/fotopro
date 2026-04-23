@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- FotoKalk PRO v2 beta | Kalkulator honorara za fotografe -->
+<!-- FotoKalk PRO v2 | Kalkulator honorara za fotografe -->
 <html lang="hr">
 <head>
 <meta charset="UTF-8">
@@ -301,7 +301,7 @@ body.pre-login header,body.pre-login .mode-bar{visibility:hidden;pointer-events:
 
 <div class="mode-bar">
   <div class="mode-sw">
-    <button class="mode-btn" id="btnA" onclick="setMode('a')">FotoKalk PRO v2.beta2</button>
+    <button class="mode-btn" id="btnA" onclick="setMode('a')">FotoKalk PRO v2.</button>
   </div>
 </div>
 
@@ -2310,7 +2310,7 @@ async function cloudPullSilent(){
 // ── MERGE HELPER ──────────────────────────────────────────
 // Admin smije mijenjati: sifra, ug, ime1, ime2, tel, adr, lat, lng, note
 // Fotograf drži: stat, dt, id — i sve što admin NIJE postavio (ostatak)
-const ADMIN_FIELDS = ['sifra','ug','ime1','ime2','tel','adr','lat','lng','note'];
+const ADMIN_FIELDS = ['sifra','ug','ime1','ime2','tel','adr','lat','lng']; // note je fotografovo polje
 
 // FIX-AUDIT-1: sigurno parsiranje localStorage — ne baca na corrupted JSON
 function safeJsonArr(key){
