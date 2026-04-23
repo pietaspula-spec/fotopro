@@ -1127,7 +1127,7 @@ async function confirmDeleteCloudData(){
   }
   toast('Brišem podatke u oblaku…');
   try {
-    const res = await fetch(SB_URL+'/rest/v1/podaci?user_id=eq.'+sbUserId, {
+    const res = await fetchWithTimeout(SB_URL+'/rest/v1/podaci?user_id=eq.'+sbUserId, {
       method: 'DELETE',
       headers: sbHeaders()
     });
@@ -1411,7 +1411,11 @@ function csvParse(line,sep){
 let klFilt='svi', klEditId=null, klEditObjId=null;
 function klNs(){return mode==='a'?'fk_kl_a':'fk_kl_p'}
 function klLoad(){return JSON.parse(localStorage.getItem(klNs())||'[]')}
-function klSaveAll(arr){localStorage.setItem(klNs(),JSON.stringify(arr));autoSyncTrigger();}
+function klSaveAll(arr){
+  try{localStorage.setItem(klNs(),JSON.stringify(arr));}
+  catch(e){if(e.name==='QuotaExceededError'||e.code===22){toast('⚠️ Nema prostora na uređaju! Napravite backup.',true);}else{toast('Greška pri pohrani klijenata.',true);}return;}
+  autoSyncTrigger();
+}
 function klSetFilt(f,btn){klFilt=f;const panelId=mode==='a'?'a-kl':'p-kl';g(panelId).querySelectorAll('.ft').forEach(b=>b.classList.remove('on'));btn.classList.add('on');klRender()}
 
 // Migracija stare strukture → nova
@@ -1639,25 +1643,45 @@ function posaoPopulatePicker(){
 // ═══ PLAN SNIMANJA ═══
 let planFilt='ceka', planEditId=null;
 function planLoad(){return JSON.parse(localStorage.getItem('fk_plan_a')||'[]')}
-function planSaveAll(arr){localStorage.setItem('fk_plan_a',JSON.stringify(arr));autoSyncTrigger();}
+function planSaveAll(arr){
+  try{localStorage.setItem('fk_plan_a',JSON.stringify(arr));}
+  catch(e){if(e.name==='QuotaExceededError'||e.code===22){toast('⚠️ Nema prostora na uređaju! Napravite backup.',true);}else{toast('Greška pri pohrani plana.',true);}return;}
+  autoSyncTrigger();
+}
 function planApplyFromServer(rawPlan){
+  // FIX-SYNC-1: umjesto pukog zamjenjivanja, koristimo merge logiku:
+  // - admin polja (sifra, ug, ime1, ime2, tel, adr, lat, lng, note) dolaze sa servera ako su novija (_adminTs)
+  // - fotograf drži stat, dt, id
+  // - novi nalozi s servera (kojih nema lokalno) dodaju se lokalno
+  // - lokalni nalozi kojih nema na serveru ostaju (offset pull bez brisanja)
   try{
-    const arr=typeof rawPlan==='string'?JSON.parse(rawPlan):rawPlan;
-    if(!Array.isArray(arr)){localStorage.setItem('fk_plan_a',typeof rawPlan==='string'?rawPlan:JSON.stringify(arr));return;}
-    const deletedIds=new Set(JSON.parse(localStorage.getItem('fk_plan_deleted')||'[]'));
-    const filtered=arr.filter(p=>!deletedIds.has(String(p.id)));
-    // Detektiraj jesu li stigli novi nalozi kojih nema lokalno (npr. kreirani iz Adriatica)
-    let _hadNewFromServer=false;
+    const serverArr=typeof rawPlan==='string'?JSON.parse(rawPlan):rawPlan;
+    if(!Array.isArray(serverArr)){
+      // Nije array — fallback: spremi kao string
+      localStorage.setItem('fk_plan_a',typeof rawPlan==='string'?rawPlan:JSON.stringify(serverArr));
+      return;
+    }
+    const deletedIds=new Set(safeJsonArr('fk_plan_deleted'));
+    // Filtriraj server plan — isključi lokalno obrisane
+    const filteredServer=serverArr.filter(p=>!deletedIds.has(String(p.id)));
+    // Lokalni plan
+    let localPlan=[];
     try{
-      const localNow=JSON.parse(localStorage.getItem('fk_plan_a')||'[]');
-      const localIds=new Set(Array.isArray(localNow)?localNow.map(p=>String(p.id)):[]);
-      _hadNewFromServer=filtered.some(p=>!localIds.has(String(p.id)));
-    }catch(e){}
-    localStorage.setItem('fk_plan_a',JSON.stringify(filtered));
+      const raw=localStorage.getItem('fk_plan_a');
+      localPlan=raw?JSON.parse(raw):[];
+      if(!Array.isArray(localPlan))localPlan=[];
+    }catch(e){localPlan=[];}
+    // Merge: admin polja sa servera + fotograf drži stat/dt
+    const merged=mergeAdminFieldsSafe(localPlan,filteredServer);
+    localStorage.setItem('fk_plan_a',JSON.stringify(merged));
     // Ako su stigli novi nalozi s servera — odmah pushni merged stanje natrag
-    // (3s debounce, flag guard u autoSyncTrigger sprječava rekurziju)
-    if(_hadNewFromServer) setTimeout(()=>autoSyncTrigger(),100);
-  }catch(e){localStorage.setItem('fk_plan_a',typeof rawPlan==='string'?rawPlan:JSON.stringify(rawPlan));}
+    const localIds=new Set(localPlan.map(p=>String(p.id)));
+    const hadNew=filteredServer.some(p=>!localIds.has(String(p.id)));
+    if(hadNew) setTimeout(()=>autoSyncTrigger(),100);
+  }catch(e){
+    // Posljednji fallback — spremi sirovi string
+    try{localStorage.setItem('fk_plan_a',typeof rawPlan==='string'?rawPlan:JSON.stringify(rawPlan));}catch(_){}
+  }
 }
 function planSetFilt(f,btn){planFilt=f;g('a-plan').querySelectorAll('.ft').forEach(b=>b.classList.remove('on'));btn.classList.add('on');planRender()}
 function planStatLabel(s){return s==='obavljeno'?'&#10003; Obavljeno':s==='otkazano'?'&#10007; Otkazano':'&#9711; Na &#269;ekanju'}
@@ -1701,7 +1725,9 @@ function planRender(){
 }
 function planQuickStat(id,stat){
   const plans=planLoad();const p=plans.find(x=>x.id===id);if(!p)return;
-  p.stat=stat;planSaveAll(plans);planRender();
+  p.stat=stat;
+  p._fotoTs=Date.now(); // FIX-SYNC-5: bilježi kad je fotograf zadnji put promijenio status
+  planSaveAll(plans);planRender();
   // Sync to klijenti - find matching objekt by sifra or vlasnik name
   planSyncKlijent(p,stat);
   toast(stat==='obavljeno'?'Označeno kao obavljeno':stat==='otkazano'?'Označeno kao otkazano':'↩ Vraćeno na čekanje');
@@ -1770,11 +1796,22 @@ function planSave(){
   const stat=(!dt)?'ceka':v('pl-stat');
   const plans=planLoad();
   const isNew=!planEditId;
-  const obj={id:planEditId||String(Date.now()),dt,sifra:v('pl-sifra').trim(),
-    ime1:v('pl-ime1').trim(),ime2:v('pl-ime2').trim(),tel:v('pl-tel').trim(),
-    ug:v('pl-ug').trim(),
-    adr:v('pl-adr').trim(),lat:v('pl-lat')||'',lng:v('pl-lng')||'',
-    stat,note:v('pl-note').trim()};
+  // FIX-SYNC-6: _fotoTs = kad je fotograf zadnji put uredio; _adminTs se ČUVA (ne briše!)
+  // Ako uređujemo postojeći nalog — zadržimo _adminTs koji je postavio admin
+  const existing = planEditId ? plans.find(x=>x.id===planEditId) : null;
+  const obj={
+    id:planEditId||String(Date.now()),
+    dt,
+    sifra:v('pl-sifra').trim(),
+    ime1:v('pl-ime1').trim(), ime2:v('pl-ime2').trim(),
+    tel:v('pl-tel').trim(),   ug:v('pl-ug').trim(),
+    adr:v('pl-adr').trim(),   lat:v('pl-lat')||'', lng:v('pl-lng')||'',
+    stat,
+    note:v('pl-note').trim(),
+    _fotoTs: Date.now(),
+    // Čuvaj _adminTs ako postoji — FotoKalk ne smije ga brisati
+    _adminTs: existing?._adminTs || 0
+  };
   if(planEditId){const idx=plans.findIndex(x=>x.id===planEditId);if(idx>=0)plans[idx]=obj;else plans.unshift(obj);}
   else plans.unshift(obj);
   planSaveAll(plans);
@@ -1822,7 +1859,7 @@ function planAutoKlijent(p){
 function planDelete(){
   customConfirm('Obrisati termin?',()=>{
     planSaveAll(planLoad().filter(x=>x.id!==planEditId));
-    const deleted=JSON.parse(localStorage.getItem('fk_plan_deleted')||'[]');
+    const deleted=safeJsonArr('fk_plan_deleted');
     if(!deleted.includes(String(planEditId)))deleted.push(String(planEditId));
     localStorage.setItem('fk_plan_deleted',JSON.stringify(deleted));
     planCancel();planRender();toast('Obrisano');
@@ -2150,11 +2187,11 @@ async function loginSubmit(){
   if(btn){ btn.disabled=true; btn.textContent='Prijava…'; }
 
   try {
-    const res = await fetch(SB_URL+'/auth/v1/token?grant_type=password', {
+    const res = await fetchWithTimeout(SB_URL+'/auth/v1/token?grant_type=password', {
       method:'POST',
       headers:{'Content-Type':'application/json','apikey':SB_KEY},
       body: JSON.stringify({email, password:pass})
-    });
+    }, 20000); // 20s za login — malo duže od ostalih
     const data = await res.json();
     if(!res.ok){ throw new Error(data.error_description||data.msg||'Greška pri prijavi'); }
     sbToken  = data.access_token;
@@ -2208,7 +2245,7 @@ async function cloudPullSilent(){
   }
   toast('Povlačim podatke iz oblaka…');
   try {
-    const res = await fetch(SB_URL+'/rest/v1/podaci?user_id=eq.'+sbUserId+'&select=sadrzaj', {
+    const res = await fetchWithTimeout(SB_URL+'/rest/v1/podaci?user_id=eq.'+sbUserId+'&select=sadrzaj', {
       headers: sbHeaders()
     });
     if(res.status===401||res.status===403){
@@ -2234,6 +2271,8 @@ async function cloudPullSilent(){
     if(d.a_cfg)  localStorage.setItem('fk_a',       d.a_cfg);
     if(d.autor)  localStorage.setItem('fk_autor',   d.autor);
     if(d.a_kl)   localStorage.setItem('fk_kl_a',   d.a_kl);
+    // FIX-SYNC-3: cloudPullSilent koristi planApplyFromServer koji radi merge
+    // (ne zamjenjuje lokalni plan slijepo — čuva stat/dt fotografa)
     if(d.a_plan) planApplyFromServer(d.a_plan);
     if(d.status) localStorage.setItem('fk_status',  d.status);
     if(d.grad)   localStorage.setItem('fk_grad',    d.grad);
@@ -2256,7 +2295,7 @@ async function cloudPullSilent(){
     toast('Podaci preuzeti iz oblaka ✓');
   } catch(e){
     console.error('cloudPullSilent greška:', e);
-    toast('Cloud pull nije uspio: '+e.message, true);
+    toast('Cloud pull nije uspio: '+(e.name==='AbortError'?'Veza nije odgovorila (timeout) — pokušaj ponovo.':e.message), true);
   }
 }
 
@@ -2268,33 +2307,43 @@ async function cloudPullSilent(){
   if(u) sbUserId = u;
 })();
 
-// ── AUTO-SYNC ENGINE ───────────────────────────────────────
-let _autoSyncTimer = null;
-let _syncPending = false;
 // ── MERGE HELPER ──────────────────────────────────────────
 // Admin smije mijenjati: sifra, ug, ime1, ime2, tel, adr, lat, lng, note
 // Fotograf drži: stat, dt, id — i sve što admin NIJE postavio (ostatak)
 const ADMIN_FIELDS = ['sifra','ug','ime1','ime2','tel','adr','lat','lng','note'];
 
-function mergeAdminFields(localPlan, serverPlan){
-  // Mapiraj server naloge po id-u radi brzog lookupa
-  const serverMap = new Map(serverPlan.map(p => [String(p.id), p]));
-  const deletedIds = new Set(JSON.parse(localStorage.getItem('fk_plan_deleted')||'[]'));
+// FIX-AUDIT-1: sigurno parsiranje localStorage — ne baca na corrupted JSON
+function safeJsonArr(key){
+  try{const r=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(r)?r:[];}
+  catch(e){console.warn('safeJsonArr: corrupted key',key,e.message);return [];}
+}
 
-  // 1. Za svaki lokalni nalog — preuzmi admin polja sa servera ako su novija
+// FIX-SYNC-2: mergeAdminFieldsSafe rješava edge case gdje lokalni _adminTs=0 i serverski _adminTs=0
+// (npr. stariji nalozi koji još nemaju _adminTs) — u tom slučaju server polja imaju prioritet
+// jer admin je "vlasnik" tih polja, a fotograf drži samo stat/dt.
+function mergeAdminFieldsSafe(localPlan, serverPlan){
+  const serverMap = new Map(serverPlan.map(p => [String(p.id), p]));
+  const deletedIds = new Set(safeJsonArr('fk_plan_deleted'));
+
+  // 1. Za svaki lokalni nalog — preuzmi admin polja sa servera
   const merged = localPlan.map(local => {
     const srv = serverMap.get(String(local.id));
     if(!srv) return local; // nalog postoji samo lokalno — ostavi ga
 
-    // _adminTs: server je noviji (ili lokalni nema timestamp) → admin pobijedi
     const srvTs   = srv._adminTs   || 0;
     const localTs = local._adminTs || 0;
-    if(srvTs <= localTs) return local; // lokalni je noviji ili isti — ne diraj
 
-    // Server _adminTs je noviji — preuzmi sva admin polja sa servera
+    // FIX: ako su oba 0 (stariji nalozi bez _adminTs), server svejedno "pobijedi"
+    // za admin polja — to je sigurno jer admin je stvorio nalog.
+    // Jedina iznimka: ako je lokalni _adminTs VEĆI od serverskog (lokalno noviji admin update
+    // koji još nije stigao na server — to se ne događa u normalnom toku, ali zaštita postoji).
+    if(srvTs < localTs) return local; // lokalni je noviji — ne diraj
+
+    // Server _adminTs >= lokalnog — preuzmi sva admin polja sa servera
     const updated = { ...local, _adminTs: srvTs };
     ADMIN_FIELDS.forEach(f => {
-      if(srv[f] !== undefined && srv[f] !== null) updated[f] = srv[f];
+      // Preuzmi sa servera ako polje postoji (čak i ako je prazan string — admin je to postavio)
+      if(srv[f] !== undefined) updated[f] = srv[f];
     });
     return updated;
   });
@@ -2308,7 +2357,14 @@ function mergeAdminFields(localPlan, serverPlan){
   return [...merged, ...adminNew];
 }
 
+// Stari mergeAdminFields alias — koristi popravljen safe varijantu
+function mergeAdminFields(localPlan, serverPlan){
+  return mergeAdminFieldsSafe(localPlan, serverPlan);
+}
+
 let _syncInProgress = false; // sprječava rekurziju: cloudSaveQuiet → planSaveAll → autoSyncTrigger
+let _syncPending    = false; // FIX-SYNC-7: bila implicitan global — sada deklariran
+let _autoSyncTimer  = null;  // FIX-SYNC-7: bila implicitan global — sada deklariran
 
 let _syncToastTimer = null;
 function syncSetIndicator(state){
@@ -2355,8 +2411,20 @@ function autoSyncTrigger(){
     }catch(e){
       syncSetIndicator('offline');
       localStorage.setItem('fk_sync_pending','1');
+      if(e.name==='AbortError') console.warn('autoSync timeout — pending za retry');
     }
   }, 3000);
+}
+
+// FIX-SYNC-7: fetch s AbortController timeoutom — sprječava vječno visanje sync indikatora
+async function fetchWithTimeout(url, opts={}, timeoutMs=15000){
+  const ctrl = new AbortController();
+  const timer = setTimeout(()=>ctrl.abort(), timeoutMs);
+  try{
+    return await fetch(url, {...opts, signal: ctrl.signal});
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 // Tiha verzija cloudSave — bez toasta, za auto-sync
@@ -2370,7 +2438,7 @@ async function cloudSaveQuiet(){
 
     // FIX-1: fetch server plana — ako ne uspije, PREKINI (ne upiši s nepotpunim podacima)
     try{
-      const fetchRes = await fetch(SB_URL+'/rest/v1/podaci?user_id=eq.'+sbUserId+'&select=sadrzaj',{headers:sbHeaders()});
+      const fetchRes = await fetchWithTimeout(SB_URL+'/rest/v1/podaci?user_id=eq.'+sbUserId+'&select=sadrzaj',{headers:sbHeaders()});
       if(fetchRes.status===401||fetchRes.status===403){
         sbToken=null; sbUserId=null;
         localStorage.removeItem('fk_sb_token');
@@ -2408,7 +2476,7 @@ async function cloudSaveQuiet(){
     // Merge: admin polja sa servera imaju prioritet, fotograf drži stat/dt
     const mergedPlan = mergeAdminFields(localPlan, serverPlan);
     payload.a_plan=JSON.stringify(mergedPlan);
-    const res=await fetch(SB_URL+'/rest/v1/podaci?on_conflict=user_id',{
+    const res=await fetchWithTimeout(SB_URL+'/rest/v1/podaci?on_conflict=user_id',{
       method:'POST',
       headers:sbHeaders({'Prefer':'resolution=merge-duplicates,return=minimal'}),
       body:JSON.stringify({user_id:sbUserId,sadrzaj:payload})
@@ -2427,7 +2495,7 @@ async function cloudSaveQuiet(){
 
     // FIX-3: TOCTOU zaštita — provjeri je li admin dodao ili promijenio nalog između fetcha i uploada
     try{
-      const verifyRes=await fetch(SB_URL+'/rest/v1/podaci?user_id=eq.'+sbUserId+'&select=sadrzaj',{headers:sbHeaders()});
+      const verifyRes=await fetchWithTimeout(SB_URL+'/rest/v1/podaci?user_id=eq.'+sbUserId+'&select=sadrzaj',{headers:sbHeaders()});
       if(verifyRes.ok){
         const verifyRows=await verifyRes.json();
         if(verifyRows&&verifyRows[0]&&verifyRows[0].sadrzaj&&verifyRows[0].sadrzaj.a_plan){
@@ -2436,7 +2504,7 @@ async function cloudSaveQuiet(){
           if(Array.isArray(serverNow)){
             const uploadedIds=new Set(mergedPlan.map(p=>String(p.id)));
             const uploadedMap=new Map(mergedPlan.map(p=>[String(p.id),p]));
-            const _deletedIds=new Set(JSON.parse(localStorage.getItem('fk_plan_deleted')||'[]'));
+            const _deletedIds=new Set(safeJsonArr('fk_plan_deleted'));
             // Novi nalozi koje admin je dodao između fetcha i uploada
             const lostItems=serverNow.filter(p=>!uploadedIds.has(String(p.id))&&!_deletedIds.has(String(p.id)));
             // Postojeći nalozi gdje je admin napravio izmjenu (noviji _adminTs) između fetcha i uploada
@@ -2489,7 +2557,7 @@ async function cloudSave(){
     let serverPlan = [];
     let serverFetchOk = false; // FIX-1: prati je li server fetch uspio
     try {
-      const fetchRes = await fetch(SB_URL+'/rest/v1/podaci?user_id=eq.'+sbUserId+'&select=sadrzaj', {
+      const fetchRes = await fetchWithTimeout(SB_URL+'/rest/v1/podaci?user_id=eq.'+sbUserId+'&select=sadrzaj', {
         headers: sbHeaders()
       });
       if(fetchRes.status===401||fetchRes.status===403){
@@ -2528,7 +2596,7 @@ async function cloudSave(){
     payload.a_plan = JSON.stringify(mergedPlan);
 
     // 4. UPSERT merged — jedan red po korisniku (user_id je UNIQUE)
-    const res = await fetch(SB_URL+'/rest/v1/podaci?on_conflict=user_id', {
+    const res = await fetchWithTimeout(SB_URL+'/rest/v1/podaci?on_conflict=user_id', {
       method: 'POST',
       headers: sbHeaders({'Prefer':'resolution=merge-duplicates,return=minimal'}),
       body: JSON.stringify({ user_id: sbUserId, sadrzaj: payload })
@@ -2551,7 +2619,7 @@ async function cloudSave(){
     markBackupDone();
     toast('Podaci spremljeni u oblak ✓');
   } catch(e){
-    toast('Greška: '+e.message, true);
+    toast('Greška: '+(e.name==='AbortError'?'Veza nije odgovorila (timeout) — pokušaj ponovo.':e.message), true);
   } finally {
     if(btn) btn.disabled = false;
   }
@@ -2563,12 +2631,12 @@ async function cloudPull(){
     loginOpen(()=>cloudPull());
     return;
   }
-  customConfirm('Povući podatke iz oblaka? Lokalni podaci bit će zamijenjeni.', async ()=>{
+  customConfirm('Povući podatke iz oblaka? Nalozi od admina bit će preuzeti, a tvoj datum i status ostaju.', async ()=>{
     const btn = g('backupModalCloudPull');
     if(btn) btn.disabled = true;
 
     try {
-      const res = await fetch(SB_URL+'/rest/v1/podaci?user_id=eq.'+sbUserId+'&select=sadrzaj', {
+      const res = await fetchWithTimeout(SB_URL+'/rest/v1/podaci?user_id=eq.'+sbUserId+'&select=sadrzaj', {
         headers: sbHeaders()
       });
 
@@ -2609,7 +2677,7 @@ async function cloudPull(){
 
       toast('Podaci preuzeti iz oblaka ✓');
     } catch(e){
-      toast('Greška: '+e.message, true);
+      toast('Greška: '+(e.name==='AbortError'?'Veza nije odgovorila (timeout) — pokušaj ponovo.':e.message), true);
     } finally {
       if(btn) btn.disabled = false;
     }
