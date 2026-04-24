@@ -1156,10 +1156,7 @@ async function confirmDeleteCloudData(){
       headers: sbHeaders()
     });
     if(res.status === 401 || res.status === 403){
-      sbToken=null; sbUserId=null;
-      localStorage.removeItem('fk_sb_token');
-      localStorage.removeItem('fk_sb_uid');
-      toast('Sesija istekla — prijavi se ponovo', true);
+      handleAuthExpired();
       return;
     }
     if(!res.ok){ throw new Error('HTTP '+res.status); }
@@ -1577,7 +1574,8 @@ function klSave(){
     kls[idx].ime1=v('kl-ime1').trim();
     kls[idx].ime2=v('kl-ime2').trim();
     kls[idx].tel=v('kl-tel').trim();
-    const obj={id:klEditObjId||String(Date.now()),
+    const existingObj=klEditObjId?(kls[idx].objekti.find(o=>o.id===klEditObjId)||null):null;
+    const obj={...(existingObj||{}),id:klEditObjId||String(Date.now()),
       nm:v('kl-nm').trim(),ug:v('kl-ug').trim(),
       adr:v('kl-adr').trim(),lat:v('kl-lat')||'',lng:v('kl-lng')||'',
       dt:v('kl-dt'),stat:v('kl-stat'),note:v('kl-note').trim()};
@@ -1763,22 +1761,41 @@ function planQuickStat(id,stat){
 }
 function planSyncKlijent(p,stat){
   const kls=klLoadMigrated();
-  const imeKey=(p.ime1+' '+p.ime2).trim().toLowerCase();
-  let changed=false;
-  const klStat=stat==='obavljeno'?'jest':stat==='otkazano'?'otkazano':'nije';
-  for(const k of kls){
-    // Match by vlasnik name
-    const kIme=(k.ime1+' '+k.ime2).trim().toLowerCase();
-    if(imeKey&&kIme&&kIme===imeKey){
-      for(const obj of k.objekti){
-        // Match by sifra if available, otherwise match first objekt
-        if(!p.sifra||obj.nm===p.sifra){
-          obj.stat=klStat;changed=true;break;
-        }
-      }
+  const imeKey=String((p.ime1||'')+' '+(p.ime2||'')).trim().toLowerCase();
+  if(!imeKey)return;
+  const telKey=String(p.tel||'').replace(/\D+/g,'');
+  const candidates=[];
+  for(let ki=0;ki<kls.length;ki++){
+    const k=kls[ki];
+    const kIme=String((k.ime1||'')+' '+(k.ime2||'')).trim().toLowerCase();
+    if(kIme!==imeKey)continue;
+    const ownerPhone=String(k.tel||'').replace(/\D+/g,'');
+    if(telKey&&ownerPhone&&ownerPhone!==telKey)continue;
+    const objs=Array.isArray(k.objekti)?k.objekti:[];
+    for(let oi=0;oi<objs.length;oi++){
+      const obj=objs[oi];
+      let score=0;
+      if(obj.planId&&String(obj.planId)===String(p.id))score+=1000;
+      if(p.sifra&&String(obj.nm||'').trim().toLowerCase()===String(p.sifra).trim().toLowerCase())score+=200;
+      if(p.ug&&String(obj.ug||'').trim().toLowerCase()===String(p.ug).trim().toLowerCase())score+=80;
+      if(p.adr&&String(obj.adr||'').trim().toLowerCase()===String(p.adr).trim().toLowerCase())score+=40;
+      if(p.lat&&p.lng&&String(obj.lat||'').trim()===String(p.lat).trim()&&String(obj.lng||'').trim()===String(p.lng).trim())score+=120;
+      if(p.dt&&obj.dt&&obj.dt===p.dt)score+=10;
+      if(score===0&&objs.length===1)score=1;
+      if(score>0)candidates.push({ki,oi,score});
     }
   }
-  if(changed){klSaveAll(kls);if(g('a-kl-list'))klRender();}
+  if(!candidates.length)return;
+  candidates.sort((a,b)=>b.score-a.score);
+  if(candidates.length>1&&candidates[0].score===candidates[1].score)return;
+  const match=candidates[0];
+  const obj=kls[match.ki]?.objekti?.[match.oi];
+  if(!obj)return;
+  obj.stat=stat==='obavljeno'?'jest':stat==='otkazano'?'otkazano':'nije';
+  obj.dt=p.dt||'';
+  obj.planId=String(p.id);
+  klSaveAll(kls);
+  if(g('a-kl-list'))klRender();
 }
 function planSetAdminLocked(locked){
   const ids=['pl-jed','pl-link','pl-note-ag'];
@@ -1856,6 +1873,7 @@ function planSave(){
   // Ako uređujemo postojeći nalog — zadržimo _adminTs koji je postavio admin
   const existing = planEditId ? plans.find(x=>x.id===planEditId) : null;
   const obj={
+    ...(existing||{}),
     id:planEditId||String(Date.now()),
     dt,
     sifra:v('pl-sifra').trim(),
@@ -1878,6 +1896,7 @@ function planSave(){
   else plans.unshift(obj);
   planSaveAll(plans);
   if(isNew)planAutoKlijent(obj);
+  else planSyncKlijent(obj,stat);
   planCancel();planRender();
   toast('Termin spremljen &#10003;');
   if(obj.dt){
@@ -1890,6 +1909,7 @@ function planSave(){
 function planAutoKlijent(p){
   const kls=klLoadMigrated();
   const noviObj={id:genUUID(),
+    planId:String(p.id),
     nm:p.sifra||'',ug:p.ug||'',
     adr:p.adr||'',lat:p.lat||'',lng:p.lng||'',
     dt:p.dt||'',stat:'nije',note:''};
@@ -2203,6 +2223,34 @@ function loginClose(){
   _loginStartup  = false;
 }
 
+let _authExpiredShown = false;
+function handleAuthExpired(){
+  sbToken = null;
+  sbUserId = null;
+  _syncPending = false;
+  try{ clearTimeout(_autoSyncTimer); }catch(_){}
+  localStorage.removeItem('fk_sb_token');
+  localStorage.removeItem('fk_sb_uid');
+  localStorage.removeItem('fk_sync_pending');
+  try{ syncSetIndicator('hidden'); }catch(_){}
+  if(_authExpiredShown) return;
+  _authExpiredShown = true;
+  loginOpenStartup();
+  toast('Sesija istekla — prijavi se ponovo', true);
+}
+
+function syncPulledStorage(key, value, {serializeJson=false} = {}){
+  if(value === undefined || value === null){
+    localStorage.removeItem(key);
+    return;
+  }
+  if(serializeJson){
+    localStorage.setItem(key, JSON.stringify(value));
+    return;
+  }
+  localStorage.setItem(key, value);
+}
+
 function logoutApp(){
   customConfirm('Odjaviti se? Svi lokalni podaci bit će obrisani s ovog uređaja.', ()=>{
     sbToken  = null;
@@ -2258,6 +2306,7 @@ async function loginSubmit(){
     if(!res.ok){ throw new Error(data.error_description||data.msg||'Greška pri prijavi'); }
     sbToken  = data.access_token;
     sbUserId = data.user?.id || null;
+    _authExpiredShown = false;
     localStorage.setItem('fk_sb_token', sbToken);
     if(sbUserId) localStorage.setItem('fk_sb_uid', sbUserId);
     // VAŽNO: spremi lokalno PRIJE loginClose() koji resetira _loginStartup i _loginCallback
@@ -2311,10 +2360,7 @@ async function cloudPullSilent(){
       headers: sbHeaders()
     });
     if(res.status===401||res.status===403){
-      sbToken=null; sbUserId=null;
-      localStorage.removeItem('fk_sb_token');
-      localStorage.removeItem('fk_sb_uid');
-      toast('Sesija istekla — prijavi se ponovo', true);
+      handleAuthExpired();
       return;
     }
     if(!res.ok){
@@ -2329,19 +2375,19 @@ async function cloudPullSilent(){
     const d = rows[0].sadrzaj;
     if(!d){ throw new Error('Neispravan format podataka u oblaku'); }
 
-    if(d.a_j)    localStorage.setItem('fk_a_j',    JSON.stringify(d.a_j));
-    if(d.a_cfg)  localStorage.setItem('fk_a',       d.a_cfg);
-    if(d.autor)  localStorage.setItem('fk_autor',   d.autor);
-    if(d.a_kl)   localStorage.setItem('fk_kl_a',   d.a_kl);
+    syncPulledStorage('fk_a_j', d.a_j, {serializeJson:true});
+    syncPulledStorage('fk_a', d.a_cfg);
+    syncPulledStorage('fk_autor', d.autor);
+    syncPulledStorage('fk_kl_a', d.a_kl);
     // FIX-SYNC-3: cloudPullSilent koristi planApplyFromServer koji radi merge
     // (ne zamjenjuje lokalni plan slijepo — čuva stat/dt fotografa)
-    if(d.a_plan) planApplyFromServer(d.a_plan);
-    if(d.status) localStorage.setItem('fk_status',  d.status);
-    if(d.grad)   localStorage.setItem('fk_grad',    d.grad);
-    if(d.theme)  localStorage.setItem('fk_theme',   d.theme);
-    if(d.mode)   localStorage.setItem('fk_mode',    d.mode);
-    if(d.gdpr)   localStorage.setItem('fk_gdpr',    d.gdpr);
-    if(d.onboard)localStorage.setItem('fk_onboard', d.onboard);
+    if(Object.prototype.hasOwnProperty.call(d, 'a_plan')) planApplyFromServer(d.a_plan);
+    syncPulledStorage('fk_status', d.status);
+    syncPulledStorage('fk_grad', d.grad);
+    syncPulledStorage('fk_theme', d.theme);
+    syncPulledStorage('fk_mode', d.mode);
+    syncPulledStorage('fk_gdpr', d.gdpr);
+    syncPulledStorage('fk_onboard', d.onboard);
 
     // Primijeni sve — rebuild UI
     aLoadCfg(); aBuildKG(); aRenderHist(); klRender(); planRender();
@@ -2504,10 +2550,7 @@ async function cloudSaveQuiet(){
     try{
       const fetchRes = await fetchWithTimeout(SB_URL+'/rest/v1/podaci?user_id=eq.'+sbUserId+'&select=sadrzaj',{headers:sbHeaders()});
       if(fetchRes.status===401||fetchRes.status===403){
-        sbToken=null; sbUserId=null;
-        localStorage.removeItem('fk_sb_token');
-        localStorage.removeItem('fk_sb_uid');
-        toast('Sesija istekla — prijavi se ponovo', true);
+        handleAuthExpired();
         return;
       }
       if(fetchRes.ok){
@@ -2546,10 +2589,7 @@ async function cloudSaveQuiet(){
       body:JSON.stringify({user_id:sbUserId,sadrzaj:payload})
     });
     if(res.status===401||res.status===403){
-      sbToken=null; sbUserId=null;
-      localStorage.removeItem('fk_sb_token');
-      localStorage.removeItem('fk_sb_uid');
-      toast('Sesija istekla — prijavi se ponovo', true);
+      handleAuthExpired();
       return;
     }
     if(!res.ok){const t=await res.text();throw new Error('HTTP '+res.status+' '+t);}
@@ -2625,10 +2665,8 @@ async function cloudSave(){
         headers: sbHeaders()
       });
       if(fetchRes.status===401||fetchRes.status===403){
-        sbToken=null; sbUserId=null;
-        localStorage.removeItem('fk_sb_token');
-        localStorage.removeItem('fk_sb_uid');
-        loginOpen(()=>cloudSave()); return;
+        handleAuthExpired();
+        return;
       }
       if(fetchRes.ok){
         serverFetchOk = true;
@@ -2669,10 +2707,8 @@ async function cloudSave(){
     if(!res.ok){
       const t = await res.text();
       if(res.status===401||res.status===403){
-        sbToken=null; sbUserId=null;
-        localStorage.removeItem('fk_sb_token');
-        localStorage.removeItem('fk_sb_uid');
-        loginOpen(()=>cloudSave()); return;
+        handleAuthExpired();
+        return;
       }
       throw new Error('Greška: '+res.status+' '+t);
     }
@@ -2705,10 +2741,8 @@ async function cloudPull(){
       });
 
       if(res.status===401||res.status===403){
-        sbToken=null; sbUserId=null;
-        localStorage.removeItem('fk_sb_token');
-        localStorage.removeItem('fk_sb_uid');
-        loginOpen(()=>cloudPull()); return;
+        handleAuthExpired();
+        return;
       }
       if(!res.ok){ const t=await res.text(); throw new Error('Fetch greška: '+res.status+' '+t); }
 
@@ -2719,17 +2753,17 @@ async function cloudPull(){
       if(!d){ throw new Error('Neispravan format podataka u oblaku.'); }
 
       // Primijeni podatke (ista logika kao importAll)
-      if(d.a_j)   localStorage.setItem('fk_a_j',   JSON.stringify(d.a_j));
-      if(d.a_cfg) localStorage.setItem('fk_a',      d.a_cfg);
-      if(d.autor) localStorage.setItem('fk_autor',  d.autor);
-      if(d.a_kl)  localStorage.setItem('fk_kl_a',  d.a_kl);
-      if(d.a_plan)planApplyFromServer(d.a_plan);
-      if(d.status)localStorage.setItem('fk_status', d.status);
-      if(d.grad)  localStorage.setItem('fk_grad',   d.grad);
-      if(d.theme) localStorage.setItem('fk_theme',  d.theme);
-      if(d.mode)  localStorage.setItem('fk_mode',   d.mode);
-      if(d.gdpr)  localStorage.setItem('fk_gdpr',   d.gdpr);
-      if(d.onboard)localStorage.setItem('fk_onboard',d.onboard);
+      syncPulledStorage('fk_a_j', d.a_j, {serializeJson:true});
+      syncPulledStorage('fk_a', d.a_cfg);
+      syncPulledStorage('fk_autor', d.autor);
+      syncPulledStorage('fk_kl_a', d.a_kl);
+      if(Object.prototype.hasOwnProperty.call(d, 'a_plan')) planApplyFromServer(d.a_plan);
+      syncPulledStorage('fk_status', d.status);
+      syncPulledStorage('fk_grad', d.grad);
+      syncPulledStorage('fk_theme', d.theme);
+      syncPulledStorage('fk_mode', d.mode);
+      syncPulledStorage('fk_gdpr', d.gdpr);
+      syncPulledStorage('fk_onboard', d.onboard);
 
       // Refresh UI
       aLoadCfg(); aBuildKG(); aRenderHist(); klRender(); planRender();
@@ -2894,3 +2928,4 @@ function appInit(){
 </script>
 </body>
 </html>
+

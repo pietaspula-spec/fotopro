@@ -1,8 +1,9 @@
 // FotoKalk Service Worker — v1.1
 // Cache-first strategija za offline upotrebu
-const CACHE_NAME = 'fotokalkpro-v0.3';
+const CACHE_NAME = 'fotokalkpro-v0.4';
 const ASSETS = [
   './index.html',
+  './upute.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'

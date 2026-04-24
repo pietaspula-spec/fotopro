@@ -1,117 +1,134 @@
-# 📷 FotoKalk PRO — Kalkulator honorara za fotografe (RH 2026)
+# FotoKalk PRO
 
-> Terenski pomoćnik za fotografe koji rade za **Adriatic.hr** — evidencija klijenata, plan snimanja i automatski obračun neto honorara prema hrvatskim poreznim propisima za 2026. godinu.
+Terenski alat za fotografe koji rade za Adriatic.hr i slične naručitelje: kalkulator honorara, povijest poslova, baza klijenata, plan snimanja, cloud sync i backup.
 
-🔗 **Live aplikacija:** [pietaspula-spec.github.io/foto](https://pietaspula-spec.github.io/foto/)
+## Što aplikacija radi
 
----
+- Prijava korisnika e-mailom i lozinkom
+- Kalkulator bruto i neto honorara
+- Povijest poslova s ukupnim statistikama
+- Izvoz u PDF, Excel i JSON
+- Baza klijenata i objekata
+- Plan snimanja i sinkronizacija naloga iz admin aplikacije
+- Cloud spremanje i povlačenje podataka
+- Lokalni backup i dijeljenje backupa
+- PWA instalacija i offline rad
 
-## ✨ Funkcionalnosti
+## Glavne funkcionalnosti
 
-- **Autentikacija** — obavezna prijava e-mailom i lozinkom, bez mogućnosti korištenja bez prijave
-- **Multi-user cloud sync** — svaki korisnik ima vlastiti korisnički račun i odvojene podatke na Supabase cloudu
-- **Evidencija klijenata i objekata** — vlasnici, šifre objekata, ugovori, GPS koordinate, status fotografiranja
-- **Plan snimanja** — termini s jasnim statusima (na čekanju / obavljeno / otkazano), zadani prikaz "Na čekanju"
-- **Kalkulator honorara** — automatski izračun bruto i neto iznosa prema čl. 4 ugovora:
-  - Kategorije objekta
-  - Snimanje dronom 
-  - Putni troškovi 
-  - Naknade za otkazana snimanja 
-- **Porezni obračun za RH 2026** — prilagođen gradu/općini i statusu fotografa (samostalni umjetnik, zaposleni, umirovljenik)
-- **Statistike** — zarada po mjesecima, ukupni neto, neplaćeni iznosi, PDV prag upozorenje
-- **Izvoz podataka** — Excel, PDF, JSON, CSV
-- **Backup sustav** — cloud backup (Supabase) + lokalni backup (.json) koji se može podijeliti
+### 1. Prijava i korisnički račun
 
----
+Korisnik se prijavljuje putem Supabase Auth prijave. Nakon uspješne prijave aplikacija sprema token lokalno i pokušava podići korisničko stanje pri idućem otvaranju.
 
-## 🔒 Autentikacija i pohrana podataka
+Nova verzija uključuje centralno rukovanje istekom sesije kako se poruka o isteku ne bi beskonačno ponavljala tijekom tihog cloud pull/sync procesa.
 
-Aplikacija zahtijeva prijavu. Korisnici se **ne mogu sami registrirati** — administrator ih dodaje putem Supabase Dashboarda.
+### 2. Kalkulator honorara
 
-**Podaci se čuvaju na dva mjesta:**
-- **Lokalno** u `localStorage` preglednika (brz pristup, radi offline)
-- **Supabase cloud** — ručnim klikom na "Spremi na oblak" u  izborniku
+Kalkulator podržava:
 
-Svaki korisnik vidi i može mijenjati **isključivo vlastite podatke** — Row Level Security (RLS) na razini baze onemogućava pristup tuđim podacima.
+- broj kategorija
+- dron
+- kilometre i putne troškove
+- otkaz po dolasku
+- dodatne troškove
+- porezne i doprinosne izračune
 
----
+Izračun koristi lokalne postavke fotografa: status, grad/općinu, poreznu stopu, MIO, ZO i paušalne izdatke.
 
-## 👤 Upravljanje korisnicima
+### 3. Povijest i izvoz
 
-Novi korisnici se dodaju putem **Supabase Dashboarda**:
+Kartica Povijest prikazuje:
 
-1. Idi na **Authentication → Users**
-2. Klikni **"Add user"** ili **"Invite user"**
-3. Unesi e-mail i lozinku (ili Supabase šalje pozivnicu s linkom)
+- ukupan neto
+- ukupan bruto
+- broj poslova
+- oznake plaćeno / neplaćeno
+- mjesečne preglede
 
-Promjena lozinke: Authentication → Users → klikni korisnika → "Reset password"
+Podaci se mogu izvoziti kao:
 
----
+- PDF evidencija
+- Excel `.xlsx`
+- JSON
 
-## ☁️ Cloud sync (Supabase)
+### 4. Klijenti
 
-Struktura baze podataka — tablica `podaci`:
+Jedan vlasnik može imati više objekata. Svaki objekt može sadržavati:
 
-```sql
--- Unique constraint (jedan red po korisniku)
-ALTER TABLE podaci ADD CONSTRAINT podaci_user_id_key UNIQUE (user_id);
+- šifru objekta
+- broj ugovora
+- adresu
+- GPS koordinate
+- status fotografiranja
+- napomenu
 
--- Row Level Security
-ALTER TABLE podaci ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "vlastiti_podaci" ON podaci
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
-```
+Podržan je i CSV import/export klijenata.
 
-Cloud sync nije automatski — korisnik ga pokreće ručno:
-- **☰ → Oblak / Backup → Spremi na oblak** — šalje lokalne podatke na cloud
-- **☰ → Oblak / Backup → Povuci s oblaka** — preuzima cloud podatke na uređaj
+### 5. Plan snimanja
 
----
+Plan snimanja služi za:
 
-## ⚠️ Rizik gubitka podataka
+- pregled naloga koje je admin dodijelio fotografu
+- status naloga
+- datum snimanja
+- navigaciju prema lokaciji
+- sinkronizaciju s cloud zapisom
 
-Lokalni podaci (`localStorage`) brišu se ako korisnik obriše cache preglednika.
+Kod sinkronizacije admin polja i foto polja se mergeaju kako se međusobno ne bi pregazila.
 
-**Preporuka:** koristiti cloud backup svakodnevno + lokalni .json backup jednom tjedno.
+### 6. Oblak i backup
 
----
+Aplikacija podržava dva načina rada s podacima:
 
-## 📱 PWA — Instalacija na uređaj
+- cloud spremanje kroz Supabase
+- lokalni backup kroz JSON datoteku
 
-Aplikacija je dostupna kao **Progressive Web App (PWA)** i može se instalirati:
+Ručne cloud opcije:
 
-- **Android / Chrome** — tri točke → *Dodaj na početni zaslon*
-- **iOS / Safari** — dijeli ikona → *Dodaj na početni zaslon*
-- **Desktop / Chrome** → ikona instalacije u adresnoj traci
+- `Spremi na oblak`
+- `Povuci s oblaka`
 
-Nakon instalacije aplikacija radi **potpuno offline** (cloud sync zahtijeva internet).
+Osim ručnih opcija, nova verzija koristi i:
 
----
+- tihi cloud pull pri startu
+- tihi auto sync nakon lokalnih izmjena
+- pending sync kad je uređaj offline
 
-## 🔄 Napomena za developere — ažuriranje verzije
+### 7. PWA i offline rad
 
-Aplikacija koristi **Service Worker s cache-first strategijom**. Nova verzija aktivira se tek kada korisnik zatvori sve tabove i ponovno otvori aplikaciju.
+FotoKalk PRO je PWA aplikacija. Service worker kešira ključne resurse i omogućuje rad nakon prvog učitavanja.
 
-**Pri svakom novom deployu povećaj verziju cachea u `sw.js`:**
+U ovoj pripremljenoj verziji `sw.js` koristi cache:
 
 ```js
-const CACHE_NAME = 'fotokalk-v2'; // ← povećaj broj pri svakom deployu
+const CACHE_NAME = 'fotokalkpro-v0.4';
 ```
 
----
+Kod novog deploya preporučuje se podići cache verziju kako bi korisnici brže dobili novu verziju aplikacije.
 
-## 🛠️ Tech stack
+## Struktura repoa
 
-- Vanilla HTML / CSS / JavaScript (bez frameworka)
-- [Supabase](https://supabase.com/) — autentikacija (Auth) i cloud pohrana podataka (PostgreSQL + RLS)
-- Service Worker (offline podrška, PWA)
-- localStorage (lokalna pohrana i brzi pristup)
-- [SheetJS (XLSX)](https://sheetjs.com/) — izvoz u Excel
-- GitHub Pages — hosting
+```text
+index.html
+upute.html
+sw.js
+manifest.json
+icon-192.png
+icon-512.png
+README.md
+IZMJENE.md
+```
 
----
+## Tehnologija
 
-## 📄 Licenca
+- Vanilla HTML / CSS / JavaScript
+- Supabase Auth + REST
+- localStorage
+- Service Worker
+- GitHub Pages
+- SheetJS (`xlsx`) za Excel export
 
-Ovaj projekt je privatni alat. Nije predviđen za redistribuciju bez dozvole autora.
+## Napomena za deploy
+
+Ako mijenjaš `index.html`, preporuka je istovremeno objaviti i novu verziju `sw.js` s podignutim `CACHE_NAME`.
+
