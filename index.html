@@ -2328,7 +2328,7 @@ async function cloudPullSilent(){
 // ── MERGE HELPER ──────────────────────────────────────────
 // Admin smije mijenjati: sifra, ug, ime1, ime2, tel, adr, lat, lng, note
 // Fotograf drži: stat, dt, id — i sve što admin NIJE postavio (ostatak)
-const ADMIN_FIELDS = ['sifra','ug','ime1','ime2','tel','adr','lat','lng','note_agencija'];
+const ADMIN_FIELDS = ['sifra','ug','ime1','ime2','tel','adr','lat','lng','note_agencija','note'];
 
 // FIX-AUDIT-1: sigurno parsiranje localStorage — ne baca na corrupted JSON
 function safeJsonArr(key){
