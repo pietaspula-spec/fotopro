@@ -61,6 +61,8 @@ main{max-width:960px;margin:0 auto;padding:18px 14px 0}
 label{font-size:.72rem;color:var(--mut2);font-weight:600;display:block;margin-bottom:4px}
 input,select{width:100%;background:var(--surf2);border:1px solid var(--brd);border-radius:7px;color:var(--txt);font-family:var(--mono);font-size:.85rem;padding:8px 10px;outline:none;transition:border-color .18s}
 input:focus,select:focus{border-color:var(--acc)}
+textarea{width:100%;background:var(--surf2);border:1px solid var(--brd);border-radius:7px;color:var(--txt);font-family:var(--mono);font-size:.85rem;padding:8px 10px;outline:none;transition:border-color .18s;display:block}
+textarea:focus{border-color:var(--acc)}
 select option{background:var(--surf2)}
 input[type=number]{-moz-appearance:textfield}
 input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
@@ -199,6 +201,9 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
 .modal{background:var(--surf);border-radius:16px 16px 0 0;padding:20px 18px 32px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto}
 .modal-title{font-size:1rem;font-weight:700;margin-bottom:16px}
 .modal-actions{display:flex;gap:8px;margin-top:16px}
+.readonly-note{background:linear-gradient(180deg,var(--surf2),var(--surf));border:1px dashed var(--brd2);color:var(--mut2);cursor:default;resize:none}
+.readonly-note:focus{border-color:var(--brd2)}
+.readonly-hint{font-size:.68rem;color:var(--mut);margin-top:5px;line-height:1.4}
 /* TOAST */
 .sync-toast{position:fixed;top:calc(env(safe-area-inset-top) + 8px);right:12px;background:var(--surf2);border:1px solid var(--brd2);color:var(--mut2);font-family:var(--mono);font-size:.72rem;font-weight:600;padding:5px 11px;border-radius:20px;z-index:998;opacity:0;transform:translateY(-6px);transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap}
 .sync-toast.on{opacity:1;transform:translateY(0)}
@@ -375,14 +380,24 @@ body.pre-login header,body.pre-login .mode-bar{visibility:hidden;pointer-events:
     </div>
     <div style="margin-bottom:10px"><label>Adresa objekta</label><input type="text" id="pl-adr" placeholder="Ul. i broj, Grad"></div>
     <div class="row c2">
+      <div><label>Smještajne jedinice</label><input type="number" id="pl-jed" placeholder="0" readonly></div>
+      <div><label>Link objekta</label><input type="url" id="pl-link" placeholder="https://www.adriatic.hr/..." readonly></div>
+    </div>
+    <div class="row c2">
       <div><label>GPS — Širina (lat)</label><input type="number" id="pl-lat" placeholder="44.8666" step="0.000001"></div>
       <div><label>GPS — Duljina (lng)</label><input type="number" id="pl-lng" placeholder="13.8496" step="0.000001"></div>
     </div>
       <div style="margin-bottom:10px">
         <label>📋 Napomena agencije (read-only)</label>
-        <textarea id="pl-note-ag" rows="2" placeholder="Uređuje se u Adriatic Nalozima" readonly style="background:var(--sfc,#f4f4f4);color:var(--mut,#888);resize:vertical;border-style:dashed" title="Ovo polje uređuje Adriatic Nalozi"></textarea>
+        <textarea id="pl-note-ag" class="readonly-note" rows="3" placeholder="Uređuje se u Adriatic Nalozima" readonly title="Ovo polje uređuje Adriatic Nalozi"></textarea>
+        <div class="readonly-hint">Ovo polje služi samo za pregled. Uređuje se u Adriatic Nalozima.</div>
       </div>
-    <div style="margin-bottom:10px"><label>💬 Komentar fotografa</label><textarea id="pl-note-foto" rows="2" placeholder="Vaš komentar, dogovor, primjedba…" style="resize:vertical"></textarea></div>
+    <div style="margin-bottom:10px"><label>💬 Komentar fotografa</label><textarea id="pl-note-foto" rows="3" placeholder="Vaš komentar, dogovor, primjedba…" style="resize:vertical"></textarea></div>
+    <div class="row c2">
+      <div><label>Udaljenost (km)</label><input type="number" id="pl-put-km" placeholder="0" min="0" step="0.1"></div>
+      <div><label>Ostalo (Eur)</label><input type="number" id="pl-put-ostalo" placeholder="0.00" min="0" step="0.01"></div>
+    </div>
+    <div class="readonly-hint" style="margin-top:-4px;margin-bottom:10px">Fotograf unosi prijedlog putnih troškova. Administrator ih u Adriatic Nalozima može potvrditi ili korigirati.</div>
     <div class="row c3">
       <div><label>📞 Kontaktiran iznajmljivač</label><div class="date-wrap"><input type="date" id="pl-dt-kontakt"><button class="date-icon-btn" type="button" onclick="document.getElementById('pl-dt-kontakt').showPicker?.()" aria-label="Odaberi datum">📅</button></div></div>
       <div><label>🔧 Datum obrade</label><div class="date-wrap"><input type="date" id="pl-dt-obrada"><button class="date-icon-btn" type="button" onclick="document.getElementById('pl-dt-obrada').showPicker?.()" aria-label="Odaberi datum">📅</button></div></div>
@@ -1719,9 +1734,12 @@ function planRender(){
       +'<div class="kl-row"><strong>'+esc(ime)+'</strong></div>'
       +(p.tel?'<div class="kl-row">&#128222; <a href="tel:'+esc(p.tel)+'">'+esc(p.tel)+'</a></div>':'')
       +(p.adr?'<div class="kl-row">&#128205; <a href="'+mapsUrl+'" target="_blank">'+esc(p.adr)+'</a></div>':'')
+      +(p.jed?'<div class="kl-row">&#127969; Smj. jedinice: <strong>'+esc(String(p.jed))+'</strong></div>':'')
+      +(p.link?'<div class="kl-row">&#128279; <a href="'+esc(p.link)+'" target="_blank" rel="noopener noreferrer">Adriatic link</a></div>':'')
       +(p.lat&&p.lng?'<div class="kl-row">&#128752; <a href="'+mapsUrl+'" target="_blank">'+p.lat+', '+p.lng+'</a></div>':'')
       +(p.note_agencija||p.note?'<div class="kl-note" style="border-left:3px solid var(--mut);padding-left:6px">&#128203; '+esc(p.note_agencija||p.note)+'</div>':'')
       +(p.note_foto?'<div class="kl-note" style="border-left:3px solid var(--grn);padding-left:6px">&#128172; '+esc(p.note_foto)+'</div>':'')
+      +((p.put_km||p.put_ostalo)?'<div style="font-size:.7rem;color:var(--mut);margin-top:4px;display:flex;gap:10px;flex-wrap:wrap">'+(p.put_km?'<span>&#128663; '+esc(String(p.put_km))+' km</span>':'')+(p.put_ostalo?'<span>&#128182; '+esc(Number(p.put_ostalo).toFixed(2))+' €</span>':'')+'</div>':'')
       +(p.dt_kontakt||p.dt_obrada||p.dt_isporuka?'<div style="font-size:.7rem;color:var(--mut);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap">'+(p.dt_kontakt?'<span>&#128222; '+fmtD(p.dt_kontakt)+'</span>':'')+(p.dt_obrada?'<span>&#128295; '+fmtD(p.dt_obrada)+'</span>':'')+(p.dt_isporuka?'<span>&#128230; '+fmtD(p.dt_isporuka)+'</span>':'')+'</div>':'')
       +'<div class="kl-actions">'
       +'<button class="btn bo" style="padding:6px 11px;display:inline-flex;align-items:center;justify-content:center" title="Uredi" onclick="openPlanModal(\''+p.id+'\')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>'
@@ -1763,7 +1781,7 @@ function planSyncKlijent(p,stat){
   if(changed){klSaveAll(kls);if(g('a-kl-list'))klRender();}
 }
 function planSetAdminLocked(locked){
-  const ids=['pl-note-ag'];
+  const ids=['pl-jed','pl-link','pl-note-ag'];
   ids.forEach(id=>{
     const el=g(id);
     if(!el) return;
@@ -1788,16 +1806,20 @@ function openPlanModal(id){
     g('pl-ime1').value=p.ime1||''; g('pl-ime2').value=p.ime2||'';
     g('pl-tel').value=p.tel||''; g('pl-ug').value=p.ug||'';
     g('pl-adr').value=p.adr||'';
+    g('pl-jed').value=p.jed!=null&&p.jed!==''?p.jed:'';
+    g('pl-link').value=p.link||'';
     g('pl-lat').value=p.lat||''; g('pl-lng').value=p.lng||'';
     g('pl-stat').value=p.stat||'ceka';
     g('pl-note-ag').value=p.note_agencija||p.note||'';
     g('pl-note-foto').value=p.note_foto||'';
+    g('pl-put-km').value=p.put_km!=null&&p.put_km!==''?p.put_km:'';
+    g('pl-put-ostalo').value=p.put_ostalo!=null&&p.put_ostalo!==''?p.put_ostalo:'';
     g('pl-dt-kontakt').value=p.dt_kontakt||'';
     g('pl-dt-obrada').value=p.dt_obrada||'';
     g('pl-dt-isporuka').value=p.dt_isporuka||'';
   } else {
     planSetAdminLocked(true);
-    ['pl-sifra','pl-ime1','pl-ime2','pl-tel','pl-ug','pl-adr','pl-lat','pl-lng','pl-note-foto','pl-dt-kontakt','pl-dt-obrada','pl-dt-isporuka'].forEach(fid=>g(fid).value='');
+    ['pl-sifra','pl-ime1','pl-ime2','pl-tel','pl-ug','pl-adr','pl-jed','pl-link','pl-lat','pl-lng','pl-note-foto','pl-put-km','pl-put-ostalo','pl-dt-kontakt','pl-dt-obrada','pl-dt-isporuka'].forEach(fid=>g(fid).value='');
     g('pl-note-ag').value='';
     g('pl-stat').value='ceka'; g('pl-dt').value='';
   }
@@ -1843,6 +1865,8 @@ function planSave(){
     stat,
     note_agencija: existing?.note_agencija || existing?.note || '', // admin polje — fotograf ga ne mijenja
     note_foto: v('pl-note-foto').trim(),
+    put_km: parseFloat(v('pl-put-km'))||0,
+    put_ostalo: parseFloat(v('pl-put-ostalo'))||0,
     dt_kontakt: v('pl-dt-kontakt')||'',
     dt_obrada: v('pl-dt-obrada')||'',
     dt_isporuka: v('pl-dt-isporuka')||'',
@@ -2350,7 +2374,7 @@ async function cloudPullSilent(){
 // Pobjeđuje novija izmjena: _adminTs vs _fotoTs.
 const SHARED_SYNC_FIELDS = ['sifra','ug','ime1','ime2','tel','adr','lat','lng'];
 // Admin-only polja uvijek dolaze iz Adriatic Nalozi.
-const ADMIN_ONLY_FIELDS = ['note_agencija','note'];
+const ADMIN_ONLY_FIELDS = ['jed','link','note_agencija','note'];
 
 // FIX-AUDIT-1: sigurno parsiranje localStorage — ne baca na corrupted JSON
 function safeJsonArr(key){
