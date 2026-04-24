@@ -378,7 +378,10 @@ body.pre-login header,body.pre-login .mode-bar{visibility:hidden;pointer-events:
       <div><label>GPS — Širina (lat)</label><input type="number" id="pl-lat" placeholder="44.8666" step="0.000001"></div>
       <div><label>GPS — Duljina (lng)</label><input type="number" id="pl-lng" placeholder="13.8496" step="0.000001"></div>
     </div>
-    <div style="margin-bottom:10px"><label>📋 Napomena agencije</label><textarea id="pl-note-ag" rows="2" placeholder="Nema napomene agencije" readonly style="background:var(--sfc,#f4f4f4);color:var(--mut,#888);resize:vertical;border-style:dashed"></textarea></div>
+      <div style="margin-bottom:10px">
+        <label>📋 Napomena agencije (read-only)</label>
+        <textarea id="pl-note-ag" rows="2" placeholder="Uređuje se u Adriatic Nalozima" readonly style="background:var(--sfc,#f4f4f4);color:var(--mut,#888);resize:vertical;border-style:dashed" title="Ovo polje uređuje Adriatic Nalozi"></textarea>
+      </div>
     <div style="margin-bottom:10px"><label>💬 Komentar fotografa</label><textarea id="pl-note-foto" rows="2" placeholder="Vaš komentar, dogovor, primjedba…" style="resize:vertical"></textarea></div>
     <div class="row c3">
       <div><label>📞 Kontaktiran iznajmljivač</label><div class="date-wrap"><input type="date" id="pl-dt-kontakt"><button class="date-icon-btn" type="button" onclick="document.getElementById('pl-dt-kontakt').showPicker?.()" aria-label="Odaberi datum">📅</button></div></div>
@@ -1759,12 +1762,28 @@ function planSyncKlijent(p,stat){
   }
   if(changed){klSaveAll(kls);if(g('a-kl-list'))klRender();}
 }
+function planSetAdminLocked(locked){
+  const ids=['pl-note-ag'];
+  ids.forEach(id=>{
+    const el=g(id);
+    if(!el) return;
+    el.readOnly=locked;
+    el.style.opacity=locked?'.72':'1';
+    el.style.cursor=locked?'not-allowed':'';
+    if(locked){
+      el.setAttribute('title','Ovo polje uređuje Adriatic Nalozi');
+    }else{
+      el.removeAttribute('title');
+    }
+  });
+}
 function openPlanModal(id){
   planEditId=id||null;
   g('planModalTitle').textContent=id?'Uredi termin':'Novi termin snimanja';
   g('planDelBtn').style.display=id?'inline-flex':'none';
   if(id){
     const p=planLoad().find(x=>x.id===id)||{};
+    planSetAdminLocked(true);
     g('pl-dt').value=p.dt||''; g('pl-sifra').value=p.sifra||'';
     g('pl-ime1').value=p.ime1||''; g('pl-ime2').value=p.ime2||'';
     g('pl-tel').value=p.tel||''; g('pl-ug').value=p.ug||'';
@@ -1777,6 +1796,7 @@ function openPlanModal(id){
     g('pl-dt-obrada').value=p.dt_obrada||'';
     g('pl-dt-isporuka').value=p.dt_isporuka||'';
   } else {
+    planSetAdminLocked(true);
     ['pl-sifra','pl-ime1','pl-ime2','pl-tel','pl-ug','pl-adr','pl-lat','pl-lng','pl-note-foto','pl-dt-kontakt','pl-dt-obrada','pl-dt-isporuka'].forEach(fid=>g(fid).value='');
     g('pl-note-ag').value='';
     g('pl-stat').value='ceka'; g('pl-dt').value='';
@@ -2326,9 +2346,11 @@ async function cloudPullSilent(){
 })();
 
 // ── MERGE HELPER ──────────────────────────────────────────
-// Admin smije mijenjati: sifra, ug, ime1, ime2, tel, adr, lat, lng, note
-// Fotograf drži: stat, dt, id — i sve što admin NIJE postavio (ostatak)
-const ADMIN_FIELDS = ['sifra','ug','ime1','ime2','tel','adr','lat','lng','note_agencija','note'];
+// Zajednička polja uređuju i admin i fotograf.
+// Pobjeđuje novija izmjena: _adminTs vs _fotoTs.
+const SHARED_SYNC_FIELDS = ['sifra','ug','ime1','ime2','tel','adr','lat','lng'];
+// Admin-only polja uvijek dolaze iz Adriatic Nalozi.
+const ADMIN_ONLY_FIELDS = ['note_agencija','note'];
 
 // FIX-AUDIT-1: sigurno parsiranje localStorage — ne baca na corrupted JSON
 function safeJsonArr(key){
@@ -2348,20 +2370,20 @@ function mergeAdminFieldsSafe(localPlan, serverPlan){
     const srv = serverMap.get(String(local.id));
     if(!srv) return local; // nalog postoji samo lokalno — ostavi ga
 
-    const srvTs   = srv._adminTs   || 0;
-    const localTs = local._adminTs || 0;
+    const srvAdminTs   = srv._adminTs   || 0;
+    const localAdminTs = local._adminTs || 0;
+    const localFotoTs  = local._fotoTs  || 0;
+    const updated = { ...local, _adminTs: Math.max(localAdminTs, srvAdminTs) };
 
-    // FIX: ako su oba 0 (stariji nalozi bez _adminTs), server svejedno "pobijedi"
-    // za admin polja — to je sigurno jer admin je stvorio nalog.
-    // Jedina iznimka: ako je lokalni _adminTs VEĆI od serverskog (lokalno noviji admin update
-    // koji još nije stigao na server — to se ne događa u normalnom toku, ali zaštita postoji).
-    if(srvTs < localTs) return local; // lokalni je noviji — ne diraj
-
-    // Server _adminTs >= lokalnog — preuzmi sva admin polja sa servera
-    const updated = { ...local, _adminTs: srvTs };
-    ADMIN_FIELDS.forEach(f => {
-      // Preuzmi sa servera ako polje postoji (čak i ako je prazan string — admin je to postavio)
+    ADMIN_ONLY_FIELDS.forEach(f => {
       if(srv[f] !== undefined) updated[f] = srv[f];
+    });
+
+    const serverWinsShared = srvAdminTs >= localFotoTs || (srvAdminTs===0 && localFotoTs===0);
+    SHARED_SYNC_FIELDS.forEach(f => {
+      if(srv[f] === undefined) return;
+      const localEmpty = updated[f] === undefined || updated[f] === null || updated[f] === '';
+      if(serverWinsShared || localEmpty) updated[f] = srv[f];
     });
     return updated;
   });
