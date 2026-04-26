@@ -380,6 +380,10 @@ body.pre-login header,body.pre-login .mode-bar{visibility:hidden;pointer-events:
     </div>
     <div style="margin-bottom:10px"><label>Adresa objekta</label><input type="text" id="pl-adr" placeholder="Ul. i broj, Grad"></div>
     <div class="row c2">
+      <div><label>Poštanski broj</label><input type="text" id="pl-pbr" placeholder="52100" readonly></div>
+      <div><label>Grad</label><input type="text" id="pl-grad" placeholder="Pula" readonly></div>
+    </div>
+    <div class="row c2">
       <div><label>Smještajne jedinice</label><input type="number" id="pl-jed" placeholder="0" readonly></div>
       <div><label>Link objekta</label><input type="url" id="pl-link" placeholder="https://www.adriatic.hr/..." readonly></div>
     </div>
@@ -933,7 +937,7 @@ function setFilt(ns,f,btn){
   if(ns==='a'){aFilt=f;g('a-hist').querySelectorAll('.ft').forEach(b=>b.classList.remove('on'));btn.classList.add('on');aRenderHist();}
 
 }
-function togPaid(id,ns){const jobs=loadJ(ns);const j=jobs.find(x=>String(x.id)===String(id));if(!j)return;j.paid=!j.paid;safeStore('fk_a_j',jobs);aRenderHist()}
+function togPaid(id,ns){const jobs=loadJ(ns);const j=jobs.find(x=>String(x.id)===String(id));if(!j)return;j.paid=!j.paid;safeStore(ns==='p'?'fk_p_j':'fk_a_j',jobs);aRenderHist()}
 function aRenderHist(){
   const all=loadJ('a');
   const jobs=aFilt==='pl'?all.filter(j=>j.paid):aFilt==='nep'?all.filter(j=>!j.paid):all;
@@ -973,7 +977,10 @@ function drawChart(svgId,jobs,field,isP){
 }
 
 // ═══ JOBS ═══
-function loadJ(ns){return JSON.parse(localStorage.getItem('fk_a_j')||'[]')}
+function loadJ(ns){
+  try{return JSON.parse(localStorage.getItem(ns==='p'?'fk_p_j':'fk_a_j')||'[]')}
+  catch{return[]}
+}
 
 // ═══ EXPORT ═══
 function doXLSX(ns){const jobs=loadJ(ns);if(!jobs.length){toast('Nema podataka',true);return}
@@ -1166,14 +1173,16 @@ async function confirmDeleteCloudData(){
   }
 }
 function buildBackupData(){return {
-  v:3,
+  v:4,
   ts:new Date().toISOString(),
   a_j:loadJ('a'),
+  p_j:loadJ('p'),
   a_cfg:localStorage.getItem('fk_a'),
   autor:localStorage.getItem('fk_autor'),
   a_kl:localStorage.getItem('fk_kl_a'),
+  p_kl:localStorage.getItem('fk_kl_p'),
   a_plan:localStorage.getItem('fk_plan_a'),
-  // Prethodno nedostajalo:
+  plan_deleted:localStorage.getItem('fk_plan_deleted'),
   status:localStorage.getItem('fk_status'),
   grad:localStorage.getItem('fk_grad'),
   theme:localStorage.getItem('fk_theme'),
@@ -1231,19 +1240,20 @@ function openBackupModal(){
 }
 function closeBackupModal(){g('backupModal').classList.remove('on');}
 function importAll(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(!d.v){toast('Neispravan format',true);return}
-  if(d.a_j)localStorage.setItem('fk_a_j',JSON.stringify(d.a_j));
-  if(d.a_cfg)localStorage.setItem('fk_a',d.a_cfg);
-  if(d.autor)localStorage.setItem('fk_autor',d.autor);
-  if(d.a_kl)localStorage.setItem('fk_kl_a',d.a_kl);
-  if(d.p_kl)localStorage.setItem('fk_kl_p',d.p_kl);
-  if(d.a_plan)planApplyFromServer(d.a_plan);
-  // v3 polja
-  if(d.status)localStorage.setItem('fk_status',d.status);
-  if(d.grad)localStorage.setItem('fk_grad',d.grad);
-  if(d.theme)localStorage.setItem('fk_theme',d.theme);
-  if(d.mode)localStorage.setItem('fk_mode',d.mode);
-  if(d.gdpr)localStorage.setItem('fk_gdpr',d.gdpr);
-  if(d.onboard)localStorage.setItem('fk_onboard',d.onboard);
+  syncPulledStorage('fk_a_j',d.a_j,{serializeJson:true});
+  syncPulledStorage('fk_p_j',d.p_j,{serializeJson:true});
+  syncPulledStorage('fk_a',d.a_cfg);
+  syncPulledStorage('fk_autor',d.autor);
+  syncPulledStorage('fk_kl_a',d.a_kl);
+  syncPulledStorage('fk_kl_p',d.p_kl);
+  if(Object.prototype.hasOwnProperty.call(d,'a_plan'))planApplyFromServer(d.a_plan);
+  syncPulledStorage('fk_plan_deleted',d.plan_deleted);
+  syncPulledStorage('fk_status',d.status);
+  syncPulledStorage('fk_grad',d.grad);
+  syncPulledStorage('fk_theme',d.theme);
+  syncPulledStorage('fk_mode',d.mode);
+  syncPulledStorage('fk_gdpr',d.gdpr);
+  syncPulledStorage('fk_onboard',d.onboard);
   // Primijeni sve
   aLoadCfg();aBuildKG();aRenderHist();klRender();planRender();
   applyStatus(getStatus());applyGrad(getGrad());
@@ -1720,7 +1730,8 @@ function planRender(){
   if(planFilt!=='svi')plans=plans.filter(p=>p.stat===planFilt);
   if(!plans.length){l.innerHTML='<div class="empty">Nema termina. Dodaj prvi!</div>';return;}
   l.innerHTML=plans.map(p=>{
-    const mapsUrl=p.lat&&p.lng?'https://maps.google.com/?q='+p.lat+','+p.lng:(p.adr?'https://maps.google.com/?q='+encodeURIComponent(p.adr):'');
+    const mjesto=[p.adr||'', [p.pbr||'',p.grad||''].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+    const mapsUrl=p.lat&&p.lng?'https://maps.google.com/?q='+p.lat+','+p.lng:(mjesto?'https://maps.google.com/?q='+encodeURIComponent(mjesto):'');
     const ime=(p.ime1+' '+p.ime2).trim()||'---';
     return '<div class="plan-card '+p.stat+(p.dt?'':' nodatum')+'">'
       +'<div style="display:flex;justify-content:space-between;align-items:flex-start">'
@@ -1731,7 +1742,7 @@ function planRender(){
       +(p.ug?'<div class="kl-row">&#128196; Ugovor: <strong>'+esc(p.ug)+'</strong></div>':'')
       +'<div class="kl-row"><strong>'+esc(ime)+'</strong></div>'
       +(p.tel?'<div class="kl-row">&#128222; <a href="tel:'+esc(p.tel)+'">'+esc(p.tel)+'</a></div>':'')
-      +(p.adr?'<div class="kl-row">&#128205; <a href="'+mapsUrl+'" target="_blank">'+esc(p.adr)+'</a></div>':'')
+      +(mjesto?'<div class="kl-row">&#128205; <a href="'+mapsUrl+'" target="_blank">'+esc(mjesto)+'</a></div>':'')
       +(p.jed?'<div class="kl-row">&#127969; Smj. jedinice: <strong>'+esc(String(p.jed))+'</strong></div>':'')
       +(p.link?'<div class="kl-row">&#128279; <a href="'+esc(p.link)+'" target="_blank" rel="noopener noreferrer">Adriatic link</a></div>':'')
       +(p.lat&&p.lng?'<div class="kl-row">&#128752; <a href="'+mapsUrl+'" target="_blank">'+p.lat+', '+p.lng+'</a></div>':'')
@@ -1798,7 +1809,7 @@ function planSyncKlijent(p,stat){
   if(g('a-kl-list'))klRender();
 }
 function planSetAdminLocked(locked){
-  const ids=['pl-jed','pl-link','pl-note-ag'];
+  const ids=['pl-pbr','pl-grad','pl-jed','pl-link','pl-note-ag'];
   ids.forEach(id=>{
     const el=g(id);
     if(!el) return;
@@ -1823,6 +1834,7 @@ function openPlanModal(id){
     g('pl-ime1').value=p.ime1||''; g('pl-ime2').value=p.ime2||'';
     g('pl-tel').value=p.tel||''; g('pl-ug').value=p.ug||'';
     g('pl-adr').value=p.adr||'';
+    g('pl-pbr').value=p.pbr||''; g('pl-grad').value=p.grad||'';
     g('pl-jed').value=p.jed!=null&&p.jed!==''?p.jed:'';
     g('pl-link').value=p.link||'';
     g('pl-lat').value=p.lat||''; g('pl-lng').value=p.lng||'';
@@ -1836,7 +1848,7 @@ function openPlanModal(id){
     g('pl-dt-isporuka').value=p.dt_isporuka||'';
   } else {
     planSetAdminLocked(true);
-    ['pl-sifra','pl-ime1','pl-ime2','pl-tel','pl-ug','pl-adr','pl-jed','pl-link','pl-lat','pl-lng','pl-note-foto','pl-put-km','pl-put-ostalo','pl-dt-kontakt','pl-dt-obrada','pl-dt-isporuka'].forEach(fid=>g(fid).value='');
+    ['pl-sifra','pl-ime1','pl-ime2','pl-tel','pl-ug','pl-adr','pl-pbr','pl-grad','pl-jed','pl-link','pl-lat','pl-lng','pl-note-foto','pl-put-km','pl-put-ostalo','pl-dt-kontakt','pl-dt-obrada','pl-dt-isporuka'].forEach(fid=>g(fid).value='');
     g('pl-note-ag').value='';
     g('pl-stat').value='ceka'; g('pl-dt').value='';
   }
@@ -1856,7 +1868,8 @@ function gcalUrl(p){
     +(p.tel?'Tel: '+p.tel+'\n':'')
     +(p.note_agencija||p.note?'Napomena: '+(p.note_agencija||p.note):'')
   );
-  const loc=encodeURIComponent(p.adr||(p.lat&&p.lng?p.lat+','+p.lng:''));
+  const locTxt=[p.adr||'', [p.pbr||'',p.grad||''].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+  const loc=encodeURIComponent(locTxt||(p.lat&&p.lng?p.lat+','+p.lng:''));
   return 'https://calendar.google.com/calendar/render?action=TEMPLATE'
     +'&text='+title
     +'&dates='+d+'T080000%2F'+d+'T180000'
@@ -2376,12 +2389,15 @@ async function cloudPullSilent(){
     if(!d){ throw new Error('Neispravan format podataka u oblaku'); }
 
     syncPulledStorage('fk_a_j', d.a_j, {serializeJson:true});
+    syncPulledStorage('fk_p_j', d.p_j, {serializeJson:true});
     syncPulledStorage('fk_a', d.a_cfg);
     syncPulledStorage('fk_autor', d.autor);
     syncPulledStorage('fk_kl_a', d.a_kl);
+    syncPulledStorage('fk_kl_p', d.p_kl);
     // FIX-SYNC-3: cloudPullSilent koristi planApplyFromServer koji radi merge
     // (ne zamjenjuje lokalni plan slijepo — čuva stat/dt fotografa)
     if(Object.prototype.hasOwnProperty.call(d, 'a_plan')) planApplyFromServer(d.a_plan);
+    syncPulledStorage('fk_plan_deleted', d.plan_deleted);
     syncPulledStorage('fk_status', d.status);
     syncPulledStorage('fk_grad', d.grad);
     syncPulledStorage('fk_theme', d.theme);
@@ -2420,7 +2436,7 @@ async function cloudPullSilent(){
 // Pobjeđuje novija izmjena: _adminTs vs _fotoTs.
 const SHARED_SYNC_FIELDS = ['sifra','ug','ime1','ime2','tel','adr','lat','lng'];
 // Admin-only polja uvijek dolaze iz Adriatic Nalozi.
-const ADMIN_ONLY_FIELDS = ['jed','link','note_agencija','note'];
+const ADMIN_ONLY_FIELDS = ['pbr','grad','jed','link','note_agencija','note'];
 
 // FIX-AUDIT-1: sigurno parsiranje localStorage — ne baca na corrupted JSON
 function safeJsonArr(key){
@@ -2754,10 +2770,13 @@ async function cloudPull(){
 
       // Primijeni podatke (ista logika kao importAll)
       syncPulledStorage('fk_a_j', d.a_j, {serializeJson:true});
+      syncPulledStorage('fk_p_j', d.p_j, {serializeJson:true});
       syncPulledStorage('fk_a', d.a_cfg);
       syncPulledStorage('fk_autor', d.autor);
       syncPulledStorage('fk_kl_a', d.a_kl);
+      syncPulledStorage('fk_kl_p', d.p_kl);
       if(Object.prototype.hasOwnProperty.call(d, 'a_plan')) planApplyFromServer(d.a_plan);
+      syncPulledStorage('fk_plan_deleted', d.plan_deleted);
       syncPulledStorage('fk_status', d.status);
       syncPulledStorage('fk_grad', d.grad);
       syncPulledStorage('fk_theme', d.theme);
