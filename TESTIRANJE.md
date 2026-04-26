@@ -1,4 +1,4 @@
-# FotoKalk PRO - Testiranje
+# FotoAdriatic - Testiranje
 
 Ovaj dokument sluzi kao brza checklist za provjeru nakon izmjena.
 

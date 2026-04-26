@@ -1,4 +1,4 @@
-# FotoKalk PRO
+# FotoAdriatic
 
 Terenski alat za fotografe koji rade za Adriatic.hr i slične naručitelje: kalkulator honorara, povijest poslova, baza klijenata, plan snimanja, cloud sync i backup.
 
@@ -96,12 +96,12 @@ Osim ručnih opcija, nova verzija koristi i:
 
 ### 7. PWA i offline rad
 
-FotoKalk PRO je PWA aplikacija. Service worker kešira ključne resurse i omogućuje rad nakon prvog učitavanja.
+FotoAdriatic je PWA aplikacija. Service worker kešira ključne resurse i omogućuje rad nakon prvog učitavanja.
 
 U ovoj pripremljenoj verziji `sw.js` koristi cache:
 
 ```js
-const CACHE_NAME = 'fotokalkpro-v0.4';
+const CACHE_NAME = 'fotoadriatic-v0.6';
 ```
 
 Kod novog deploya preporučuje se podići cache verziju kako bi korisnici brže dobili novu verziju aplikacije.
@@ -131,4 +131,3 @@ IZMJENE.md
 ## Napomena za deploy
 
 Ako mijenjaš `index.html`, preporuka je istovremeno objaviti i novu verziju `sw.js` s podignutim `CACHE_NAME`.
-

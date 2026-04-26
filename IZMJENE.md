@@ -22,7 +22,7 @@
 
 ### 4. PWA / service worker
 
-- podignut `CACHE_NAME` u `sw.js` na `fotokalkpro-v0.4`
+- podignut `CACHE_NAME` u `sw.js` na `fotoadriatic-v0.6`
 - dodan `upute.html` u cache listu
 
 ### 5. Paket za upload

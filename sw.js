@@ -1,6 +1,6 @@
-// FotoKalk Service Worker — v1.2
+// FotoAdriatic Service Worker — v1.2
 // Cache-first strategija za offline upotrebu
-const CACHE_NAME = 'fotokalkpro-v0.5';
+const CACHE_NAME = 'fotoadriatic-v0.6';
 const ASSETS = [
   './index.html',
   './upute.html',

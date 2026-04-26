@@ -1,4 +1,4 @@
-# FotoKalk PRO - Technical Notes
+# FotoAdriatic - Technical Notes
 
 Ovaj dokument je namijenjen programeru koji preuzima odrzavanje ili doradu aplikacije.
 
@@ -177,7 +177,7 @@ To razlikovanje je vazno ako se mijenjaju sigurnosna ili UX pravila.
 `sw.js` koristi cache verziju:
 
 ```js
-const CACHE_NAME = 'fotokalkpro-v0.4';
+const CACHE_NAME = 'fotoadriatic-v0.6';
 ```
 
 Kod svake bitne promjene deploya preporuka je:

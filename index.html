@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<!-- FotoKalk PRO v2 | Kalkulator honorara za fotografe -->
+<!-- FotoAdriatic | Klijenti i plan snimanja za fotografe -->
 <html lang="hr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>FotoKalk PRO</title>
+  <title>FotoAdriatic</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0b0c0e" id="themeColorMeta">
-<meta name="description" content="Kalkulator honorara za fotografe — Adriatic.hr i privatni najam (RH 2026)">
+  <meta name="description" content="Klijenti i plan snimanja za fotografe — Adriatic.hr i privatni najam (RH 2026)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="FotoKalk PRO">
+  <meta name="apple-mobile-web-app-title" content="FotoAdriatic">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -277,10 +277,10 @@ body.pre-login header,body.pre-login .mode-bar{visibility:hidden;pointer-events:
 <!-- PWA INSTALL BANNER -->
 <div id="installBanner" role="banner" aria-label="Instalacija aplikacije">
   <div class="inst-icon">
-    <img src="icon-192.png" alt="FotoKalk">
+    <img src="icon-192.png" alt="FotoAdriatic">
   </div>
   <div class="inst-text">
-    <div class="inst-title">FotoKalk PRO</div>
+    <div class="inst-title">FotoAdriatic</div>
     <div class="inst-sub" id="instSubText">Instaliraj aplikaciju za brži pristup i rad bez interneta.</div>
   </div>
   <div class="inst-actions">
@@ -306,7 +306,7 @@ body.pre-login header,body.pre-login .mode-bar{visibility:hidden;pointer-events:
 
 <div class="mode-bar">
   <div class="mode-sw">
-    <button class="mode-btn" id="btnA" onclick="setMode('a')">FotoKalk PRO v2.</button>
+      <button class="mode-btn" id="btnA" onclick="setMode('a')">FotoAdriatic</button>
   </div>
 </div>
 
@@ -539,7 +539,7 @@ body.pre-login header,body.pre-login .mode-bar{visibility:hidden;pointer-events:
         Otvori upute za korištenje
       </a>
     </div>
-    <div class="card">
+    <div class="card" hidden>
       <div class="ct">Naknade — Adriatic.hr čl.4</div>
       <div class="setr"><label>Honorar/kategoriji (bruto €) <span class="sbg">čl.4</span></label><input type="number" id="a-s-cp" placeholder="0" step="0.5" onchange="aSaveCfg()"></div>
       <div class="setr"><label>Honorar dron (bruto €) <span class="sbg">čl.4</span></label><input type="number" id="a-s-dp" placeholder="0" step="0.5" onchange="aSaveCfg()"></div>
@@ -547,7 +547,7 @@ body.pre-login header,body.pre-login .mode-bar{visibility:hidden;pointer-events:
       <div class="setr"><label>Prag km <span class="sbg">čl.4</span></label><input type="number" id="a-s-kt" placeholder="0" step="1" onchange="aSaveCfg()"></div>
       <div class="setr"><label>Propuštena dobit — otkaz (€) <span class="sbg">čl.4</span></label><input type="number" id="a-s-ot" placeholder="0" step="0.5" onchange="aSaveCfg()"></div>
     </div>
-    <div class="card">
+    <div class="card" hidden>
       <div class="ct">Porezne stope — RH 2026</div>
       <div class="setr"><label>Grad / općina</label><select id="a-s-grad" onchange="settingsGradChange('a-s-grad')"></select></div>
       <div class="setr"><label>Paušalni izdaci (%) <span class="sbg">ZPD</span></label><input type="number" id="a-s-iz" value="30" step="1" onchange="aSaveCfg()"></div>
@@ -558,7 +558,7 @@ body.pre-login header,body.pre-login .mode-bar{visibility:hidden;pointer-events:
       <div class="ib" id="a-pd-info" style="margin-top:8px">ℹ️ Pula 2026: 22% niža stopa / 32% viša stopa. Prirez ukinut. ZO plaća Naručitelj.</div>
       <div class="wb" id="a-umir-warn" style="margin-top:6px;display:none">⚠️ Umirovljenik: doprinosi se obračunavaju i na autorsku naknadu. Konzultacija s računovođom!</div>
     </div>
-    <div class="card">
+    <div class="card" hidden>
       <div class="ct">Moj status</div>
       <div class="setr">
         <label>Status fotografa</label>
@@ -570,7 +570,7 @@ body.pre-login header,body.pre-login .mode-bar{visibility:hidden;pointer-events:
       </div>
       <div class="ib" id="settings-status-note" style="margin-top:6px;display:none"></div>
     </div>
-    <div class="card">
+    <div class="card" hidden>
       <div class="ct">Kategorije objekta</div>
       <div id="a-ksl"></div>
       <div style="display:flex;gap:7px;margin-top:9px;align-items:flex-end">
@@ -652,8 +652,8 @@ body.pre-login header,body.pre-login .mode-bar{visibility:hidden;pointer-events:
 <!-- LOGIN SCREEN (startup + cloud) -->
 <div id="loginModal" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:950;overflow-y:auto;align-items:center;justify-content:center">
   <div style="max-width:400px;width:100%;margin:0 auto;padding:40px 24px 48px">
-    <div style="font-size:2rem;font-weight:800;color:var(--acc);letter-spacing:-1px;margin-bottom:4px">📷 FotoKalk PRO</div>
-    <div style="font-size:.85rem;color:var(--mut2);margin-bottom:28px">Kalkulator honorara za fotografe</div>
+    <div style="font-size:2rem;font-weight:800;color:var(--acc);letter-spacing:-1px;margin-bottom:4px">📷 FotoAdriatic</div>
+    <div style="font-size:.85rem;color:var(--mut2);margin-bottom:28px">Klijenti i plan snimanja za fotografe</div>
 
     <!-- Odabir tipa korisnika -->
     <div style="display:flex;gap:8px;margin-bottom:24px">
@@ -753,7 +753,7 @@ body.pre-login header,body.pre-login .mode-bar{visibility:hidden;pointer-events:
 <div id="onboardModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:800;flex-direction:row;align-items:flex-end;justify-content:center">
   <div style="background:var(--surf);border-radius:20px 20px 0 0;padding:24px 20px calc(32px + env(safe-area-inset-bottom));width:100%;max-width:600px;max-height:90vh;overflow-y:auto">
     <div style="text-align:center;margin-bottom:20px">
-      <div style="font-size:1.6rem;font-weight:800;color:var(--acc);letter-spacing:-1px;margin-bottom:2px">📷 FotoKalk PRO</div>
+      <div style="font-size:1.6rem;font-weight:800;color:var(--acc);letter-spacing:-1px;margin-bottom:2px">📷 FotoAdriatic</div>
       <div style="font-size:.82rem;color:var(--mut2)">Postavi aplikaciju — samo jednom</div>
     </div>
 
@@ -817,10 +817,10 @@ function setMode(m2){
   // Build tabs
   const tabs=g('tabsBar');tabs.innerHTML='';
   const IC={plan:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/></svg>',kalk:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="14" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="10" y2="18"/><line x1="14" y1="18" x2="16" y2="18"/></svg>',hist:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v4H3z"/><path d="M3 10h18v4H3z"/><path d="M3 17h18v4H3z"/></svg>',ug:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>',kl:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'};
-  const defs=[['a-kalk',IC.kalk,'Kalkulator'],['a-hist',IC.hist,'Povijest'],['a-kl',IC.kl,'Klijenti'],['a-plan',IC.plan,'Plan snimanja']];
+  const defs=[['a-kl',IC.kl,'Klijenti'],['a-plan',IC.plan,'Plan snimanja']];
   defs.forEach((d,i)=>{const b=document.createElement('button');b.className='tab icon-tab'+(i===0?' active':'');b.innerHTML=d[1];b.title=d[2];b.setAttribute('aria-label',d[2]);b.onclick=()=>showPg(d[0]);tabs.appendChild(b);});
   g('postBtn').classList.remove('active');
-  showPgRaw('a-kalk');aBuildKG();aCalc();posaoPopulatePicker();
+  showPgRaw('a-kl');aBuildKG();aCalc();posaoPopulatePicker();
 }
 function showPg(id){
   const wrap='aw';
@@ -828,7 +828,7 @@ function showPg(id){
   const pg=g(id);if(pg)pg.classList.add('on');
   g('tabsBar').querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   const tabs=g('tabsBar').querySelectorAll('.tab');
-  const defs=['a-kalk','a-hist','a-kl','a-plan'];
+  const defs=['a-kl','a-plan'];
   const idx=defs.indexOf(id);if(idx>=0&&tabs[idx])tabs[idx].classList.add('active');
   g('postBtn').classList.remove('active');
   if(id==='a-hist')aRenderHist();
@@ -845,7 +845,7 @@ function showPgRaw(id){
 function openPost(){
   const pid='a-post';
   const pg=g(pid);
-  if(pg&&pg.classList.contains('on')){showPg('a-kalk');g('postBtn').classList.remove('active');}
+  if(pg&&pg.classList.contains('on')){showPg('a-kl');g('postBtn').classList.remove('active');}
   else{showPg(pid);g('postBtn').classList.add('active');loadFotoIme();}
 }
 
@@ -988,7 +988,7 @@ function doXLSX(ns){const jobs=loadJ(ns);if(!jobs.length){toast('Nema podataka',
   const rows=[hdr];
   jobs.forEach(j=>rows.push(isA?[j.date,j.name,j.loc||'',j.dron?'Da':'Ne',j.km||0,j.bruto.toFixed(2),(j.mioI*0.75).toFixed(2),(j.mioI*0.25).toFixed(2),j.porI.toFixed(2),j.zoI.toFixed(2),j.neto.toFixed(2),j.paid?'Da':'Ne',j.note||'']:[j.date,j.name,j.loc||'',j.km||0,(j.neto||0).toFixed(2),(j.b2||0).toFixed(2),j.paid?'Da':'Ne',j.note||'']));
   rows.push([]);rows.push(isA?['UKUPNO','','','','',jobs.reduce((a,j)=>a+j.bruto,0).toFixed(2),'','','','',jobs.reduce((a,j)=>a+j.neto,0).toFixed(2),'','']:['UKUPNO','','','',jobs.reduce((a,j)=>a+(j.neto||0),0).toFixed(2),'','','']);
-  const d=new Date();const fn='fotokalk_'+(ns==='p'?'apt_':'')+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+  const d=new Date();const fn='fotoadriatic_'+(ns==='p'?'apt_':'')+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
   if(typeof XLSX!=='undefined'){
     const ws=XLSX.utils.aoa_to_sheet(rows);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Evidencija');
     XLSX.writeFile(wb,fn+'.xlsx');toast('Excel preuzet &#10003;');
@@ -1000,7 +1000,7 @@ function doXLSX(ns){const jobs=loadJ(ns);if(!jobs.length){toast('Nema podataka',
     toast('CSV preuzet (xlsx.js nije dostupan offline)');
   }
 }
-function doJSON(ns){const jobs=loadJ(ns);if(!jobs.length){toast('Nema podataka',true);return}const b=new Blob([JSON.stringify(jobs,null,2)],{type:'application/json'});const a=document.createElement('a');const _jurl=URL.createObjectURL(b);a.href=_jurl;setTimeout(()=>URL.revokeObjectURL(_jurl),1500);const d=new Date();a.download='fotokalk_'+(ns==='p'?'apt_':'')+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'.json';a.click();toast('JSON preuzet')}
+function doJSON(ns){const jobs=loadJ(ns);if(!jobs.length){toast('Nema podataka',true);return}const b=new Blob([JSON.stringify(jobs,null,2)],{type:'application/json'});const a=document.createElement('a');const _jurl=URL.createObjectURL(b);a.href=_jurl;setTimeout(()=>URL.revokeObjectURL(_jurl),1500);const d=new Date();a.download='fotoadriatic_'+(ns==='p'?'apt_':'')+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'.json';a.click();toast('JSON preuzet')}
 function aEvidencijaPrint(){
   // Picker modal
   const now=new Date();
@@ -1096,7 +1096,7 @@ tr:nth-child(even) td{background:#f9f9f9}
     </tr>`);
     w.document.write('</tbody></table>');
   }
-  w.document.write(`<div class="foot">FotoKalk · Adriatic.hr · Autorsko djelo · Zakon o autorskom pravu i srodnim pravima (NN 111/21, izmj. NN 32/24)</div>`);
+  w.document.write(`<div class="foot">FotoAdriatic · Adriatic.hr · Autorsko djelo · Zakon o autorskom pravu i srodnim pravima (NN 111/21, izmj. NN 32/24)</div>`);
   w.document.write('</div></body></html>');
   w.document.close();setTimeout(()=>w.print(),600);
 }
@@ -1190,7 +1190,7 @@ function buildBackupData(){return {
   gdpr:localStorage.getItem('fk_gdpr'),
   onboard:localStorage.getItem('fk_onboard')
 }}
-function backupFilename(){const d=new Date();return 'fotokalkpro_'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'.json'}
+function backupFilename(){const d=new Date();return 'fotoadriatic_'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'.json'}
 function markBackupDone(){localStorage.setItem('fk_last_backup',Date.now());checkBackupReminder()}
 function backupAll(){const data=buildBackupData();const b=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');const _burl=URL.createObjectURL(b);a.href=_burl;setTimeout(()=>URL.revokeObjectURL(_burl),1500);a.download=backupFilename();a.click();markBackupDone();toast('Backup preuzet ✓')}
 function shareBackup(){
@@ -1213,11 +1213,11 @@ function shareBackup(){
   const file=new File([json],txtName,{type:'text/plain'});
 
   if(navigator.canShare({files:[file]})){
-    navigator.share({files:[file],title:'FotoKalk Backup',text:'FotoKalk backup datoteka'})
+    navigator.share({files:[file],title:'FotoAdriatic Backup',text:'FotoAdriatic backup datoteka'})
       .then(()=>{markBackupDone();toast('Backup podijeljen ✓');})
       .catch(e=>{if(e.name!=='AbortError')doDownload();});
   } else {
-    navigator.share({title:'FotoKalk Backup',text:json})
+    navigator.share({title:'FotoAdriatic Backup',text:json})
       .then(()=>{markBackupDone();toast('Backup podijeljen kao tekst ✓');})
       .catch(e=>{if(e.name!=='AbortError')doDownload();});
   }
@@ -1902,7 +1902,7 @@ function planSave(){
     dt_obrada: v('pl-dt-obrada')||'',
     dt_isporuka: v('pl-dt-isporuka')||'',
     _fotoTs: Date.now(),
-    // Čuvaj _adminTs ako postoji — FotoKalk ne smije ga brisati
+    // Čuvaj _adminTs ako postoji — FotoAdriatic ga ne smije brisati
     _adminTs: existing?._adminTs || 0
   };
   if(planEditId){const idx=plans.findIndex(x=>x.id===planEditId);if(idx>=0)plans[idx]=obj;else plans.unshift(obj);}

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FotoKalk PRO — Upute</title>
+  <title>FotoAdriatic — Upute</title>
 <style>
 :root{
   --bg:#0b0c0e;
@@ -131,8 +131,8 @@ footer{text-align:center;padding:28px 24px;border-top:1px solid var(--brd);color
 
 <div class="hero">
   <div class="hero-badge">Upute za korištenje</div>
-  <h1>FotoKalk PRO</h1>
-  <p>Terenski alat za fotografe: kalkulator honorara, evidencija poslova, baza klijenata, plan snimanja i cloud sync — sve na jednom mjestu.</p>
+  <h1>FotoAdriatic</h1>
+  <p>Terenski alat za fotografe: baza klijenata, plan snimanja i cloud sync — sve na jednom mjestu.</p>
 </div>
 
 <div class="layout">
@@ -142,8 +142,6 @@ footer{text-align:center;padding:28px 24px;border-top:1px solid var(--brd);color
     <div class="toc-box">
       <h2>Sadržaj</h2>
       <a href="#prijava"><span class="ti">🔑</span> Prijava i račun</a>
-      <a href="#kalkulator"><span class="ti">🧮</span> Kalkulator</a>
-      <a href="#povijest"><span class="ti">📋</span> Povijest i izvoz</a>
       <a href="#klijenti"><span class="ti">👥</span> Klijenti</a>
       <a href="#plan"><span class="ti">📅</span> Plan snimanja</a>
       <a href="#postavke"><span class="ti">⚙️</span> Postavke</a>
@@ -160,7 +158,7 @@ footer{text-align:center;padding:28px 24px;border-top:1px solid var(--brd);color
       <div class="qcard">
         <span class="qi">🧮</span>
         <h3>Brzi start</h3>
-        <p>Prijava → provjeri porezne postavke → otvori Kalkulator → spremi posao u Povijest.</p>
+        <p>Prijava → otvori Klijente → provjeri Plan snimanja → sinkroniziraj rad kroz oblak.</p>
       </div>
       <div class="qcard">
         <span class="qi">☁️</span>
@@ -171,11 +169,6 @@ footer{text-align:center;padding:28px 24px;border-top:1px solid var(--brd);color
         <span class="qi">⬇️</span>
         <h3>Backup</h3>
         <p>Ikona <code>⬇</code> u headeru otvara Backup modal — cloud i lokalne opcije na jednom mjestu.</p>
-      </div>
-      <div class="qcard">
-        <span class="qi">📤</span>
-        <h3>Izvoz</h3>
-        <p>Iz Povijesti izvozi PDF evidenciju, Excel (.xlsx) ili JSON arhivu podataka.</p>
       </div>
     </div>
 
@@ -192,7 +185,7 @@ footer{text-align:center;padding:28px 24px;border-top:1px solid var(--brd);color
         <div class="steps">
           <div class="step"><div class="step-num">1</div><p>Unesi <strong>e-mail i lozinku</strong> na login ekranu.</p></div>
           <div class="step"><div class="step-num">2</div><p>Aplikacija sprema token lokalno — sljedeći put se otvara automatski.</p></div>
-          <div class="step"><div class="step-num">3</div><p>Novi korisnici prolaze <strong>onboarding</strong>: ime, grad, status fotografa.</p></div>
+          <div class="step"><div class="step-num">3</div><p>Novi korisnici prolaze <strong>onboarding</strong> s osnovnim korisničkim podacima i prijavom za rad u aplikaciji.</p></div>
         </div>
       </div>
 
@@ -214,7 +207,7 @@ footer{text-align:center;padding:28px 24px;border-top:1px solid var(--brd);color
     </div>
 
     <!-- 2. KALKULATOR -->
-    <div class="section" id="kalkulator">
+    <div class="section" id="kalkulator" hidden>
       <div class="sec-header">
         <div class="sec-icon">🧮</div>
         <h2>2. Kalkulator honorara</h2>
@@ -251,7 +244,7 @@ footer{text-align:center;padding:28px 24px;border-top:1px solid var(--brd);color
     </div>
 
     <!-- 3. POVIJEST -->
-    <div class="section" id="povijest">
+    <div class="section" id="povijest" hidden>
       <div class="sec-header">
         <div class="sec-icon">📋</div>
         <h2>3. Povijest i izvoz</h2>
@@ -286,9 +279,9 @@ footer{text-align:center;padding:28px 24px;border-top:1px solid var(--brd);color
     <div class="section" id="klijenti">
       <div class="sec-header">
         <div class="sec-icon">👥</div>
-        <h2>4. Klijenti</h2>
+        <h2>2. Klijenti</h2>
       </div>
-      <p class="sec-intro">Baza vlasnika i objekata. Jednom uneseni podaci dostupni su brzo u kalkulatoru.</p>
+      <p class="sec-intro">Baza vlasnika i objekata za brz pristup podacima na terenu i u planu snimanja.</p>
 
       <div class="fields">
         <div class="field">
@@ -296,8 +289,8 @@ footer{text-align:center;padding:28px 24px;border-top:1px solid var(--brd);color
           <p>Svaki objekt čuva šifru, ugovor, adresu, GPS, status fotografiranja i napomenu odvojeno.</p>
         </div>
         <div class="field">
-          <div class="field-head"><span class="field-icon">⚡</span><strong>Brzo popunjavanje</strong></div>
-          <p>Odabirom klijenta u kalkulatoru polja se automatski popune — bez tipkanja.</p>
+          <div class="field-head"><span class="field-icon">⚡</span><strong>Brz pristup podacima</strong></div>
+          <p>Podaci o vlasniku i objektu ostaju spremljeni za kasniji pregled, uređivanje i povezivanje s planom snimanja.</p>
         </div>
         <div class="field">
           <div class="field-head"><span class="field-icon">📤</span><strong>CSV import i export</strong></div>
@@ -314,7 +307,7 @@ footer{text-align:center;padding:28px 24px;border-top:1px solid var(--brd);color
     <div class="section" id="plan">
       <div class="sec-header">
         <div class="sec-icon">📅</div>
-        <h2>5. Plan snimanja</h2>
+        <h2>3. Plan snimanja</h2>
       </div>
       <p class="sec-intro">Pregled i upravljanje nalozima za buduća ili aktivna snimanja. Sinkronizira se s Adriatic Nalozi admin aplikacijom.</p>
 
@@ -342,26 +335,14 @@ footer{text-align:center;padding:28px 24px;border-top:1px solid var(--brd);color
     <div class="section" id="postavke">
       <div class="sec-header">
         <div class="sec-icon">⚙️</div>
-        <h2>6. Postavke</h2>
+        <h2>4. Postavke</h2>
       </div>
-      <p class="sec-intro">Hamburger meni → Postavke. Sve što utječe na izračune i prikaz aplikacije.</p>
+      <p class="sec-intro">Hamburger meni → Postavke. Ovdje su smještene osnovne korisničke opcije i sigurnosne radnje.</p>
 
       <div class="fields">
         <div class="field">
           <div class="field-head"><span class="field-icon">👤</span><strong>Ime fotografa</strong></div>
-          <p>Pojavljuje se u PDF evidenciji i svim generiranim dokumentima.</p>
-        </div>
-        <div class="field">
-          <div class="field-head"><span class="field-icon">💶</span><strong>Naknade</strong></div>
-          <p>Iznos po kategoriji, dron, kilometar, prag kilometara i propuštena dobit kod otkaza. Ove vrijednosti direktno mijenjaju izračun u kalkulatoru.</p>
-        </div>
-        <div class="field">
-          <div class="field-head"><span class="field-icon">🧾</span><strong>Porezne postavke</strong></div>
-          <p>Grad, status fotografa, MIO, ZO, porezna stopa i paušalni izdaci. Bez ispravnih postavki neto neće biti točan.</p>
-        </div>
-        <div class="field">
-          <div class="field-head"><span class="field-icon">🏷</span><strong>Kategorije objekta</strong></div>
-          <p>Dodavaj i briši kategorije koje se koriste u padajućem izborniku kalkulatora.</p>
+          <p>Osnovni korisnički podatak koji ostaje spremljen uz tvoj račun na uređaju.</p>
         </div>
         <div class="field">
           <div class="field-head"><span class="field-icon">🌙</span><strong>Tema</strong></div>
@@ -371,7 +352,7 @@ footer{text-align:center;padding:28px 24px;border-top:1px solid var(--brd);color
 
       <div class="note info">
         <span class="note-icon">💡</span>
-        <span>Porezne postavke postavi odmah pri prvom korištenju — svaka kasnija izmjena retroaktivno mijenja izračun za nove poslove, ali ne i za stare u Povijesti.</span>
+        <span>U postavkama su sada ostavljene samo osnovne korisničke i sigurnosne opcije, bez obračunskih polja.</span>
       </div>
     </div>
 
@@ -379,7 +360,7 @@ footer{text-align:center;padding:28px 24px;border-top:1px solid var(--brd);color
     <div class="section" id="oblak">
       <div class="sec-header">
         <div class="sec-icon">☁️</div>
-        <h2>7. Oblak i backup <span class="tag new">Novo</span></h2>
+        <h2>5. Oblak i backup <span class="tag new">Novo</span></h2>
       </div>
       <p class="sec-intro">Aplikacija sada kombinira automatski pozadinski sync s ručnim kontrolama. Ručni gumbi su i dalje tu — samo više nisu jedina opcija.</p>
 
@@ -427,7 +408,7 @@ footer{text-align:center;padding:28px 24px;border-top:1px solid var(--brd);color
         <div class="sec-icon">📱</div>
         <h2>8. Offline rad i PWA instalacija</h2>
       </div>
-      <p class="sec-intro">FotoKalk PRO se može instalirati kao aplikacija i radi i bez interneta, bar za osnovne funkcije.</p>
+      <p class="sec-intro">FotoAdriatic se može instalirati kao aplikacija i radi i bez interneta, bar za osnovne funkcije.</p>
 
       <div class="fields">
         <div class="field">
@@ -470,8 +451,8 @@ footer{text-align:center;padding:28px 24px;border-top:1px solid var(--brd);color
           <p>Brzi pristup backup modalu iz headeraa bez otvaranja cijelog menija.</p>
         </div>
         <div class="field">
-          <div class="field-head"><span class="field-icon">📤</span><strong>Integrirani izvoz</strong></div>
-          <p>PDF evidencija, Excel i JSON sada su jasno ugrađeni u tijek rada Povijesti.</p>
+          <div class="field-head"><span class="field-icon">📤</span><strong>Integrirani backup pristup</strong></div>
+          <p>Backup i prijenos podataka sada su jasno dostupni iz headera i postavki.</p>
         </div>
       </div>
 
@@ -484,6 +465,6 @@ footer{text-align:center;padding:28px 24px;border-top:1px solid var(--brd);color
   </main>
 </div>
 
-<footer>FotoKalk PRO — Upute za korištenje &nbsp;·&nbsp; ažurirano 24.04.2026.</footer>
+<footer>FotoAdriatic — Upute za korištenje &nbsp;·&nbsp; ažurirano 24.04.2026.</footer>
 </body>
 </html>
