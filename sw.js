@@ -1,6 +1,6 @@
-// FotoAdriatic Service Worker — v1.2
+// FotoAdriatic Service Worker — v1.3
 // Cache-first strategija za offline upotrebu
-const CACHE_NAME = 'fotoadriatic-v0.6';
+const CACHE_NAME = 'fotoadriatic-v0.7';
 const ASSETS = [
   './index.html',
   './upute.html',

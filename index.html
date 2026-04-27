@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>FotoAdriatic</title>
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="manifest.json?v=1.3">
 <meta name="theme-color" content="#0b0c0e" id="themeColorMeta">
   <meta name="description" content="Klijenti i plan snimanja za fotografe — Adriatic.hr i privatni najam (RH 2026)">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -380,8 +380,8 @@ body.pre-login header,body.pre-login .mode-bar{visibility:hidden;pointer-events:
     </div>
     <div style="margin-bottom:10px"><label>Adresa objekta</label><input type="text" id="pl-adr" placeholder="Ul. i broj, Grad"></div>
     <div class="row c2">
-      <div><label>Poštanski broj</label><input type="text" id="pl-pbr" placeholder="52100" readonly></div>
-      <div><label>Grad</label><input type="text" id="pl-grad" placeholder="Pula" readonly></div>
+      <div><label>Poštanski broj</label><input type="text" id="pl-pbr" placeholder="52100"></div>
+      <div><label>Grad</label><input type="text" id="pl-grad" placeholder="Pula"></div>
     </div>
     <div class="row c2">
       <div><label>Smještajne jedinice</label><input type="number" id="pl-jed" placeholder="0" readonly></div>
@@ -641,6 +641,12 @@ body.pre-login header,body.pre-login .mode-bar{visibility:hidden;pointer-events:
       <button class="ft" onclick="planSetFilt('svi',this)">Svi</button>
       <button class="ft" onclick="planSetFilt('obavljeno',this)">Obavljeno</button>
       <button class="ft" onclick="planSetFilt('otkazano',this)">Otkazano</button>
+      <select id="planSortSel" onchange="planSetSort(this.value)" style="margin-left:auto;font-size:.72rem;padding:4px 8px;border-radius:20px;border:1px solid var(--brd);background:var(--surf2);color:var(--txt);cursor:pointer">
+        <option value="dt_asc">Datum obrade ↑</option>
+        <option value="dt_desc">Datum obrade ↓</option>
+        <option value="created_desc">Dodano ↓</option>
+        <option value="created_asc">Dodano ↑</option>
+      </select>
     </div>
     <div id="a-plan-list"></div>
   </div>
@@ -1673,7 +1679,7 @@ function posaoPopulatePicker(){
 
 
 // ═══ PLAN SNIMANJA ═══
-let planFilt='ceka', planEditId=null;
+let planFilt='ceka', planEditId=null, planSort='dt_asc';
 function planLoad(){return JSON.parse(localStorage.getItem('fk_plan_a')||'[]')}
 function planSaveAll(arr){
   try{localStorage.setItem('fk_plan_a',JSON.stringify(arr));}
@@ -1716,18 +1722,38 @@ function planApplyFromServer(rawPlan){
   }
 }
 function planSetFilt(f,btn){planFilt=f;g('a-plan').querySelectorAll('.ft').forEach(b=>b.classList.remove('on'));btn.classList.add('on');planRender()}
+function planSetSort(v){planSort=v||'dt_asc';planRender()}
 function planStatLabel(s){return s==='obavljeno'?'&#10003; Obavljeno':s==='otkazano'?'&#10007; Otkazano':'&#9711; Na &#269;ekanju'}
+function planCreatedTs(p){
+  const m=String(p?.id||'').match(/^(\d{13})/);
+  return m?parseInt(m[1],10):0;
+}
+function sortPlansForView(plans,mode){
+  const arr=[...plans];
+  arr.sort((a,b)=>{
+    if(mode==='dt_desc'){
+      const ad=a.dt||'', bd=b.dt||'';
+      if(!ad&&!bd)return planCreatedTs(b)-planCreatedTs(a);
+      if(!ad)return 1;
+      if(!bd)return -1;
+      return bd.localeCompare(ad) || (planCreatedTs(b)-planCreatedTs(a));
+    }
+    if(mode==='created_desc')return planCreatedTs(b)-planCreatedTs(a) || ((b.dt||'').localeCompare(a.dt||''));
+    if(mode==='created_asc')return planCreatedTs(a)-planCreatedTs(b) || ((a.dt||'').localeCompare(b.dt||''));
+    const ad=a.dt||'', bd=b.dt||'';
+    if(!ad&&!bd)return planCreatedTs(a)-planCreatedTs(b);
+    if(!ad)return 1;
+    if(!bd)return -1;
+    return ad.localeCompare(bd) || (planCreatedTs(a)-planCreatedTs(b));
+  });
+  return arr;
+}
 function planRender(){
   const l=g('a-plan-list');if(!l)return;
   let plans=planLoad();
-  // Sort by date ascending
-  plans.sort((a,b)=>{
-    if(!a.dt&&!b.dt)return 0;
-    if(!a.dt)return 1;  // bez datuma idu na kraj
-    if(!b.dt)return -1;
-    return a.dt>b.dt?1:-1;
-  });
   if(planFilt!=='svi')plans=plans.filter(p=>p.stat===planFilt);
+  plans=sortPlansForView(plans,planSort);
+  const sortSel=g('planSortSel');if(sortSel&&sortSel.value!==planSort)sortSel.value=planSort;
   if(!plans.length){l.innerHTML='<div class="empty">Nema termina. Dodaj prvi!</div>';return;}
   l.innerHTML=plans.map(p=>{
     const mjesto=[p.adr||'', [p.pbr||'',p.grad||''].filter(Boolean).join(' ')].filter(Boolean).join(', ');
@@ -1809,7 +1835,7 @@ function planSyncKlijent(p,stat){
   if(g('a-kl-list'))klRender();
 }
 function planSetAdminLocked(locked){
-  const ids=['pl-pbr','pl-grad','pl-jed','pl-link','pl-note-ag'];
+  const ids=['pl-jed','pl-link','pl-note-ag'];
   ids.forEach(id=>{
     const el=g(id);
     if(!el) return;
@@ -1892,7 +1918,8 @@ function planSave(){
     sifra:v('pl-sifra').trim(),
     ime1:v('pl-ime1').trim(), ime2:v('pl-ime2').trim(),
     tel:v('pl-tel').trim(),   ug:v('pl-ug').trim(),
-    adr:v('pl-adr').trim(),   lat:v('pl-lat')||'', lng:v('pl-lng')||'',
+    adr:v('pl-adr').trim(),   pbr:v('pl-pbr').trim(), grad:v('pl-grad').trim(),
+    lat:v('pl-lat')||'', lng:v('pl-lng')||'',
     stat,
     note_agencija: existing?.note_agencija || existing?.note || '', // admin polje — fotograf ga ne mijenja
     note_foto: v('pl-note-foto').trim(),
@@ -2434,9 +2461,9 @@ async function cloudPullSilent(){
 // ── MERGE HELPER ──────────────────────────────────────────
 // Zajednička polja uređuju i admin i fotograf.
 // Pobjeđuje novija izmjena: _adminTs vs _fotoTs.
-const SHARED_SYNC_FIELDS = ['sifra','ug','ime1','ime2','tel','adr','lat','lng'];
+const SHARED_SYNC_FIELDS = ['sifra','ug','ime1','ime2','tel','adr','pbr','grad','lat','lng','dt_kontakt','dt_obrada','dt_isporuka'];
 // Admin-only polja uvijek dolaze iz Adriatic Nalozi.
-const ADMIN_ONLY_FIELDS = ['pbr','grad','jed','link','note_agencija','note'];
+const ADMIN_ONLY_FIELDS = ['jed','link','note_agencija','note'];
 
 // FIX-AUDIT-1: sigurno parsiranje localStorage — ne baca na corrupted JSON
 function safeJsonArr(key){
@@ -2815,7 +2842,7 @@ document.addEventListener('keydown', e=>{
 // ═══ SERVICE WORKER ═══
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
+    navigator.serviceWorker.register('./sw.js?v=1.3').catch(() => {});
   });
 }
 
