@@ -142,8 +142,8 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
 .unp .l{color:var(--red);font-weight:600;font-size:.8rem}
 .unp .v{font-family:var(--mono);color:var(--red);font-size:.95rem;font-weight:700}
 /* FILTER */
-.frow{display:flex;gap:5px;margin-bottom:11px;flex-wrap:wrap}
-.ft{background:transparent;border:1px solid var(--brd);color:var(--mut2);font-family:var(--sans);font-size:.72rem;font-weight:600;padding:4px 12px;border-radius:20px;cursor:pointer;transition:all .18s}
+.frow{display:flex;gap:5px;margin-bottom:11px;flex-wrap:wrap;overflow-x:auto}
+.ft{background:transparent;border:1px solid var(--brd);color:var(--mut2);font-family:var(--sans);font-size:.72rem;font-weight:600;padding:4px 12px;border-radius:20px;cursor:pointer;transition:all .18s;white-space:nowrap;flex-shrink:0}
 .ft.on{background:var(--acc);color:#000;border-color:var(--acc)}
 /* SETTINGS ROWS */
 .setr{display:flex;align-items:center;gap:9px;background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:8px 11px;margin-bottom:7px}
@@ -642,10 +642,10 @@ body.pre-login header,body.pre-login .mode-bar{visibility:hidden;pointer-events:
       <button class="ft" onclick="planSetFilt('obavljeno',this)">Obavljeno</button>
       <button class="ft" onclick="planSetFilt('otkazano',this)">Otkazano</button>
       <select id="planSortSel" onchange="planSetSort(this.value)" style="margin-left:auto;font-size:.72rem;padding:4px 8px;border-radius:20px;border:1px solid var(--brd);background:var(--surf2);color:var(--txt);cursor:pointer">
-        <option value="dt_asc">Datum obrade ↑</option>
-        <option value="dt_desc">Datum obrade ↓</option>
-        <option value="created_desc">Dodano ↓</option>
-        <option value="created_asc">Dodano ↑</option>
+        <option value="dt_asc">Datum obrade ▲</option>
+        <option value="dt_desc">Datum obrade ▼</option>
+        <option value="created_desc">Dodano ▼</option>
+        <option value="created_asc">Dodano ▲</option>
       </select>
     </div>
     <div id="a-plan-list"></div>
@@ -1679,7 +1679,7 @@ function posaoPopulatePicker(){
 
 
 // ═══ PLAN SNIMANJA ═══
-let planFilt='ceka', planEditId=null, planSort='dt_asc';
+let planFilt='ceka', planEditId=null, planSort='created_desc';
 function planLoad(){return JSON.parse(localStorage.getItem('fk_plan_a')||'[]')}
 function planSaveAll(arr){
   try{localStorage.setItem('fk_plan_a',JSON.stringify(arr));}
@@ -1722,7 +1722,7 @@ function planApplyFromServer(rawPlan){
   }
 }
 function planSetFilt(f,btn){planFilt=f;g('a-plan').querySelectorAll('.ft').forEach(b=>b.classList.remove('on'));btn.classList.add('on');planRender()}
-function planSetSort(v){planSort=v||'dt_asc';planRender()}
+function planSetSort(v){planSort=v||'created_desc';planRender()}
 function planStatLabel(s){return s==='obavljeno'?'&#10003; Obavljeno':s==='otkazano'?'&#10007; Otkazano':'&#9711; Na &#269;ekanju'}
 function planCreatedTs(p){
   const m=String(p?.id||'').match(/^(\d{13})/);
