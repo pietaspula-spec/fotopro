@@ -409,6 +409,11 @@ body.pre-login header,body.pre-login .mode-bar{visibility:hidden;pointer-events:
         <textarea id="pl-note-ag" class="readonly-note" rows="3" placeholder="Uređuje se u Adriatic Nalozima" readonly title="Ovo polje uređuje Adriatic Nalozi"></textarea>
         <div class="readonly-hint">Ovo polje služi samo za pregled. Uređuje se u Adriatic Nalozima.</div>
       </div>
+      <div style="margin-bottom:10px">
+        <label>🏷️ Oznake jedinica (read-only)</label>
+        <textarea id="pl-oznake-jed" class="readonly-note" rows="3" placeholder="Uređuje se u Adriatic Nalozima" readonly title="Ovo polje uređuje Adriatic Nalozi"></textarea>
+        <div class="readonly-hint">Ovo polje služi samo za pregled. Uređuje se u Adriatic Nalozima.</div>
+      </div>
     <div style="margin-bottom:10px"><label>💬 Komentar fotografa</label><textarea id="pl-note-foto" rows="3" placeholder="Vaš komentar, dogovor, primjedba…" style="resize:vertical"></textarea></div>
     <div class="row c2">
       <div><label>Udaljenost (km)</label><input type="number" id="pl-put-km" placeholder="0" min="0" step="0.1"></div>
@@ -1855,6 +1860,7 @@ function planRender(){
       +(p.link?'<div class="kl-row">&#128279; <a href="'+esc(p.link)+'" target="_blank" rel="noopener noreferrer">Adriatic link</a></div>':'')
       +(p.lat&&p.lng?'<div class="kl-row">&#128752; <a href="'+mapsUrl+'" target="_blank">'+p.lat+', '+p.lng+'</a></div>':'')
       +(p.note_agencija||p.note?'<div class="kl-note" style="border-left:3px solid var(--mut);padding-left:6px">&#128203; '+esc(p.note_agencija||p.note)+'</div>':'')
+      +(p.oznake_jedinica?'<div class="kl-note" style="border-left:3px solid var(--pur);padding-left:6px">&#127991; '+esc(p.oznake_jedinica)+'</div>':'')
       +(p.note_foto?'<div class="kl-note" style="border-left:3px solid var(--grn);padding-left:6px">&#128172; '+esc(p.note_foto)+'</div>':'')
       +((p.put_km||p.put_ostalo)?'<div style="font-size:.7rem;color:var(--mut);margin-top:4px;display:flex;gap:10px;flex-wrap:wrap">'+(p.put_km?'<span>&#128663; '+esc(String(p.put_km))+' km</span>':'')+(p.put_ostalo?'<span>&#128182; '+esc(Number(p.put_ostalo).toFixed(2))+' €</span>':'')+'</div>':'')
       +(p.dt_kontakt||p.dt_obrada||p.dt_isporuka?'<div style="font-size:.7rem;color:var(--mut);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap">'+(p.dt_kontakt?'<span>&#128222; '+fmtD(p.dt_kontakt)+'</span>':'')+(p.dt_obrada?'<span>&#128295; '+fmtD(p.dt_obrada)+'</span>':'')+(p.dt_isporuka?'<span>&#128230; '+fmtD(p.dt_isporuka)+'</span>':'')+'</div>':'')
@@ -1917,7 +1923,7 @@ function planSyncKlijent(p,stat){
   if(g('a-kl-list'))klRender();
 }
 function planSetAdminLocked(locked){
-  const ids=['pl-jed','pl-link','pl-note-ag'];
+  const ids=['pl-jed','pl-link','pl-note-ag','pl-oznake-jed'];
   ids.forEach(id=>{
     const el=g(id);
     if(!el) return;
@@ -1948,6 +1954,7 @@ function openPlanModal(id){
     g('pl-lat').value=p.lat||''; g('pl-lng').value=p.lng||'';
     g('pl-stat').value=p.stat||'ceka';
     g('pl-note-ag').value=p.note_agencija||p.note||'';
+    g('pl-oznake-jed').value=p.oznake_jedinica||'';
     g('pl-note-foto').value=p.note_foto||'';
     g('pl-put-km').value=p.put_km!=null&&p.put_km!==''?p.put_km:'';
     g('pl-put-ostalo').value=p.put_ostalo!=null&&p.put_ostalo!==''?p.put_ostalo:'';
@@ -1958,6 +1965,7 @@ function openPlanModal(id){
     planSetAdminLocked(true);
     ['pl-sifra','pl-ime1','pl-ime2','pl-tel','pl-ug','pl-adr','pl-pbr','pl-grad','pl-jed','pl-link','pl-lat','pl-lng','pl-note-foto','pl-put-km','pl-put-ostalo','pl-dt-kontakt','pl-dt-obrada','pl-dt-isporuka'].forEach(fid=>g(fid).value='');
     g('pl-note-ag').value='';
+    g('pl-oznake-jed').value='';
     g('pl-stat').value='ceka'; g('pl-dt').value='';
   }
   g('planModal').classList.add('on');
@@ -2004,6 +2012,7 @@ function planSave(){
     lat:v('pl-lat')||'', lng:v('pl-lng')||'',
     stat,
     note_agencija: existing?.note_agencija || existing?.note || '', // admin polje — fotograf ga ne mijenja
+    oznake_jedinica: existing?.oznake_jedinica || '', // admin polje — fotograf ga ne mijenja
     note_foto: v('pl-note-foto').trim(),
     put_km: parseFloat(v('pl-put-km'))||0,
     put_ostalo: parseFloat(v('pl-put-ostalo'))||0,
@@ -2545,7 +2554,7 @@ async function cloudPullSilent(){
 // Pobjeđuje novija izmjena: _adminTs vs _fotoTs.
 const SHARED_SYNC_FIELDS = ['sifra','ug','ime1','ime2','tel','adr','pbr','grad','lat','lng','dt_kontakt','dt_obrada','dt_isporuka'];
 // Admin-only polja uvijek dolaze iz Adriatic Nalozi.
-const ADMIN_ONLY_FIELDS = ['jed','link','note_agencija','note'];
+const ADMIN_ONLY_FIELDS = ['jed','link','note_agencija','note','oznake_jedinica'];
 
 // FIX-AUDIT-1: sigurno parsiranje localStorage — ne baca na corrupted JSON
 function safeJsonArr(key){
